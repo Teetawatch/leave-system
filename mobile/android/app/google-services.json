@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "653886016284",
+    "project_id": "nassapp-ab65e",
+    "storage_bucket": "nassapp-ab65e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:653886016284:android:cb5dcc4e741a199f1408d9",
+        "android_client_info": {
+          "package_name": "com.leavesystem.leave_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGOp5olKLjLDJ7beFe7xXn8snPimG8738"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
