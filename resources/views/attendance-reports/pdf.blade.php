@@ -124,7 +124,7 @@
                         </td>
                         <td class="px-3 py-3 text-center">
                             @if($row['morning'] && $row['morning']->scan_photo)
-                                <img src="{{ route('fa-storage.file', ['path' => $row['morning']->scan_photo]) }}" class="w-16 h-16 object-cover rounded-lg border border-slate-200 mx-auto">
+                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($row['morning']->scan_photo) }}" class="w-16 h-16 object-cover rounded-lg border border-slate-200 mx-auto">
                             @else
                                 <div class="w-16 h-16 bg-slate-100 rounded-lg border border-slate-200 mx-auto flex items-center justify-center text-slate-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -147,7 +147,7 @@
                         </td>
                         <td class="px-3 py-3 text-center">
                             @if($row['afternoon'] && $row['afternoon']->scan_photo)
-                                <img src="{{ route('fa-storage.file', ['path' => $row['afternoon']->scan_photo]) }}" class="w-16 h-16 object-cover rounded-lg border border-slate-200 mx-auto">
+                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($row['afternoon']->scan_photo) }}" class="w-16 h-16 object-cover rounded-lg border border-slate-200 mx-auto">
                             @else
                                 <div class="w-16 h-16 bg-slate-100 rounded-lg border border-slate-200 mx-auto flex items-center justify-center text-slate-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
