@@ -140,10 +140,10 @@
 @section('content')
 <div class="space-y-8">
     <!-- Hero Header -->
-    <div class="relative overflow-hidden rounded-3xl hero-gradient p-8 shadow-2xl">
-        <div class="absolute inset-0 bg-black/10"></div>
-        <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-8 shadow-2xl">
+        <div class="absolute inset-0 bg-black/20"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
         
         <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div class="flex items-center gap-5">
