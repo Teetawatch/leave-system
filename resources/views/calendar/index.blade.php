@@ -475,6 +475,41 @@
             const showGuardChangeCheckbox = document.getElementById('showGuardChange');
             const loadingEl = document.getElementById('calendarLoading');
             
+            // Function to build events URL
+            function getEventsUrl(start, end) {
+                const params = new URLSearchParams({
+                    start: start,
+                    end: end,
+                    department: departmentFilter ? departmentFilter.value : 'all',
+                    show_guard_change: showGuardChangeCheckbox ? (showGuardChangeCheckbox.checked ? '1' : '0') : '1'
+                });
+                return `{{ route('calendar.events') }}?${params}`;
+            }
+            
+            // Function to fetch events
+            function fetchEvents(info, successCallback, failureCallback) {
+                if (loadingEl) loadingEl.classList.remove('hidden');
+                
+                const url = getEventsUrl(info.startStr, info.endStr);
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (loadingEl) loadingEl.classList.add('hidden');
+                        successCallback(data);
+                    })
+                    .catch(error => {
+                        if (loadingEl) loadingEl.classList.add('hidden');
+                        console.error('Error fetching events:', error);
+                        failureCallback(error);
+                    });
+            }
+            
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'th',
@@ -493,28 +528,8 @@
                 dayMaxEvents: 3,
                 moreLinkClick: 'popover',
                 eventDisplay: 'block',
-                events: function(info, successCallback, failureCallback) {
-                    loadingEl.classList.remove('hidden');
-                    
-                    const params = new URLSearchParams({
-                        start: info.startStr,
-                        end: info.endStr,
-                        department: departmentFilter.value,
-                        show_guard_change: showGuardChangeCheckbox.checked ? '1' : '0'
-                    });
-                    
-                    fetch(`{{ route('calendar.events') }}?${params}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            loadingEl.classList.add('hidden');
-                            successCallback(data);
-                        })
-                        .catch(error => {
-                            loadingEl.classList.add('hidden');
-                            console.error('Error fetching events:', error);
-                            failureCallback(error);
-                        });
-                },
+                lazyFetching: false,
+                events: fetchEvents,
                 eventClick: function(info) {
                     showEventModal(info.event);
                 },
@@ -529,42 +544,58 @@
             
             calendar.render();
             
-            // Filter change handlers
-            departmentFilter.addEventListener('change', function() {
+            // Force refetch events after a short delay to ensure everything is loaded
+            setTimeout(function() {
                 calendar.refetchEvents();
-                updateSummary(calendar.view.currentStart, calendar.view.currentEnd);
-            });
+                if (calendar.view) {
+                    updateSummary(calendar.view.currentStart, calendar.view.currentEnd);
+                }
+            }, 100);
             
-            showGuardChangeCheckbox.addEventListener('change', function() {
-                calendar.refetchEvents();
-            });
+            // Filter change handlers
+            if (departmentFilter) {
+                departmentFilter.addEventListener('change', function() {
+                    calendar.refetchEvents();
+                    updateSummary(calendar.view.currentStart, calendar.view.currentEnd);
+                });
+            }
+            
+            if (showGuardChangeCheckbox) {
+                showGuardChangeCheckbox.addEventListener('change', function() {
+                    calendar.refetchEvents();
+                });
+            }
             
             // Update summary statistics
             function updateSummary(start, end) {
+                if (!start || !end) return;
+                
                 const params = new URLSearchParams({
                     start: start.toISOString().split('T')[0],
                     end: end.toISOString().split('T')[0],
-                    department: departmentFilter.value
+                    department: departmentFilter ? departmentFilter.value : 'all'
                 });
                 
                 fetch(`{{ route('calendar.summary') }}?${params}`)
                     .then(response => response.json())
                     .then(data => {
                         // Update header stats
-                        document.getElementById('headerOnLeaveToday').textContent = data.onLeaveToday || 0;
-                        document.getElementById('headerMonthlyTotal').textContent = data.totalRequests || 0;
+                        const headerOnLeave = document.getElementById('headerOnLeaveToday');
+                        const headerMonthly = document.getElementById('headerMonthlyTotal');
+                        const onLeaveCount = document.getElementById('onLeaveTodayCount');
+                        const monthlyCount = document.getElementById('monthlyRequestsCount');
+                        const vacationEl = document.getElementById('vacationCount');
+                        const sickEl = document.getElementById('sickCount');
                         
-                        // Update card stats
-                        document.getElementById('onLeaveTodayCount').textContent = data.onLeaveToday || 0;
-                        document.getElementById('monthlyRequestsCount').textContent = data.totalRequests || 0;
-                        document.getElementById('vacationCount').textContent = data.byType['ลาพักร้อน'] || data.byType['Vacation'] || 0;
-                        document.getElementById('sickCount').textContent = data.byType['ลาป่วย'] || data.byType['Sick Leave'] || 0;
+                        if (headerOnLeave) headerOnLeave.textContent = data.onLeaveToday || 0;
+                        if (headerMonthly) headerMonthly.textContent = data.totalRequests || 0;
+                        if (onLeaveCount) onLeaveCount.textContent = data.onLeaveToday || 0;
+                        if (monthlyCount) monthlyCount.textContent = data.totalRequests || 0;
+                        if (vacationEl) vacationEl.textContent = data.byType['ลาพักร้อน'] || data.byType['Vacation'] || 0;
+                        if (sickEl) sickEl.textContent = data.byType['ลาป่วย'] || data.byType['Sick Leave'] || 0;
                     })
                     .catch(error => console.error('Error fetching summary:', error));
             }
-            
-            // Initial summary load
-            updateSummary(calendar.view.currentStart, calendar.view.currentEnd);
         });
         
         function showEventModal(event) {

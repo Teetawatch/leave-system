@@ -105,11 +105,10 @@ class CalendarController extends Controller
         
         // Get approved guard change requests if enabled
         if ($showGuardChange) {
-            $guardQuery = GuardChangeRequest::with(['user', 'substituteUser'])
+            $guardQuery = GuardChangeRequest::with(['user', 'replacementUser'])
                 ->where('status', 'approved')
                 ->where(function ($query) use ($start, $end) {
-                    $query->whereBetween('original_date', [$start, $end])
-                        ->orWhereBetween('new_date', [$start, $end]);
+                    $query->whereBetween('duty_date', [$start, $end]);
                 });
             
             if ($department && $department !== 'all') {
@@ -123,24 +122,24 @@ class CalendarController extends Controller
             foreach ($guardChanges as $guard) {
                 $userName = $guard->user->rank ? $guard->user->rank . ' ' . $guard->user->name : $guard->user->name;
                 
-                // Original date event (crossed out)
+                // Guard change event
                 $events[] = [
-                    'id' => 'guard_orig_' . $guard->id,
+                    'id' => 'guard_' . $guard->id,
                     'title' => '🔄 ' . $userName . ' (เปลี่ยนเวร)',
-                    'start' => Carbon::parse($guard->original_date)->format('Y-m-d'),
+                    'start' => Carbon::parse($guard->duty_date)->format('Y-m-d'),
                     'backgroundColor' => '#94A3B8',
                     'borderColor' => '#64748B',
                     'textColor' => '#ffffff',
                     'extendedProps' => [
                         'type' => 'guard_change',
-                        'guardType' => 'original',
                         'userId' => $guard->user_id,
                         'userName' => $userName,
                         'department' => $guard->user->department,
-                        'originalDate' => Carbon::parse($guard->original_date)->format('d/m/Y'),
-                        'newDate' => Carbon::parse($guard->new_date)->format('d/m/Y'),
-                        'substituteUser' => $guard->substituteUser ? $guard->substituteUser->name : null,
-                        'reason' => $guard->reason,
+                        'originalDate' => Carbon::parse($guard->duty_date)->format('d/m/Y'),
+                        'newDate' => Carbon::parse($guard->duty_date)->format('d/m/Y'),
+                        'substituteUser' => $guard->replacementUser ? $guard->replacementUser->name : null,
+                        'reason' => $guard->remarks,
+                        'dutyPosition' => $guard->duty_position,
                     ],
                 ];
             }
