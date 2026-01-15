@@ -47,10 +47,21 @@ class GuardChangeReportController extends Controller
             $query->where('status', $request->status);
         }
 
+        
+        // Clone query for statistics
+        $statsQuery = clone $query;
+        
+        $stats = [
+            'total' => $statsQuery->count(),
+            'approved' => (clone $statsQuery)->where('status', 'fully_approved')->count(),
+            'pending' => (clone $statsQuery)->whereIn('status', ['pending', 'approved', 'director_approved'])->count(),
+            'rejected' => (clone $statsQuery)->whereIn('status', ['rejected', 'cancelled'])->count(),
+        ];
+
         $requests = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
         $departments = Department::all();
 
-        return view('reports.guard-change', compact('requests', 'departments'));
+        return view('reports.guard-change', compact('requests', 'departments', 'stats'));
     }
 }

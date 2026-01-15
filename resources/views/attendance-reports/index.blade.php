@@ -1,519 +1,379 @@
 @extends('layouts.app')
 
-@section('title', 'รายงานนักเรียน')
-
-@push('styles')
-<style>
-    /* Animated gradient background */
-    .hero-gradient {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
-        background-size: 400% 400%;
-        animation: gradientShift 8s ease infinite;
-    }
-    
-    @keyframes gradientShift {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-    }
-    
-    /* Card hover animation */
-    .stat-card {
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Icon pulse animation */
-    .icon-pulse {
-        animation: pulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-    
-    /* Glass morphism */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    /* Shimmer effect */
-    .shimmer {
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .shimmer::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        animation: shimmer 3s infinite;
-    }
-    
-    @keyframes shimmer {
-        0% { left: -100%; }
-        100% { left: 100%; }
-    }
-    
-    /* Table row hover */
-    .table-row-hover {
-        transition: all 0.3s ease;
-    }
-    
-    .table-row-hover:hover {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
-        transform: scale(1.005);
-    }
-    
-    /* Badge glow */
-    .badge-glow {
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
-    }
-    
-    /* Floating animation */
-    .float-animation {
-        animation: float 3s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-    
-    /* Button shine effect */
-    .btn-shine {
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .btn-shine::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s;
-    }
-    
-    .btn-shine:hover::before {
-        left: 100%;
-    }
-    
-    /* Gradient text */
-    .gradient-text {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    /* Student card hover */
-    .student-card {
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    
-    .student-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Section expand animation */
-    .section-expand {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-</style>
-@endpush
+@section('title', 'รายงานการเข้าเรียนนักเรียน')
 
 @section('content')
-<div class="space-y-8">
+<div class="max-w-[95rem] mx-auto py-8 sm:px-6 lg:px-8 space-y-8">
+    
     <!-- Hero Header -->
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-8 shadow-2xl">
-        <div class="absolute inset-0 bg-black/20"></div>
-        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
+    <div class="relative overflow-hidden rounded-[2rem] bg-brand-900 p-8 shadow-xl border border-brand-700/50">
+        <!-- Background Effects -->
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-600 to-slate-900 opacity-90"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-brand-500/20 rounded-full blur-2xl -ml-20 -mb-20 pointer-events-none"></div>
         
         <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="flex items-center gap-5">
-                <div class="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center float-animation">
-                    <i data-lucide="bar-chart-3" class="w-8 h-8 text-white"></i>
+            <div class="flex items-center gap-6">
+                <div class="w-20 h-20 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
+                    <i data-lucide="scan-face" class="w-10 h-10 text-white"></i>
                 </div>
                 <div>
-                    <h2 class="text-3xl font-black text-white tracking-tight">รายงานการเข้าเรียนนักเรียน</h2>
-                    <p class="text-white/80 mt-1 flex items-center gap-2">
-                        <i data-lucide="calendar-check" class="w-4 h-4"></i>
-                        ช่วงวันที่ {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}
-                    </p>
+                    <h1 class="text-3xl font-black text-white tracking-tight">รายงานการเข้าเรียนนักเรียน</h1>
+                    <div class="flex items-center gap-3 mt-2 text-brand-200 font-medium">
+                        <span class="flex items-center gap-1.5 bg-brand-800/50 px-3 py-1 rounded-lg text-sm backdrop-blur-sm border border-brand-700">
+                            <i data-lucide="calendar" class="w-4 h-4 text-brand-300"></i>
+                            {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }}
+                        </span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 opacity-50"></i>
+                        <span class="flex items-center gap-1.5 bg-brand-800/50 px-3 py-1 rounded-lg text-sm backdrop-blur-sm border border-brand-700">
+                            <i data-lucide="calendar" class="w-4 h-4 text-brand-300"></i>
+                            {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}
+                        </span>
+                    </div>
                 </div>
             </div>
+            
             <div class="flex items-center gap-3">
                 <a href="{{ route('attendance-reports.pdf', array_merge(request()->query(), ['date' => $startDate])) }}" 
                    target="_blank"
-                   class="inline-flex items-center gap-3 bg-white text-rose-600 px-6 py-3.5 rounded-2xl transition-all shadow-lg hover:shadow-2xl text-sm font-bold btn-shine group">
-                    <i data-lucide="file-text" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                   class="group inline-flex items-center gap-2 bg-white text-brand-700 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-brand-50 hover:scale-105 hover:shadow-xl transition-all duration-300">
+                    <i data-lucide="file-down" class="w-5 h-5 transition-transform group-hover:-translate-y-0.5"></i>
                     <span>Export PDF</span>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Alert Success -->
+    <!-- Alert Messages -->
     @if(session('success'))
-        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 px-6 py-4 rounded-2xl border border-emerald-200 flex items-center gap-4 shadow-lg animate-pulse">
-            <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-                <i data-lucide="check-circle" class="w-6 h-6 text-white"></i>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                <i data-lucide="check" class="w-5 h-5"></i>
             </div>
-            <span class="font-semibold text-lg">{{ session('success') }}</span>
+            <span class="text-emerald-800 font-medium">{{ session('success') }}</span>
         </div>
     @endif
 
-    <!-- Alert Error -->
     @if(session('error'))
-        <div class="bg-gradient-to-r from-rose-50 to-pink-50 text-rose-700 px-6 py-4 rounded-2xl border border-rose-200 flex items-center gap-4 shadow-lg">
-            <div class="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center">
-                <i data-lucide="x-circle" class="w-6 h-6 text-white"></i>
+        <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600">
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
             </div>
-            <span class="font-semibold text-lg">{{ session('error') }}</span>
+            <span class="text-rose-800 font-medium">{{ session('error') }}</span>
         </div>
     @endif
 
-    <!-- Filters -->
-    <div class="glass-card rounded-3xl shadow-xl p-6 border border-white/50">
-        <div class="flex items-center gap-3 mb-5">
-            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <i data-lucide="filter" class="w-5 h-5 text-white"></i>
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <div class="flex items-center gap-2 mb-6 pb-4 border-b border-slate-50">
+            <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center">
+                <i data-lucide="search" class="w-4 h-4 text-brand-600"></i>
             </div>
-            <h3 class="text-lg font-bold text-slate-700">กรองข้อมูล</h3>
+            <h3 class="font-bold text-slate-800">ตัวกรองข้อมูล</h3>
         </div>
-        <form action="{{ route('attendance-reports.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
-            <div class="flex-1">
-                <label class="text-xs font-semibold text-slate-500 block mb-2 uppercase tracking-wider">หลักสูตร</label>
+        
+        <form action="{{ route('attendance-reports.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase">หลักสูตร</label>
                 <div class="relative">
-                    <select name="course_id" class="w-full px-5 py-3.5 bg-white border-2 border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
-                        <option value="">🎓 ทุกหลักสูตร</option>
+                    <select name="course_id" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all appearance-none cursor-pointer">
+                        <option value="">ทั้งหมด</option>
                         @foreach($courses as $course)
                             <option value="{{ $course->id }}" {{ $courseId == $course->id ? 'selected' : '' }}>
                                 {{ $course->name }}
                             </option>
                         @endforeach
                     </select>
-                    <i data-lucide="chevron-down" class="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    <i data-lucide="graduation-cap" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                 </div>
             </div>
-            <div>
-                <label class="text-xs font-semibold text-slate-500 block mb-2 uppercase tracking-wider">วันที่เริ่ม</label>
-                <input type="date" name="start_date" value="{{ $startDate }}" 
-                       class="px-5 py-3.5 bg-white border-2 border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+            
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase">วันที่เริ่มต้น</label>
+                <div class="relative">
+                    <input type="date" name="start_date" value="{{ $startDate }}" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                    <i data-lucide="calendar-days" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                </div>
             </div>
-            <div>
-                <label class="text-xs font-semibold text-slate-500 block mb-2 uppercase tracking-wider">วันที่สิ้นสุด</label>
-                <input type="date" name="end_date" value="{{ $endDate }}" 
-                       class="px-5 py-3.5 bg-white border-2 border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+            
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 uppercase">วันที่สิ้นสุด</label>
+                <div class="relative">
+                    <input type="date" name="end_date" value="{{ $endDate }}" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                    <i data-lucide="calendar-days" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                </div>
             </div>
-            <button type="submit" class="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 btn-shine flex items-center gap-2">
-                <i data-lucide="search" class="w-4 h-4"></i> ค้นหา
-            </button>
+            
+            <div class="flex items-end">
+                <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md shadow-brand-200 hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4"></i> ค้นหา
+                </button>
+            </div>
         </form>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <!-- Total Students -->
-        <div class="stat-card bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl p-6 text-white shimmer">
-            <div class="flex items-center justify-between">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-brand-50 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm font-medium">นักเรียนทั้งหมด</p>
-                    <p class="text-4xl font-black mt-2">{{ number_format($totalStudents) }}</p>
-                    <p class="text-blue-200 text-xs mt-1">คน</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">นักเรียนทั้งหมด</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($totalStudents) }}</h3>
+                    <p class="text-[10px] text-slate-400 font-medium">คนในระบบ</p>
                 </div>
-                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center icon-pulse">
-                    <i data-lucide="users" class="w-7 h-7"></i>
+                <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                    <i data-lucide="users" class="w-6 h-6"></i>
                 </div>
             </div>
         </div>
         
         <!-- Present -->
-        <div class="stat-card bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-xl p-6 text-white shimmer">
-            <div class="flex items-center justify-between">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <p class="text-emerald-100 text-sm font-medium">มาเรียน</p>
-                    <p class="text-4xl font-black mt-2">{{ number_format($uniqueStudentsCount) }}</p>
-                    <p class="text-emerald-200 text-xs mt-1">คน (ช่วงเวลา)</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">มาเรียน</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($uniqueStudentsCount) }}</h3>
+                    <p class="text-[10px] text-emerald-500 font-bold flex items-center gap-0.5">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> เข้าเรียน
+                    </p>
                 </div>
-                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center icon-pulse">
-                    <i data-lucide="user-check" class="w-7 h-7"></i>
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <i data-lucide="user-check" class="w-6 h-6"></i>
                 </div>
             </div>
         </div>
         
         <!-- Absent -->
-        <div class="stat-card bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-xl p-6 text-white shimmer">
-            <div class="flex items-center justify-between">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <p class="text-rose-100 text-sm font-medium">ยังไม่เข้าเรียน</p>
-                    <p class="text-4xl font-black mt-2">{{ number_format($absentCount) }}</p>
-                    <p class="text-rose-200 text-xs mt-1">คน</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">ไม่เข้าเรียน</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($absentCount) }}</h3>
+                    <p class="text-[10px] text-rose-500 font-bold flex items-center gap-0.5">
+                        <i data-lucide="alert-circle" class="w-3 h-3"></i> ขาด/ลา
+                    </p>
                 </div>
-                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center icon-pulse">
-                    <i data-lucide="user-x" class="w-7 h-7"></i>
+                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                    <i data-lucide="user-x" class="w-6 h-6"></i>
                 </div>
             </div>
         </div>
         
         <!-- Late -->
-        <div class="stat-card bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl p-6 text-white shimmer">
-            <div class="flex items-center justify-between">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <p class="text-amber-100 text-sm font-medium">มาสาย</p>
-                    <p class="text-4xl font-black mt-2">{{ number_format($lateCount) }}</p>
-                    <p class="text-amber-200 text-xs mt-1">คน</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">มาสาย</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($lateCount) }}</h3>
+                    <p class="text-[10px] text-amber-500 font-bold flex items-center gap-0.5">
+                        <i data-lucide="clock" class="w-3 h-3"></i> เกินเวลา
+                    </p>
                 </div>
-                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center icon-pulse">
-                    <i data-lucide="clock" class="w-7 h-7"></i>
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                    <i data-lucide="history" class="w-6 h-6"></i>
                 </div>
             </div>
         </div>
         
         <!-- Total Scans -->
-        <div class="stat-card bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl shadow-xl p-6 text-white shimmer">
-            <div class="flex items-center justify-between">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-slate-100 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+            <div class="relative flex items-center justify-between">
                 <div>
-                    <p class="text-purple-100 text-sm font-medium">การสแกนทั้งหมด</p>
-                    <p class="text-4xl font-black mt-2">{{ number_format($totalScansCount) }}</p>
-                    <p class="text-purple-200 text-xs mt-1">ครั้ง</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">สแกนรวม</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($totalScansCount) }}</h3>
+                    <p class="text-[10px] text-slate-400 font-medium">ครั้ง (เข้า/ออก)</p>
                 </div>
-                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center icon-pulse">
-                    <i data-lucide="scan-face" class="w-7 h-7"></i>
+                <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
+                    <i data-lucide="fingerprint" class="w-6 h-6"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Late Students Section -->
+    <!-- Late Students Toggle Section -->
     @if($lateStudents->count() > 0)
-    <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-3xl shadow-xl border border-amber-200/50 overflow-hidden" x-data="{ open: true }">
-        <button @click="open = !open" class="w-full flex items-center justify-between px-8 py-5 bg-gradient-to-r from-amber-100/80 to-orange-100/80 hover:from-amber-200/80 hover:to-orange-200/80 transition-all">
+    <div x-data="{ open: true }" class="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
+        <button @click="open = !open" class="w-full flex items-center justify-between p-6 bg-gradient-to-r from-amber-50 to-white hover:from-amber-100/50 transition-colors">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <i data-lucide="clock" class="w-7 h-7 text-white"></i>
+                <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold shadow-sm">
+                    {{ $lateStudents->unique('student_id')->count() }}
                 </div>
                 <div class="text-left">
-                    <h3 class="text-xl font-black text-amber-800">นักเรียนที่มาสาย</h3>
-                    <p class="text-sm text-amber-600 flex items-center gap-2 mt-1">
-                        <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full">{{ $lateStudents->unique('student_id')->count() }}</span>
-                        <span>คน</span>
-                    </p>
+                    <h3 class="font-bold text-lg text-slate-800">นักเรียนที่มาสาย</h3>
+                    <p class="text-xs text-slate-500">แตะเพื่อแสดง/ซ่อน รายชื่อนักเรียนที่มาสาย</p>
                 </div>
             </div>
-            <div class="w-10 h-10 bg-amber-200 rounded-xl flex items-center justify-center">
-                <i data-lucide="chevron-down" class="w-5 h-5 text-amber-600 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
-            </div>
+            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
         </button>
-        <div x-show="open" x-collapse class="section-expand">
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                @foreach($lateStudents->unique('student_id') as $log)
-                <div class="student-card bg-white rounded-2xl p-5 border-2 border-amber-200/50 flex items-center gap-4 hover:border-amber-400">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 overflow-hidden flex-shrink-0 border-2 border-amber-300 shadow-md">
-                        @if($log->student->photo_path)
-                            <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->student->photo_path) }}" class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center text-amber-400">
-                                <i data-lucide="user" class="w-6 h-6"></i>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-bold text-slate-800 truncate text-base">{{ $log->student->first_name }} {{ $log->student->last_name }}</p>
-                        <p class="text-xs text-slate-500 font-medium">{{ $log->student->student_code }}</p>
-                        <div class="flex items-center gap-1.5 mt-2">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold">
-                                <i data-lucide="clock" class="w-3 h-3"></i>
-                                {{ $log->scan_time->format('H:i:s') }}
+        
+        <div x-show="open" x-collapse>
+            <div class="p-6 bg-slate-50/50 border-t border-amber-50">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    @foreach($lateStudents->unique('student_id') as $log)
+                    <div class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow group">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex-shrink-0 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+                            @if($log->student->photo_path)
+                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->student->photo_path) }}" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                    <i data-lucide="user" class="w-6 h-6"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="font-bold text-slate-800 text-sm truncate">{{ $log->student->first_name }} {{ $log->student->last_name }}</h4>
+                            <p class="text-xs text-slate-500 mb-1">{{ $log->student->student_code }}</p>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[10px] font-bold border border-amber-100">
+                                <i data-lucide="clock" class="w-3 h-3"></i> {{ $log->scan_time->format('H:i:s') }}
                             </span>
                         </div>
                     </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
         </div>
     </div>
     @endif
 
-    <!-- Absent Students Section -->
+    <!-- Absent Students Toggle Section -->
     @if($absentStudents->count() > 0)
-    <div class="bg-gradient-to-br from-rose-50 via-pink-50 to-red-50 rounded-3xl shadow-xl border border-rose-200/50 overflow-hidden" x-data="{ open: true }">
-        <button @click="open = !open" class="w-full flex items-center justify-between px-8 py-5 bg-gradient-to-r from-rose-100/80 to-pink-100/80 hover:from-rose-200/80 hover:to-pink-200/80 transition-all">
+    <div x-data="{ open: true }" class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden">
+        <button @click="open = !open" class="w-full flex items-center justify-between p-6 bg-gradient-to-r from-rose-50 to-white hover:from-rose-100/50 transition-colors">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <i data-lucide="user-x" class="w-7 h-7 text-white"></i>
+                <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold shadow-sm">
+                    {{ $absentStudents->count() }}
                 </div>
                 <div class="text-left">
-                    <h3 class="text-xl font-black text-rose-800">นักเรียนที่ยังไม่เข้าเรียน</h3>
-                    <p class="text-sm text-rose-600 flex items-center gap-2 mt-1">
-                        <span class="inline-flex items-center justify-center w-6 h-6 bg-rose-500 text-white text-xs font-bold rounded-full">{{ $absentStudents->count() }}</span>
-                        <span>คน</span>
-                    </p>
+                    <h3 class="font-bold text-lg text-slate-800">นักเรียนที่ยังไม่เข้าเรียน</h3>
+                    <p class="text-xs text-slate-500">แตะเพื่อแสดง/ซ่อน รายชื่อนักเรียนที่ขาดเรียน</p>
                 </div>
             </div>
-            <div class="w-10 h-10 bg-rose-200 rounded-xl flex items-center justify-center">
-                <i data-lucide="chevron-down" class="w-5 h-5 text-rose-600 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
-            </div>
+            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
         </button>
-        <div x-show="open" x-collapse class="section-expand">
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                @foreach($absentStudents as $student)
-                <div class="student-card bg-white rounded-2xl p-5 border-2 border-rose-200/50 flex items-center gap-4 hover:border-rose-400">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 overflow-hidden flex-shrink-0 border-2 border-rose-300 shadow-md">
-                        @if($student->photo_path)
-                            <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($student->photo_path) }}" class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center text-rose-400">
-                                <i data-lucide="user" class="w-6 h-6"></i>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-bold text-slate-800 truncate text-base">{{ $student->first_name }} {{ $student->last_name }}</p>
-                        <p class="text-xs text-slate-500 font-medium">{{ $student->student_code }}</p>
-                        <div class="flex items-center gap-1.5 mt-2">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold">
-                                <i data-lucide="graduation-cap" class="w-3 h-3"></i>
-                                {{ $student->course->name ?? '-' }}
+        
+        <div x-show="open" x-collapse>
+            <div class="p-6 bg-slate-50/50 border-t border-rose-50">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    @foreach($absentStudents as $student)
+                    <div class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow group">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex-shrink-0 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+                            @if($student->photo_path)
+                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($student->photo_path) }}" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                    <i data-lucide="user" class="w-6 h-6"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="font-bold text-slate-800 text-sm truncate">{{ $student->first_name }} {{ $student->last_name }}</h4>
+                            <p class="text-xs text-slate-500 mb-1">{{ $student->student_code }}</p>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-100">
+                                <i data-lucide="graduation-cap" class="w-3 h-3"></i> {{ $student->course->name ?? '-' }}
                             </span>
                         </div>
                     </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
         </div>
     </div>
     @endif
 
     <!-- Data Table -->
-    <div class="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-        <!-- Table Header -->
-        <div class="px-8 py-5 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                        <i data-lucide="table" class="w-5 h-5 text-white"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-800">ประวัติการลงเวลา</h3>
-                        <p class="text-xs text-slate-500">รายละเอียดการสแกนเข้าเรียนทั้งหมด</p>
-                    </div>
-                </div>
-                <span class="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium text-slate-600 shadow-sm border border-slate-200">
-                    <i data-lucide="clipboard-list" class="w-4 h-4 text-indigo-500"></i>
-                    {{ number_format($logs->total()) }} รายการ
-                </span>
-            </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="list" class="w-4 h-4 text-slate-400"></i>
+                ประวัติการลงเวลาล่าสุด
+            </h3>
+            <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full font-medium">
+                {{ number_format($logs->total()) }} รายการ
+            </span>
         </div>
         
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
-                <thead class="bg-gradient-to-r from-slate-100 to-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider">
+                <thead class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
                     <tr>
-                        <th class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-500"></i>
-                                นักเรียน
-                            </div>
-                        </th>
-                        <th class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="book-open" class="w-4 h-4 text-purple-500"></i>
-                                หลักสูตร
-                            </div>
-                        </th>
-                        <th class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="calendar" class="w-4 h-4 text-blue-500"></i>
-                                วันที่
-                            </div>
-                        </th>
-                        <th class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="w-4 h-4 text-green-500"></i>
-                                เวลา
-                            </div>
-                        </th>
-                        <th class="px-6 py-4 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <i data-lucide="tag" class="w-4 h-4 text-amber-500"></i>
-                                ประเภท
-                            </div>
-                        </th>
+                        <th class="px-6 py-4">นักเรียน</th>
+                        <th class="px-6 py-4 text-center">หลักสูตร</th>
+                        <th class="px-6 py-4 text-center">วัน/เวลา</th>
+                        <th class="px-6 py-4 text-center">สถานะ</th>
+                        <th class="px-6 py-4 text-center">ประเภท</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y divide-slate-50">
                     @forelse($logs as $log)
-                    <tr class="table-row-hover">
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden flex-shrink-0 border-2 border-white shadow-md">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
                                     @if($log->student->photo_path)
                                         <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->student->photo_path) }}" class="w-full h-full object-cover">
                                     @else
-                                        <div class="w-full h-full flex items-center justify-center text-slate-400">
+                                        <div class="w-full h-full flex items-center justify-center text-slate-300">
                                             <i data-lucide="user" class="w-5 h-5"></i>
                                         </div>
                                     @endif
                                 </div>
                                 <div>
-                                    <p class="font-bold text-slate-800">{{ $log->student->first_name }} {{ $log->student->last_name }}</p>
+                                    <p class="font-bold text-slate-800 text-sm group-hover:text-brand-600 transition-colors">{{ $log->student->first_name }} {{ $log->student->last_name }}</p>
                                     <p class="text-xs text-slate-500 font-mono">{{ $log->student->student_code }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200/50">
-                                <i data-lucide="graduation-cap" class="w-3 h-3"></i>
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600">
                                 {{ $log->student->course->name ?? '-' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <span class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <i data-lucide="calendar-days" class="w-4 h-4 text-blue-600"></i>
-                                </span>
-                                <span class="text-slate-700 font-medium">{{ $log->scan_time->format('d/m/Y') }}</span>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex flex-col items-center">
+                                <span class="font-bold text-slate-700">{{ $log->scan_time->format('H:i:s') }}</span>
+                                <span class="text-xs text-slate-400">{{ $log->scan_time->format('d/m/Y') }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="font-mono text-slate-800 bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">
-                                {{ $log->scan_time->format('H:i:s') }}
-                            </span>
+                        <td class="px-6 py-4 text-center">
+                            @if($log->is_late)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-100">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> สาย
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> ปกติ
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-xs font-bold shadow-md badge-glow">
-                                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                                {{ $log->scan_type === 'in' ? 'เข้าเรียน' : 'ออก' }}
-                            </span>
+                            @if($log->scan_type === 'in')
+                                <span class="font-bold text-brand-600 text-xs bg-brand-50 px-3 py-1 rounded-lg border border-brand-100">
+                                    เข้าเรียน
+                                </span>
+                            @else
+                                <span class="font-bold text-slate-500 text-xs bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                                    ออก
+                                </span>
+                            @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-20 text-center">
-                            <div class="flex flex-col items-center">
-                                <div class="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center mb-5 float-animation">
-                                    <i data-lucide="clipboard-list" class="w-12 h-12 text-slate-400"></i>
-                                </div>
-                                <p class="font-bold text-slate-600 text-lg">ไม่พบข้อมูลการลงเวลา</p>
-                                <p class="text-sm mt-2 text-slate-400">ลองเปลี่ยนช่วงเวลาหรือหลักสูตรแล้วค้นหาใหม่</p>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                <i data-lucide="search-x" class="w-8 h-8 text-slate-300"></i>
                             </div>
+                            <p class="font-medium text-slate-500">ไม่พบข้อมูลการลงเวลา</p>
+                            <p class="text-sm text-slate-400">ลองปรับเปลี่ยนตัวกรองค้นหาใหม่</p>
                         </td>
                     </tr>
                     @endforelse
@@ -523,19 +383,10 @@
         
         <!-- Pagination -->
         @if($logs->hasPages())
-        <div class="px-8 py-5 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
             {{ $logs->appends(request()->query())->links() }}
         </div>
         @endif
     </div>
 </div>
-
-@push('scripts')
-<script>
-    // Reinitialize Lucide icons after page load
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-</script>
-@endpush
 @endsection
