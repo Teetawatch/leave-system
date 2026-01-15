@@ -19,6 +19,8 @@
     <style>
         [x-cloak] { display: none !important; }
     </style>
+    
+    @stack('styles')
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-600" x-data="{ sidebarOpen: false, mobileProfileOpen: false, mobileNotifOpen: false }">
     
@@ -185,6 +187,13 @@
                    class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('dashboard') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                     <i data-lucide="gauge" class="w-4 h-4 {{ request()->routeIs('dashboard') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
                     <span class="ml-3 text-sm font-medium">หน้าหลัก</span>
+                </a>
+
+                <!-- Calendar - Shared Leave Calendar -->
+                <a href="{{ route('calendar.index') }}" 
+                   class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('calendar.*') ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
+                    <i data-lucide="calendar" class="w-4 h-4 {{ request()->routeIs('calendar.*') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}"></i>
+                    <span class="ml-3 text-sm font-medium">ปฏิทินการลา</span>
                 </a>
 
                 <!-- Leave Section - Collapsible -->
