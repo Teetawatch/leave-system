@@ -8,6 +8,7 @@ use App\Models\LeaveBalance;
 use Illuminate\Http\Request;
 use App\Imports\EmployeeImport;
 use App\Exports\EmployeeTemplateExport;
+use App\Exports\EmployeeDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
@@ -241,10 +242,18 @@ class EmployeeController extends Controller
             Excel::import($import, $request->file('file'));
 
             $successCount = $import->getSuccessCount();
+            $updateCount = $import->getUpdateCount();
             $rowCount = $import->getRowCount();
             $errorMessages = $import->getErrorMessages();
             
-            $message = "นำเข้าข้อมูลพนักงานสำเร็จ {$successCount} จาก {$rowCount} รายการ";
+            $messageParts = [];
+            if ($successCount > 0) {
+                $messageParts[] = "เพิ่มใหม่ {$successCount} รายการ";
+            }
+            if ($updateCount > 0) {
+                $messageParts[] = "อัปเดต {$updateCount} รายการ";
+            }
+            $message = "นำเข้าข้อมูลพนักงานสำเร็จ: " . implode(', ', $messageParts) . " (จากทั้งหมด {$rowCount} แถว)";
             
             // Show error messages if any
             $allErrors = $errorMessages;
@@ -268,6 +277,14 @@ class EmployeeController extends Controller
     public function downloadTemplate()
     {
         return Excel::download(new EmployeeTemplateExport, 'employee_import_template.xlsx');
+    }
+
+    /**
+     * Export all employees data as Excel
+     */
+    public function exportData()
+    {
+        return Excel::download(new EmployeeDataExport, 'employees_data_' . date('Y-m-d') . '.xlsx');
     }
 
     /**

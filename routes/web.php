@@ -217,6 +217,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/employees/import', [App\Http\Controllers\EmployeeController::class, 'import'])->name('employees.import.store');
         Route::post('/employees/import/preview', [App\Http\Controllers\EmployeeController::class, 'previewImport'])->name('employees.import.preview');
         Route::get('/employees/template', [App\Http\Controllers\EmployeeController::class, 'downloadTemplate'])->name('employees.template');
+        Route::get('/employees/export', [App\Http\Controllers\EmployeeController::class, 'exportData'])->name('employees.export');
         
         // Employee Registration Approval (MUST be before resource route)
         Route::get('/employees/pending-registrations', [App\Http\Controllers\EmployeeController::class, 'pendingRegistrations'])->name('employees.pending-registrations');

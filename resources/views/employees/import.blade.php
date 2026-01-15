@@ -53,21 +53,27 @@
                     </div>
                 @endif
 
-                <!-- Step 1: Download Template -->
-                <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-6">
+                <!-- Step 1: Download Current Data -->
+                <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border-2 border-emerald-200">
                     <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl flex-shrink-0">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
                             1
                         </div>
                         <div class="flex-grow">
-                            <h4 class="font-bold text-slate-800 text-lg mb-2">ดาวน์โหลด Template</h4>
+                            <h4 class="font-bold text-slate-800 text-lg mb-2">ดาวน์โหลดข้อมูลพนักงานปัจจุบัน</h4>
                             <p class="text-slate-500 text-sm mb-4">
-                                ดาวน์โหลด Template Excel แล้วกรอกข้อมูลพนักงานลงไป
+                                ดาวน์โหลด Excel ที่มีข้อมูลพนักงานทั้งหมดในระบบ แก้ไขข้อมูล Approver แล้วอัปโหลดกลับ
                             </p>
-                            <a href="{{ route('employees.template') }}" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg transition-all">
-                                <i data-lucide="download" class="w-4 h-4 mr-2"></i>
-                                ดาวน์โหลด Template
-                            </a>
+                            <div class="flex flex-wrap gap-3">
+                                <a href="{{ route('employees.export') }}" class="inline-flex items-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg transition-all">
+                                    <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                    ดาวน์โหลดข้อมูลพนักงาน
+                                </a>
+                                <a href="{{ route('employees.template') }}" class="inline-flex items-center px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-200 transition-all">
+                                    <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i>
+                                    ดาวน์โหลด Template เปล่า
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -77,17 +83,34 @@
                     <div class="flex items-start gap-3">
                         <i data-lucide="lightbulb" class="w-5 h-5 text-amber-500 mt-1"></i>
                         <div class="text-sm text-amber-800">
-                            <p class="font-bold mb-2">ข้อมูลใน Template:</p>
-                            <ul class="list-disc list-inside space-y-1 text-amber-700">
-                                <li><strong>ยศ</strong> - เช่น น.อ., น.ท., ร.อ.</li>
-                                <li><strong>ชื่อ_นามสกุล</strong> - ชื่อเต็มของพนักงาน (จำเป็น)</li>
-                                <li><strong>แผนก</strong> - ชื่อแผนก</li>
-                                <li><strong>ตำแหน่ง</strong> - ตำแหน่งงาน</li>
-                                <li><strong>บทบาท</strong> - employee, department_head, admin ฯลฯ</li>
-                                <li><strong>สิทธิ์วันลา</strong> - จำนวนวันลาพักผ่อนต่อปี (default: 10)</li>
-                                <li><strong>หัวหน้าแผนก</strong> - ชื่อหัวหน้าแผนก (ต้องมีในระบบ)</li>
-                                <li><strong>ผู้บังคับบัญชา (Approver 2)</strong> - ชื่อผู้บังคับบัญชา (ต้องมีในระบบ)</li>
-                            </ul>
+                            <p class="font-bold mb-2">คอลัมน์ใน Excel (9 คอลัมน์):</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-amber-700">
+                                <div>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li><strong>ยศ</strong> - เช่น น.อ., น.ท., ร.อ.</li>
+                                        <li><strong>ชื่อ_นามสกุล</strong> - ชื่อเต็ม (จำเป็น)</li>
+                                        <li><strong>แผนก</strong> - ชื่อแผนก</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li><strong>ตำแหน่ง</strong> - ตำแหน่งงาน</li>
+                                        <li><strong>บทบาท</strong> - ข้าราชการ, หัวหน้าแผนก ฯลฯ</li>
+                                        <li><strong>สิทธิ์วันลา</strong> - จำนวนวันลา/ปี</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li><strong class="text-emerald-700">หัวหน้าแผนก</strong> - Approver 1</li>
+                                        <li><strong class="text-blue-700">รองผู้บังคับบัญชา</strong> - Acknowledgement</li>
+                                        <li><strong class="text-purple-700">ผู้บังคับบัญชา</strong> - Approver 2</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-xs text-amber-600">
+                                <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+                                หากพบชื่อที่มีอยู่แล้วในระบบ → ระบบจะ <strong>อัปเดต</strong> ข้อมูล | หากไม่พบ → ระบบจะ <strong>เพิ่มใหม่</strong>
+                            </p>
                         </div>
                     </div>
                 </div>
