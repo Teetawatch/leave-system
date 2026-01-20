@@ -26,7 +26,8 @@ class LeaveTypeSeeder extends Seeder
                 'advance_notice_days' => 0,
                 'allows_retroactive' => true,
                 'requires_file' => true,
-                'created_at' => now(), 'updated_at' => now()
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'ลากิจ',
@@ -36,17 +37,19 @@ class LeaveTypeSeeder extends Seeder
                 'advance_notice_days' => 1,
                 'allows_retroactive' => false,
                 'requires_file' => false,
-                'created_at' => now(), 'updated_at' => now()
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'ลาพักผ่อน',
                 'slug' => 'vacation',
                 'max_days_per_year' => 10,
-                'requires_advance_notice' => false, // TEMPORARY: Changed from true
-                'advance_notice_days' => 0, // TEMPORARY: Changed from 3
+                'requires_advance_notice' => true,
+                'advance_notice_days' => 3,
                 'allows_retroactive' => false,
                 'requires_file' => false,
-                'created_at' => now(), 'updated_at' => now()
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'ลาชั่วกาล',
@@ -56,7 +59,8 @@ class LeaveTypeSeeder extends Seeder
                 'advance_notice_days' => 0,
                 'allows_retroactive' => false,
                 'requires_file' => false,
-                'created_at' => now(), 'updated_at' => now()
+                'created_at' => now(),
+                'updated_at' => now()
             ]
         ]);
     }

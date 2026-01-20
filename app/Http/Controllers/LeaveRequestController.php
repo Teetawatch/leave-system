@@ -20,8 +20,8 @@ class LeaveRequestController extends Controller
             ->with('leaveType')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-            
-        return view('leave_request.index', compact('requests')); 
+
+        return view('leave_request.index', compact('requests'));
     }
 
 
@@ -63,7 +63,7 @@ class LeaveRequestController extends Controller
 
         $user = Auth::user();
         $leaveType = LeaveType::findOrFail($request->leave_type_id);
-        
+
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $diffDays = $startDate->diffInDays($endDate) + 1; // Inclusive
@@ -83,7 +83,7 @@ class LeaveRequestController extends Controller
         // Retroactive Check (if NOT required advance notice, e.g. Sick Leave)
         if (!$leaveType->allows_retroactive) {
             if ($startDate->isPast() && !$startDate->isToday()) {
-                 return back()->withErrors(['start_date' => "ประเภทการลานี้ ({$leaveType->name}) ไม่สามารถยื่นย้อนหลังได้"]);
+                return back()->withErrors(['start_date' => "ประเภทการลานี้ ({$leaveType->name}) ไม่สามารถยื่นย้อนหลังได้"]);
             }
         } else {
             // Allowed retroactive but maybe limit to 7 days?
@@ -93,7 +93,7 @@ class LeaveRequestController extends Controller
             // limit to configurable N=7
             $daysPast = $startDate->diffInDays(now(), false);
             if ($daysPast > 7) {
-                 return back()->withErrors(['start_date' => "ไม่สามารถยื่นย้อนหลังเกิน 7 วันได้"]);
+                return back()->withErrors(['start_date' => "ไม่สามารถยื่นย้อนหลังเกิน 7 วันได้"]);
             }
         }
 
@@ -117,11 +117,14 @@ class LeaveRequestController extends Controller
                 return back()->withErrors(['end_date' => 'ลาชั่วกาลสามารถลาได้แค่ 1 วันเท่านั้น']);
             }
 
-            $currentHour = (int) now()->setTimezone('Asia/Bangkok')->format('H');
+            $currentTime = now()->setTimezone('Asia/Bangkok');
+            $currentHour = (int) $currentTime->format('H');
+            $currentMinute = (int) $currentTime->format('i');
             $period = $request->temporary_leave_period;
 
-            if ($period === 'morning' && $currentHour >= 6) {
-                return back()->withErrors(['temporary_leave_period' => 'ลาชั่วกาลช่วงเช้าต้องยื่นก่อน 06:00 น. (ขณะนี้เลยเวลาแล้ว)']);
+            // ลาชั่วกาลช่วงเช้าต้องยื่นก่อน 07:30 น.
+            if ($period === 'morning' && ($currentHour > 7 || ($currentHour === 7 && $currentMinute >= 30))) {
+                return back()->withErrors(['temporary_leave_period' => 'ลาชั่วกาลช่วงเช้าต้องยื่นก่อน 07:30 น. (ขณะนี้เลยเวลาแล้ว)']);
             }
             if ($period === 'afternoon' && $currentHour >= 11) {
                 return back()->withErrors(['temporary_leave_period' => 'ลาชั่วกาลช่วงบ่ายต้องยื่นก่อน 11:00 น. (ขณะนี้เลยเวลาแล้ว)']);
@@ -146,7 +149,7 @@ class LeaveRequestController extends Controller
         }
 
         // --- Create Request ---
-        
+
         $filePath = null;
         if ($request->hasFile('attachment')) {
             $filePath = $request->file('attachment')->store('leave_attachments', 'public');
@@ -211,7 +214,7 @@ class LeaveRequestController extends Controller
                 $supervisor->notify(new NewLeaveRequestNotification($leaveRequest, $user));
             }
         }
-        
+
         return redirect()->route('dashboard')->with('status', 'ส่งคำขอเรียบร้อยแล้ว รอการอนุมัติ');
     }
 
@@ -225,8 +228,10 @@ class LeaveRequestController extends Controller
     {
         // Authorize (User can view their own, Approvers can view others)
         $user = Auth::user();
-        if ($leaveRequest->user_id !== $user->id && 
-            !in_array($user->role, ['supervisor', 'manager', 'department_head', 'deputy_director', 'director', 'admin'])) {
+        if (
+            $leaveRequest->user_id !== $user->id &&
+            !in_array($user->role, ['supervisor', 'manager', 'department_head', 'deputy_director', 'director', 'admin'])
+        ) {
             abort(403);
         }
 
@@ -257,7 +262,7 @@ class LeaveRequestController extends Controller
 
         // Determine View based on Leave Type
         $viewName = 'leave_request.pdf'; // Default (Vacation/Other)
-        
+
         if ($leaveRequest->leaveType) {
             $slug = $leaveRequest->leaveType->slug;
             if ($slug == 'sick') {
@@ -268,10 +273,10 @@ class LeaveRequestController extends Controller
         }
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact('leaveRequest', 'leaveBalance', 'lastYearBalance'));
-        
+
         // Optional: Custom paper size and orientation
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('leave-request-'.$leaveRequest->id.'.pdf');
+        return $pdf->stream('leave-request-' . $leaveRequest->id . '.pdf');
     }
 }
