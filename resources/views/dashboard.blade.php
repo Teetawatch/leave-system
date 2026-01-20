@@ -1,430 +1,432 @@
 <x-app-layout>
     @section('title', 'หน้าหลัก (Dashboard)')
 
-    <div class="min-h-screen">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen pb-12">
 
-            <!-- Success Alert -->
-            @if(session('status'))
-                <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms class="mb-6">
-                    <div class="bg-white rounded-2xl border border-emerald-200 p-4 flex items-center gap-4 shadow-sm">
+        <!-- Hero Header Section -->
+        <div
+            class="relative bg-gradient-to-br from-brand-700 via-brand-600 to-blue-500 rounded-b-[2.5rem] shadow-xl overflow-hidden -mt-8 pt-12 pb-24 px-4 sm:px-6 lg:px-8 mb-8 text-white">
+            <!-- Decorative Elements -->
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+                <div
+                    class="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full bg-white blur-3xl mix-blend-overlay">
+                </div>
+                <div class="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-brand-300 blur-3xl mix-blend-overlay">
+                </div>
+            </div>
+
+            <div class="relative max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div class="flex-1 animate-fade-in-up">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-medium text-brand-50 mb-4">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        ระบบพร้อมใช้งาน
+                    </div>
+                    <h1 class="text-3xl md:text-5xl font-bold tracking-tight text-white mb-2 shadow-sm">
+                        สวัสดี, {{ Auth::user()->rank }} {{ Auth::user()->name }}
+                    </h1>
+                    <p class="text-brand-100 text-lg max-w-2xl font-light">
+                        ขอให้วันนี้เป็นวันที่ดีในการทำงาน เริ่มต้นจัดการงานของคุณได้ที่นี่
+                    </p>
+                </div>
+
+                <!-- Primary Action Buttons (Floating on Desktop) -->
+                <div class="flex flex-wrap gap-3 animate-fade-in-up delay-100">
+                    <a href="{{ route('leave-request.create') }}"
+                        class="group inline-flex items-center gap-3 px-6 py-4 bg-white text-brand-700 hover:text-brand-600 font-bold rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                         <div
-                            class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
-                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 group-hover:scale-110 transition-transform">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-base">ยื่นใบลา</span>
+                    </a>
+                    <a href="{{ route('guard-change.create') }}"
+                        class="group inline-flex items-center gap-3 px-6 py-4 bg-brand-800/40 hover:bg-brand-800/60 text-white backdrop-blur-md border border-white/20 font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                            <i data-lucide="shield" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-base">ขอเปลี่ยนยาม</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content (Overlapping Hero) -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
+
+            <!-- Alerts -->
+            @if(session('status'))
+                <div x-data="{ show: true }" x-show="show" x-transition class="mb-6 animate-fade-in-up">
+                    <div
+                        class="bg-white/90 backdrop-blur-xl border border-emerald-100 rounded-2xl p-4 flex items-center gap-4 shadow-lg shadow-emerald-500/5">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center flex-shrink-0 text-white shadow-md shadow-emerald-500/30">
+                            <i data-lucide="check-circle" class="w-6 h-6"></i>
                         </div>
                         <div class="flex-1">
-                            <p class="text-sm font-semibold text-slate-700">{{ session('status') }}</p>
+                            <h3 class="text-sm font-bold text-emerald-900">ดำเนินการสำเร็จ</h3>
+                            <p class="text-sm text-emerald-700">{{ session('status') }}</p>
                         </div>
-                        <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                            <i data-lucide="x" class="w-4 h-4"></i>
+                        <button @click="show = false"
+                            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
             @endif
 
-            <!-- Compact Welcome Header -->
-            <div class="mb-8">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500 mb-1">👋 สวัสดี</p>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">
-                            {{ Auth::user()->rank }} {{ Auth::user()->name }}
-                        </h1>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <a href="{{ route('leave-request.create') }}"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            <span>ยื่นใบลา</span>
-                        </a>
-                        <a href="{{ route('guard-change.create') }}"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm transition-all duration-200">
-                            <i data-lucide="shield" class="w-4 h-4"></i>
-                            <span>ขอเปลี่ยนยาม</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pending Alert (if any) -->
             @if($pendingCount > 0)
-                <div class="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-4">
-                    <div class="flex items-center gap-4">
-                        <div class="relative">
-                            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                                <i data-lucide="clock" class="w-5 h-5"></i>
+                <div class="mb-6 animate-fade-in-up">
+                    <div
+                        class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-[1px] shadow-lg shadow-amber-500/20">
+                        <div class="bg-white rounded-[15px] p-4 flex flex-col sm:flex-row items-center gap-4">
+                            <div class="relative">
+                                <span class="absolute -top-1 -right-1 flex h-4 w-4">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                                </span>
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500">
+                                    <i data-lucide="clock" class="w-6 h-6"></i>
+                                </div>
                             </div>
-                            <span
-                                class="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                                <span class="text-[10px] font-bold text-white">{{ $pendingCount }}</span>
-                            </span>
+                            <div class="flex-1 text-center sm:text-left">
+                                <h3 class="text-base font-bold text-slate-800">รายการรออนุมัติ {{ $pendingCount }} รายการ
+                                </h3>
+                                <p class="text-sm text-slate-500">กรุณาติดตามผลการอนุมัติจากผู้บังคับบัญชา</p>
+                            </div>
+                            <a href="{{ route('leave-request.index') }}"
+                                class="w-full sm:w-auto text-center px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 font-semibold rounded-xl text-sm transition-colors">
+                                ตรวจสอบสถานะ
+                            </a>
                         </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-semibold text-amber-800">คุณมี {{ $pendingCount }} รายการที่รออนุมัติ</p>
-                            <p class="text-xs text-amber-600">กรุณารอการตรวจสอบจากผู้บังคับบัญชา</p>
-                        </div>
-                        <a href="{{ route('leave-request.index') }}"
-                            class="text-amber-700 hover:text-amber-800 font-medium text-sm flex items-center gap-1">
-                            ดูรายละเอียด
-                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                        </a>
                     </div>
                 </div>
             @endif
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <!-- Vacation Balance -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
-                            <i data-lucide="plane" class="w-5 h-5"></i>
-                        </div>
-                        <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">คงเหลือ</span>
-                    </div>
-                    <p class="text-xs font-medium text-slate-500 mb-1">วันลาพักผ่อน</p>
-                    <div class="flex items-baseline gap-1">
-                        <span
-                            class="text-3xl font-bold text-slate-800">{{ $vacationBalance ? ($vacationBalance->remaining_days + 0) : 0 }}</span>
-                        <span class="text-sm text-slate-400">/
-                            {{ $vacationBalance ? ($vacationBalance->total_days + 0) : 0 }} วัน</span>
-                    </div>
-                    @php
-                        $total = ($vacationBalance && $vacationBalance->total_days > 0) ? $vacationBalance->total_days : 1;
-                        $remaining = $vacationBalance ? $vacationBalance->remaining_days : 0;
-                        $percent = ($remaining / $total) * 100;
-                    @endphp
-                    <div class="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-blue-500 rounded-full transition-all duration-500"
-                            style="width: {{ $percent }}%"></div>
-                    </div>
-                </div>
-
-                <!-- Sick Leave Usage -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-3 mb-3">
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <!-- Vacation Card -->
+                <div
+                    class="bg-white rounded-3xl p-5 border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
                         <div
-                            class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600">
-                            <i data-lucide="heart-pulse" class="w-5 h-5"></i>
+                            class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                            <i data-lucide="plane" class="w-6 h-6"></i>
                         </div>
                         <span
-                            class="text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">ปีนี้</span>
+                            class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider">วันลาพักร้อน</span>
                     </div>
-                    <p class="text-xs font-medium text-slate-500 mb-1">ลาป่วย</p>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-bold text-slate-800">{{ $sickUsageCount }}</span>
-                        <span class="text-sm text-slate-400">ครั้ง</span>
+                    <div>
+                        <p class="text-slate-400 text-sm font-medium">คงเหลือ</p>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span class="text-3xl font-extrabold text-slate-800 tracking-tight">
+                                {{ $vacationBalance ? ($vacationBalance->remaining_days + 0) : 0 }}
+                            </span>
+                            <span class="text-sm font-semibold text-slate-400">/
+                                {{ $vacationBalance ? ($vacationBalance->total_days + 0) : 0 }} วัน</span>
+                        </div>
+                        @php
+                            $total = ($vacationBalance && $vacationBalance->total_days > 0) ? $vacationBalance->total_days : 1;
+                            $remaining = $vacationBalance ? $vacationBalance->remaining_days : 0;
+                            $percent = ($remaining / $total) * 100;
+                        @endphp
+                        <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000 ease-out"
+                                style="width: {{ $percent }}%"></div>
+                        </div>
                     </div>
-                    <p class="mt-3 text-xs text-slate-500">
-                        <span class="inline-flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg">
-                            <i data-lucide="calendar" class="w-3 h-3"></i>
-                            {{ $sickUsageDays + 0 }} วัน
-                        </span>
-                    </p>
                 </div>
 
-                <!-- Personal Leave Usage -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                            <i data-lucide="briefcase" class="w-5 h-5"></i>
+                <!-- Sick Leave Card -->
+                <div
+                    class="bg-white rounded-3xl p-5 border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
+                            <i data-lucide="heart-pulse" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">ปีนี้</span>
+                        <span
+                            class="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-600 text-[10px] font-bold uppercase tracking-wider">ลาป่วย</span>
                     </div>
-                    <p class="text-xs font-medium text-slate-500 mb-1">ลากิจ</p>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-bold text-slate-800">{{ $personalUsageCount }}</span>
-                        <span class="text-sm text-slate-400">ครั้ง</span>
+                    <div>
+                        <p class="text-slate-400 text-sm font-medium">ใช้ไปแล้ว</p>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span
+                                class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $sickUsageCount }}</span>
+                            <span class="text-sm font-semibold text-slate-400">ครั้ง</span>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-500">
+                            <div class="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                            รวม {{ $sickUsageDays + 0 }} วันในปีนี้
+                        </div>
                     </div>
-                    <p class="mt-3 text-xs text-slate-500">
-                        <span class="inline-flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg">
-                            <i data-lucide="calendar" class="w-3 h-3"></i>
-                            {{ $personalUsageDays + 0 }} วัน
-                        </span>
-                    </p>
                 </div>
 
-                <!-- Pending / Today's Leave -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600">
-                            <i data-lucide="users" class="w-5 h-5"></i>
+                <!-- Personal Leave Card -->
+                <div
+                    class="bg-white rounded-3xl p-5 border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+                            <i data-lucide="briefcase" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-xs font-semibold text-rose-600 bg-rose-50 px-2 py-1 rounded-lg">วันนี้</span>
+                        <span
+                            class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-wider">ลากิจ</span>
                     </div>
-                    <p class="text-xs font-medium text-slate-500 mb-1">คนที่ลา</p>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-bold text-slate-800">{{ $todayLeaves->count() }}</span>
-                        <span class="text-sm text-slate-400">คน</span>
+                    <div>
+                        <p class="text-slate-400 text-sm font-medium">ใช้ไปแล้ว</p>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span
+                                class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $personalUsageCount }}</span>
+                            <span class="text-sm font-semibold text-slate-400">ครั้ง</span>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-500">
+                            <div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                            รวม {{ $personalUsageDays + 0 }} วันในปีนี้
+                        </div>
                     </div>
-                    @if($todayLeaves->isNotEmpty())
-                        <p class="mt-3 text-xs text-slate-500 truncate">
-                            {{ $todayLeaves->first()->user->name }}
-                            @if($todayLeaves->count() > 1)
-                                และอีก {{ $todayLeaves->count() - 1 }} คน
-                            @endif
-                        </p>
-                    @else
-                        <p class="mt-3 text-xs text-emerald-600 font-medium">
-                            <i data-lucide="check-circle" class="w-3 h-3 inline"></i> มาครบ!
-                        </p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Main Grid: Recent + Quick Links -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Recent Activity -->
-                <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center text-brand-600">
-                                <i data-lucide="history" class="w-4 h-4"></i>
-                            </div>
-                            <h3 class="font-semibold text-slate-800">รายการล่าสุด</h3>
-                        </div>
-                        <a href="{{ route('leave-request.index') }}"
-                            class="text-sm font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1">
-                            ดูทั้งหมด
-                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                        </a>
-                    </div>
-
-                    @if($recentRequests->isEmpty())
-                        <div class="p-8 text-center">
-                            <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="inbox" class="w-7 h-7 text-slate-400"></i>
-                            </div>
-                            <p class="text-slate-500 font-medium mb-4">ยังไม่มีรายการ</p>
-                            <a href="{{ route('leave-request.create') }}"
-                                class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                                ยื่นใบลาใหม่
-                            </a>
-                        </div>
-                    @else
-                        <div class="divide-y divide-slate-50">
-                            @foreach($recentRequests->take(5) as $req)
-                                <div class="px-5 py-4 hover:bg-slate-50 transition-colors">
-                                    <div class="flex items-center gap-4">
-                                        @php
-                                            $iconConfig = match ($req->leaveType->slug) {
-                                                'sick' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-600', 'icon' => 'heart-pulse'],
-                                                'vacation' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-600', 'icon' => 'plane'],
-                                                default => ['bg' => 'bg-amber-100', 'text' => 'text-amber-600', 'icon' => 'briefcase'],
-                                            };
-                                        @endphp
-                                        <div
-                                            class="w-10 h-10 rounded-xl {{ $iconConfig['bg'] }} flex items-center justify-center {{ $iconConfig['text'] }} flex-shrink-0">
-                                            <i data-lucide="{{ $iconConfig['icon'] }}" class="w-5 h-5"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-slate-800 text-sm">{{ $req->leaveType->name }}</p>
-                                            <p class="text-xs text-slate-500">
-                                                @thaidate($req->start_date) - @thaidate($req->end_date)
-                                                <span class="mx-1">•</span>
-                                                {{ $req->total_days + 0 }} วัน
-                                            </p>
-                                        </div>
-                                        <div class="text-right flex-shrink-0">
-                                            @php
-                                                $statusConfig = match ($req->status) {
-                                                    'approved' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'อนุมัติแล้ว'],
-                                                    'rejected' => ['bg' => 'bg-red-100', 'text' => 'text-red-700', 'label' => 'ถูกปฏิเสธ'],
-                                                    'cancelled' => ['bg' => 'bg-slate-100', 'text' => 'text-slate-600', 'label' => 'ยกเลิกแล้ว'],
-                                                    default => ['bg' => 'bg-amber-100', 'text' => 'text-amber-700', 'label' => 'รออนุมัติ']
-                                                };
-                                            @endphp
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }}">
-                                                {{ $statusConfig['label'] }}
-                                            </span>
-                                            <p class="text-xs text-slate-400 mt-1">{{ $req->created_at->diffForHumans() }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
 
-                <!-- Quick Links & Today's Leave Detail -->
-                <div class="space-y-6">
-                    <!-- Quick Links -->
-                    <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                        <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                            <i data-lucide="zap" class="w-4 h-4 text-brand-500"></i>
-                            เมนูลัด
-                        </h3>
-                        <div class="space-y-2">
-                            <a href="{{ route('leave-request.index') }}"
-                                class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
-                                <div
-                                    class="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-brand-100 flex items-center justify-center text-slate-500 group-hover:text-brand-600 transition-colors">
-                                    <i data-lucide="history" class="w-4 h-4"></i>
-                                </div>
-                                <span
-                                    class="font-medium text-slate-700 group-hover:text-brand-700 text-sm">ประวัติการลา</span>
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 ml-auto"></i>
-                            </a>
-                            <a href="{{ route('guard-change.index') }}"
-                                class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
-                                <div
-                                    class="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center text-slate-500 group-hover:text-emerald-600 transition-colors">
-                                    <i data-lucide="shield" class="w-4 h-4"></i>
-                                </div>
-                                <span
-                                    class="font-medium text-slate-700 group-hover:text-emerald-700 text-sm">ประวัติเปลี่ยนยาม</span>
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 ml-auto"></i>
-                            </a>
-                            <a href="{{ route('calendar.index') }}"
-                                class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
-                                <div
-                                    class="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-indigo-100 flex items-center justify-center text-slate-500 group-hover:text-indigo-600 transition-colors">
-                                    <i data-lucide="calendar-days" class="w-4 h-4"></i>
-                                </div>
-                                <span
-                                    class="font-medium text-slate-700 group-hover:text-indigo-700 text-sm">ปฏิทินการลา</span>
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 ml-auto"></i>
-                            </a>
-                            @if(in_array(Auth::user()->role, ['supervisor', 'department_head', 'deputy_director', 'director', 'admin']))
-                                <a href="{{ route('attendance-reports.index') }}"
-                                    class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
-                                    <div
-                                        class="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-teal-100 flex items-center justify-center text-slate-500 group-hover:text-teal-600 transition-colors">
-                                        <i data-lucide="scan-face" class="w-4 h-4"></i>
-                                    </div>
-                                    <div class="flex-1">
-                                        <span
-                                            class="font-medium text-slate-700 group-hover:text-teal-700 text-sm block">รายงานการเข้างาน</span>
-                                        <span class="text-xs text-slate-400">จากระบบสแกนใบหน้า</span>
-                                    </div>
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
-                                </a>
-                            @endif
+                <!-- Today's Leave Card -->
+                <div
+                    class="bg-white rounded-3xl p-5 border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300">
+                            <i data-lucide="users" class="w-6 h-6"></i>
                         </div>
+                        <span
+                            class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 text-[10px] font-bold uppercase tracking-wider">ลาวันนี้</span>
                     </div>
-
-                    <!-- Today's Leave Detail Card -->
-                    @if($todayLeaves->isNotEmpty())
-                        <div class="bg-white rounded-2xl border border-slate-200 p-5">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-semibold text-slate-800 flex items-center gap-2">
-                                    <i data-lucide="users" class="w-4 h-4 text-rose-500"></i>
-                                    ลาวันนี้
-                                </h3>
-                                <span
-                                    class="text-xs font-medium text-slate-500">{{ now()->locale('th')->isoFormat('D MMM') }}</span>
-                            </div>
-                            <div class="space-y-3">
-                                @foreach($todayLeaves->take(5) as $leave)
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-semibold text-sm flex-shrink-0">
-                                            {{ mb_substr($leave->user->name, 0, 1) }}
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-slate-700 truncate">{{ $leave->user->rank }}
-                                                {{ $leave->user->name }}</p>
-                                            <p class="text-xs text-slate-500">{{ $leave->leaveType->name }}</p>
-                                        </div>
-                                        @php
-                                            $dotColors = [
-                                                'sick' => 'bg-orange-500',
-                                                'vacation' => 'bg-blue-500',
-                                                'personal' => 'bg-amber-500',
-                                            ];
-                                            $dotColor = $dotColors[$leave->leaveType->slug] ?? 'bg-slate-400';
-                                        @endphp
-                                        <span class="w-2 h-2 rounded-full {{ $dotColor }} flex-shrink-0"></span>
+                    <div>
+                        <p class="text-slate-400 text-sm font-medium">กำลังลา</p>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span
+                                class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ $todayLeaves->count() }}</span>
+                            <span class="text-sm font-semibold text-slate-400">คน</span>
+                        </div>
+                        @if($todayLeaves->isNotEmpty())
+                            <div class="mt-4 flex -space-x-2 overflow-hidden">
+                                @foreach($todayLeaves->take(4) as $leave)
+                                    <div class="w-6 h-6 rounded-full bg-slate-100 ring-2 ring-white flex items-center justify-center text-[10px] font-bold text-slate-500"
+                                        title="{{ $leave->user->name }}">
+                                        {{ mb_substr($leave->user->name, 0, 1) }}
                                     </div>
                                 @endforeach
-                                @if($todayLeaves->count() > 5)
-                                    <p class="text-xs text-slate-500 text-center pt-2">และอีก {{ $todayLeaves->count() - 5 }}
-                                        คน...</p>
+                                @if($todayLeaves->count() > 4)
+                                    <div
+                                        class="w-6 h-6 rounded-full bg-slate-100 ring-2 ring-white flex items-center justify-center text-[8px] font-bold text-slate-500">
+                                        +{{ $todayLeaves->count() - 4 }}
+                                    </div>
                                 @endif
                             </div>
-                        </div>
-                    @endif
-
-                    <!-- Leave Rules Summary -->
-                    <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5">
-                        <h3 class="font-semibold text-slate-700 mb-3 flex items-center gap-2 text-sm">
-                            <i data-lucide="info" class="w-4 h-4 text-slate-500"></i>
-                            ระเบียบการลา
-                        </h3>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-                                <span class="text-slate-600">ลาป่วย: ยื่นได้ทันที</span>
+                        @else
+                            <div class="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-600">
+                                <i data-lucide="check" class="w-3 h-3"></i>
+                                มาปฏิบัติงานครบ
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                                <span class="text-slate-600">ลากิจ: ยื่นล่วงหน้า <strong class="text-amber-700">1
-                                        วัน</strong></span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                <span class="text-slate-600">ลาพักผ่อน: ยื่นล่วงหน้า <strong class="text-blue-700">3
-                                        วัน</strong></span>
-                            </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
 
-            <!-- Calendar Section -->
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div
-                    class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
-                            <i data-lucide="calendar" class="w-4 h-4"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-slate-800">ปฏิทินการลา</h3>
-                            <p class="text-xs text-slate-500">ภาพรวมการลาของทีม</p>
-                        </div>
-                    </div>
-                    <!-- Legend -->
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                            <span class="text-xs text-slate-600">พักร้อน</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                            <span class="text-xs text-slate-600">ลาป่วย</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                            <span class="text-xs text-slate-600">ลากิจ</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                            <span class="text-xs text-slate-600">เปลี่ยนเวร</span>
-                        </div>
-                        <a href="{{ route('calendar.index') }}"
-                            class="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1 ml-auto">
-                            ดูปฏิทินเต็ม
-                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            <!-- Content Grid: Quick Links & Recent -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Center Column: Recent Activity (Takes 2 cols on Large) -->
+                <div class="lg:col-span-2 space-y-8">
+
+                    <!-- Quick Actions Grid (Sorted by Importance) -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <a href="{{ route('leave-request.create') }}"
+                            class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white transition-all duration-300">
+                                <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-brand-700">ยื่นใบลา</span>
                         </a>
+                        <a href="{{ route('guard-change.create') }}"
+                            class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                                <i data-lucide="shield" class="w-6 h-6"></i>
+                            </div>
+                            <span
+                                class="text-sm font-bold text-slate-700 group-hover:text-emerald-700">ขอเปลี่ยนยาม</span>
+                        </a>
+                        <a href="{{ route('calendar.index') }}"
+                            class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                                <i data-lucide="calendar" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-purple-700">ปฏิทิน</span>
+                        </a>
+                        <a href="{{ route('leave-request.index') }}"
+                            class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-slate-600 group-hover:text-white transition-all duration-300">
+                                <i data-lucide="history" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-slate-900">ประวัติ</span>
+                        </a>
+                    </div>
+
+                    <!-- Recent Leaves List -->
+                    <div
+                        class="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
+                        <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">
+                                    <i data-lucide="clock-3" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-lg">รายการล่าสุด</h3>
+                                    <p class="text-xs text-slate-400">ติดตามสถานะการลาของคุณ</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('leave-request.index') }}"
+                                class="text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 px-4 py-2 rounded-xl transition-all">
+                                ดูทั้งหมด
+                            </a>
+                        </div>
+
+                        @if($recentRequests->isEmpty())
+                            <div class="p-12 text-center flex flex-col items-center justify-center">
+                                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                                    <i data-lucide="inbox" class="w-10 h-10 text-slate-300"></i>
+                                </div>
+                                <h4 class="text-slate-800 font-bold mb-1">ยังไม่มีรายการ</h4>
+                                <p class="text-slate-400 text-sm mb-6">คุณยังไม่ได้ทำการยื่นใบลาในระบบ</p>
+                                <a href="{{ route('leave-request.create') }}"
+                                    class="px-6 py-2 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 transition-colors shadow-lg shadow-brand-500/30">
+                                    เริ่มยื่นใบลา
+                                </a>
+                            </div>
+                        @else
+                            <div class="divide-y divide-slate-50">
+                                @foreach($recentRequests->take(5) as $req)
+                                                <div class="p-6 hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                                                    onclick="window.location='{{ route('leave-request.show', $req->id) }}'">
+                                                    <div class="flex items-center gap-4">
+                                                        @php
+                                                            $style = match ($req->leaveType->slug) {
+                                                                'sick' => ['bg' => 'bg-orange-50', 'text' => 'text-orange-600', 'icon' => 'heart-pulse', 'border' => 'border-orange-100'],
+                                                                'vacation' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-600', 'icon' => 'plane', 'border' => 'border-blue-100'],
+                                                                default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-600', 'icon' => 'briefcase', 'border' => 'border-amber-100'],
+                                                            };
+                                                        @endphp
+                                    <div
+                                                            class="w-12 h-12 rounded-2xl {{ $style['bg'] }} {{ $style['text'] }} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 border {{ $style['border'] }}">
+                                                            <i data-lucide="{{ $style['icon'] }}" class="w-6 h-6"></i>
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="flex items-center gap-2 mb-1">
+                                                                <span class="font-bold text-slate-800">{{ $req->leaveType->name }}</span>
+                                                                <span class="text-xs text-slate-400">• {{ $req->total_days + 0 }} วัน</span>
+                                                            </div>
+                                                            <div class="flex items-center gap-2 text-sm text-slate-500">
+                                                                <i data-lucide="calendar-range" class="w-3.5 h-3.5"></i>
+                                                                @thaidate($req->start_date) - @thaidate($req->end_date)
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-right">
+                                                            @php
+                                                                $statusStyle = match ($req->status) {
+                                                                    'approved' => 'bg-emerald-100 text-emerald-700 ring-emerald-600/20',
+                                                                    'rejected' => 'bg-red-100 text-red-700 ring-red-600/20',
+                                                                    'cancelled' => 'bg-slate-100 text-slate-600 ring-slate-500/20',
+                                                                    default => 'bg-amber-100 text-amber-700 ring-amber-600/20'
+                                                                };
+                                                                $statusLabel = match ($req->status) {
+                                                                    'approved' => 'อนุมัติแล้ว',
+                                                                    'rejected' => 'ถูกปฏิเสธ',
+                                                                    'cancelled' => 'ยกเลิก',
+                                                                    default => 'รออนุมัติ'
+                                                                };
+                                                            @endphp
+                                        <span
+                                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $statusStyle }} ring-1 ring-inset">
+                                                                {{ $statusLabel }}
+                                                            </span>
+                                                            <p class="text-[10px] text-slate-400 mt-1.5">
+                                                                {{ $req->created_at->diffForHumans() }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
 
-                <!-- Calendar Container -->
-                <div class="relative p-4">
-                    <div id="dashboardCalendarLoading"
-                        class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center">
-                        <div class="flex flex-col items-center gap-2">
-                            <div
-                                class="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin">
+                <!-- Right Column: Calendar & Info -->
+                <div class="space-y-8">
+
+                    <!-- Calendar Widget -->
+                    <div
+                        class="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
+                        <div class="p-6 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-lg flex items-center gap-2">
+                                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                                    ปฏิทินการลา
+                                </h3>
+                                <a href="{{ route('calendar.index') }}"
+                                    class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm">
+                                    <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                                </a>
                             </div>
-                            <p class="text-xs text-slate-500">กำลังโหลด...</p>
+                            <p class="text-indigo-100 text-sm mb-2">ภาพรวมการลาของบุคลากรภายในหน่วยงาน</p>
+                        </div>
+                        <div class="p-2">
+                            <div id="dashboardCalendar" class="dashboard-calendar"></div>
                         </div>
                     </div>
-                    <div id="dashboardCalendar"></div>
+
+                    <!-- Leave Regulation Summary -->
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2rem] p-6 text-white shadow-xl">
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                            <i data-lucide="info" class="w-5 h-5 text-brand-400"></i>
+                            ระเบียบการลา
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/10">
+                                <div class="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-sm">ลาป่วย</p>
+                                    <p class="text-xs text-slate-400">ยื่นได้ทันทีเมื่อมีอาการป่วย</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/10">
+                                <div class="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-sm">ลากิจ</p>
+                                    <p class="text-xs text-slate-400">ยื่นล่วงหน้าอย่างน้อย 1 วัน</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/10">
+                                <div class="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-sm">ลาพักผ่อน</p>
+                                    <p class="text-xs text-slate-400">ยื่นล่วงหน้าอย่างน้อย 3 วัน</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -433,139 +435,109 @@
     @push('styles')
         <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
         <style>
-            /* FullCalendar Dashboard Styles */
-            #dashboardCalendar .fc {
-                font-family: inherit;
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translate3d(0, 20px, 0);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translate3d(0, 0, 0);
+                }
             }
 
-            #dashboardCalendar .fc .fc-toolbar {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-                margin-bottom: 1rem !important;
+            .animate-fade-in-up {
+                animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                opacity: 0;
+                /* Start hidden */
             }
 
-            #dashboardCalendar .fc .fc-toolbar-title {
-                font-size: 1rem;
+            .delay-100 {
+                animation-delay: 0.1s;
+            }
+
+            .fc-theme-standard td,
+            .fc-theme-standard th {
+                border: none !important;
+            }
+
+            .dashboard-calendar .fc-toolbar-title {
+                font-size: 1rem !important;
                 font-weight: 700;
-                color: rgb(30 41 59);
+                color: #1e293b;
             }
 
-            #dashboardCalendar .fc .fc-button {
-                background: rgb(99 102 241);
-                border: none;
+            .dashboard-calendar .fc-daygrid-day-number {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #64748b;
+            }
+
+            .dashboard-calendar .fc-day-today {
+                background: #eff6ff !important;
                 border-radius: 0.5rem;
-                padding: 0.5rem 0.75rem;
-                font-weight: 600;
-                font-size: 0.75rem;
-                text-transform: none;
-                transition: all 0.2s ease;
             }
 
-            #dashboardCalendar .fc .fc-button:hover:not(:disabled) {
-                background: rgb(79 70 229);
-            }
-
-            #dashboardCalendar .fc .fc-button:disabled {
-                opacity: 0.5;
-            }
-
-            #dashboardCalendar .fc .fc-button-primary:not(:disabled).fc-button-active,
-            #dashboardCalendar .fc .fc-button-primary:not(:disabled):active {
-                background: rgb(67 56 202);
-            }
-
-            #dashboardCalendar .fc .fc-day-today {
-                background: rgba(99, 102, 241, 0.05) !important;
-            }
-
-            #dashboardCalendar .fc .fc-day-today .fc-daygrid-day-number {
-                background: rgb(99 102 241);
-                color: white;
-                border-radius: 0.375rem;
-                padding: 0.2rem 0.4rem;
+            .dashboard-calendar .fc-col-header-cell-cushion {
+                font-size: 0.7rem;
                 font-weight: 700;
-                font-size: 0.75rem;
+                color: #94a3b8;
+                padding-bottom: 10px;
             }
 
-            #dashboardCalendar .fc .fc-daygrid-day-number {
-                font-weight: 600;
-                color: rgb(71 85 105);
-                padding: 0.35rem;
-                font-size: 0.75rem;
+            .dashboard-calendar .fc-button {
+                background-color: transparent !important;
+                color: #64748b !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.5rem !important;
+                box-shadow: none !important;
+                padding: 0.25rem 0.5rem !important;
+                font-size: 0.75rem !important;
             }
 
-            #dashboardCalendar .fc .fc-col-header-cell-cushion {
-                font-weight: 700;
-                color: rgb(100 116 139);
-                padding: 0.5rem 0.25rem;
-                font-size: 0.65rem;
-                text-transform: uppercase;
+            .dashboard-calendar .fc-button:hover {
+                background-color: #f8fafc !important;
+                color: #0f172a !important;
             }
 
-            #dashboardCalendar .fc .fc-event {
-                border-radius: 0.25rem;
-                padding: 0.125rem 0.25rem;
-                font-size: 0.65rem;
-                font-weight: 600;
-                border: none;
-                cursor: pointer;
-                transition: all 0.2s ease;
+            .dashboard-calendar .fc-button-active {
+                background-color: #f1f5f9 !important;
+                color: #0f172a !important;
             }
 
-            #dashboardCalendar .fc .fc-event:hover {
-                transform: scale(1.02);
+            .dashboard-calendar .fc-icon {
+                font-size: 0.75rem !important;
             }
 
-            #dashboardCalendar .fc .fc-daygrid-event-dot {
+            /* Clean events - small bars */
+            #dashboardCalendar .fc-event-title,
+            #dashboardCalendar .fc-event-time {
                 display: none;
             }
 
-            #dashboardCalendar .fc-theme-standard td,
-            #dashboardCalendar .fc-theme-standard th {
-                border-color: rgb(241 245 249);
+            #dashboardCalendar .fc-event {
+                border: none !important;
+                cursor: pointer;
+                border-radius: 3px;
+                margin-bottom: 2px !important;
+                box-shadow: none !important;
             }
 
-            #dashboardCalendar .fc .fc-scrollgrid {
-                border-radius: 0.75rem;
-                overflow: hidden;
-                border-color: rgb(241 245 249);
+            /* Make internal content hidden but keep the colored bar */
+            #dashboardCalendar .fc-daygrid-block-event .fc-event-main {
+                padding: 0;
             }
 
-            #dashboardCalendar .fc .fc-more-link {
-                color: rgb(99 102 241);
-                font-weight: 700;
-                font-size: 0.65rem;
-                background: rgb(238 242 255);
-                padding: 0.1rem 0.35rem;
-                border-radius: 0.25rem;
+            #dashboardCalendar .fc-daygrid-block-event {
+                height: 6px !important;
             }
 
-            #dashboardCalendar .fc .fc-popover {
-                border-radius: 0.75rem;
-                box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
-                border: 1px solid rgb(241 245 249);
-                overflow: hidden;
-            }
-
-            #dashboardCalendar .fc .fc-popover-header {
-                background: rgb(99 102 241);
-                color: white;
-                padding: 0.5rem 0.75rem;
-                font-weight: 700;
-                font-size: 0.75rem;
-            }
-
-            /* Responsive adjustments */
-            @media (max-width: 640px) {
-                #dashboardCalendar .fc .fc-toolbar {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                #dashboardCalendar .fc .fc-toolbar-chunk {
-                    display: flex;
-                    justify-content: center;
-                }
+            /* For dot events (timed) */
+            #dashboardCalendar .fc-daygrid-event-dot {
+                border-width: 3px;
+                border-radius: 50%;
+                margin: 0 auto;
             }
         </style>
     @endpush
@@ -575,49 +547,35 @@
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const calendarEl = document.getElementById('dashboardCalendar');
-                const loadingEl = document.getElementById('dashboardCalendarLoading');
-
                 if (!calendarEl) return;
 
                 const calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     locale: 'th',
                     headerToolbar: {
-                        left: 'prev,next',
+                        left: 'prev',
                         center: 'title',
-                        right: 'today'
+                        right: 'next' // removed today to save space
                     },
-                    buttonText: {
-                        today: 'วันนี้'
-                    },
-                    height: 'auto',
-                    dayMaxEvents: 2,
-                    moreLinkClick: 'popover',
-                    eventDisplay: 'block',
+                    height: '350px',
+                    contentHeight: 'auto',
+                    aspectRatio: 1.5,
+                    dayMaxEvents: 3,
                     fixedWeekCount: false,
+                    showNonCurrentDates: false,
                     events: function (info, successCallback, failureCallback) {
-                        if (loadingEl) loadingEl.classList.remove('hidden');
-
                         const params = new URLSearchParams({
                             start: info.startStr,
                             end: info.endStr,
-                            department: 'all',
-                            show_guard_change: '1'
+                            department: 'all'
                         });
 
                         fetch(`{{ route('calendar.events') }}?${params}`)
                             .then(response => response.json())
                             .then(data => {
-                                if (loadingEl) loadingEl.classList.add('hidden');
-                                // Shorten event titles for dashboard
-                                const shortenedData = data.map(event => ({
-                                    ...event,
-                                    title: event.extendedProps?.userName?.split(' ').pop() || event.title.split(' - ')[0]
-                                }));
-                                successCallback(shortenedData);
+                                successCallback(data);
                             })
                             .catch(error => {
-                                if (loadingEl) loadingEl.classList.add('hidden');
                                 console.error('Error fetching events:', error);
                                 failureCallback(error);
                             });
@@ -625,9 +583,7 @@
                     eventClick: function (info) {
                         window.location.href = '{{ route("calendar.index") }}';
                     },
-                    eventDidMount: function (info) {
-                        info.el.title = info.event.extendedProps?.userName + ' - ' + (info.event.extendedProps?.leaveType || 'เปลี่ยนเวร');
-                    }
+                    eventDisplay: 'block'
                 });
 
                 calendar.render();

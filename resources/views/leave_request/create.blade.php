@@ -5,7 +5,7 @@
         <style>
             /* Light Animated Background */
             .leave-bg {
-                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 25%, #f5f3ff 50%, #fdf4ff 75%, #fff1f2 100%);
+                background: #f7fcff;
                 background-size: 400% 400%;
                 animation: gradientShift 20s ease infinite;
             }
@@ -186,8 +186,7 @@
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
                     <span>ระบบยื่นใบลาออนไลน์</span>
                 </div>
-                <h1
-                    class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-800 mb-3 tracking-tight">
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-800 mb-3 tracking-tight">
                     แบบฟอร์มขออนุมัติการลา
                 </h1>
                 <p class="text-slate-500 text-base md:text-lg max-w-xl mx-auto">
@@ -266,7 +265,7 @@
                                             :class="{'selected': leaveType == '{{ $type->id }}'}">
                                             <div
                                                 class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center text-3xl mb-4 transition-transform group-hover:scale-110
-                                                    {{ $type->slug == 'vacation' ? 'bg-blue-100 text-blue-600' : ($type->slug == 'sick' ? 'bg-rose-100 text-rose-600' : ($type->slug == 'temporary' ? 'bg-purple-100 text-purple-600' : 'bg-amber-100 text-amber-600')) }}">
+                                                        {{ $type->slug == 'vacation' ? 'bg-blue-100 text-blue-600' : ($type->slug == 'sick' ? 'bg-rose-100 text-rose-600' : ($type->slug == 'temporary' ? 'bg-purple-100 text-purple-600' : 'bg-amber-100 text-amber-600')) }}">
                                                 @if($type->slug == 'vacation')
                                                     <i data-lucide="plane" class="w-8 h-8"></i>
                                                 @elseif($type->slug == 'sick')
