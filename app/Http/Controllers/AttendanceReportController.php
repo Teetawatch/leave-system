@@ -105,7 +105,7 @@ class AttendanceReportController extends Controller
         $lateCount = $lateStudents->unique('student_id')->count();
 
         // ===== ข้อมูลข้าราชการ (Employees) =====
-        
+
         // Get employee attendance logs
         $employeeLogsQuery = FaAttendanceLog::with(['employee'])
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -137,13 +137,11 @@ class AttendanceReportController extends Controller
         if ($officialDutyType) {
             $officialDutyRequests = LeaveRequest::where('leave_type_id', $officialDutyType->id)
                 ->where('status', 'approved')
-                ->where(function ($q) use ($startDate, $endDate) {
-                    $q->whereBetween('start_date', [$startDate, $endDate])
-                      ->orWhereBetween('end_date', [$startDate, $endDate])
-                      ->orWhere(function ($q2) use ($startDate, $endDate) {
-                          $q2->where('start_date', '<=', $startDate)
-                             ->where('end_date', '>=', $endDate);
-                      });
+                ->where(function ($query) use ($startDate, $endDate) {
+                    // Check for date overlap:
+                    // (start_date <= end_range) AND (end_date >= start_range)
+                    $query->whereDate('start_date', '<=', $endDate)
+                        ->whereDate('end_date', '>=', $startDate);
                 })
                 ->get();
         }
@@ -160,8 +158,20 @@ class AttendanceReportController extends Controller
             return $employee;
         });
 
+        // Match official duty requests to FaEmployees
+        $onOfficialDutyEmployees = collect();
+        if ($officialDutyRequests->isNotEmpty()) {
+            $userIdsOnDuty = $officialDutyRequests->pluck('user_id')->unique();
+            $onOfficialDutyEmployees = $allEmployees->whereIn('user_id', $userIdsOnDuty)->map(function ($emp) use ($officialDutyRequests) {
+                $duty = $officialDutyRequests->firstWhere('user_id', $emp->user_id);
+                $emp->official_duty_reason = $duty ? $duty->reason : null;
+                $emp->on_official_duty = true;
+                return $emp;
+            });
+        }
+
         // Split absent into actually absent and on official duty
-        $onOfficialDutyEmployees = $absentEmployees->where('on_official_duty', true);
+        // Actually absent = Absent AND Not on official duty
         $actuallyAbsentEmployees = $absentEmployees->where('on_official_duty', false);
 
         // Update counts
@@ -250,19 +260,19 @@ class AttendanceReportController extends Controller
         $scannedStudentLogs = $logs->groupBy('student_id')->map(function ($studentLogs) {
             $morning = $studentLogs->where('period', 'morning')->first();
             $afternoon = $studentLogs->where('period', 'afternoon')->first();
-            
+
             // Determine status based on scans
             $status = 'ปกติ';
             $morningLate = $morning && $morning->is_late;
             $afternoonLate = $afternoon && $afternoon->is_late;
-            
+
             if ($morningLate || $afternoonLate) {
                 $status = 'มาสาย';
             }
             if (!$morning && !$afternoon) {
                 $status = 'ไม่มาลงชื่อ';
             }
-            
+
             return [
                 'student' => $studentLogs->first()->student,
                 'morning' => $morning,
@@ -300,7 +310,7 @@ class AttendanceReportController extends Controller
         $courses = FaCourse::orderBy('created_at', 'desc')->get();
 
         // ===== ข้อมูลข้าราชการ (Employees) =====
-        
+
         // Get all active employees
         $allEmployees = FaEmployee::where('is_active', true)->get();
 
@@ -313,55 +323,67 @@ class AttendanceReportController extends Controller
         // Get employee IDs who have scanned on this date
         $scannedEmployeeIds = $employeeLogRecords->pluck('employee_id')->unique();
 
-        // Group scanned employees by employee_id - ข้าราชการสแกนแค่ตอนเช้าครั้งเดียว
-        $scannedEmployeeLogs = $employeeLogRecords->groupBy('employee_id')->map(function ($empLogs) {
-            // ใช้ log แรกของวัน (เรียงตาม scan_time แล้ว)
-            $firstLog = $empLogs->first();
-            
-            // Determine status based on is_late field
-            $status = 'ปกติ';
-            $isLate = $firstLog && $firstLog->is_late;
-            
-            if ($isLate) {
-                $status = 'มาสาย';
-            }
-            if (!$firstLog) {
-                $status = 'ไม่มาลงชื่อ';
-            }
-            
-            return [
-                'employee' => $firstLog->employee,
-                'morning' => $firstLog, // ใช้ log แรกเป็น morning
-                'afternoon' => null,
-                'morning_late' => $isLate,
-                'afternoon_late' => false,
-                'status' => $status,
-            ];
-        })->values();
-
         // Get approved official duty requests for the selected date
         $officialDutyType = LeaveType::where('slug', 'official-duty')->first();
         $officialDutyRequests = collect();
         if ($officialDutyType) {
             $officialDutyRequests = LeaveRequest::where('leave_type_id', $officialDutyType->id)
                 ->where('status', 'approved')
-                ->where('start_date', '<=', $date)
-                ->where('end_date', '>=', $date)
+                ->whereDate('start_date', '<=', $date)
+                ->whereDate('end_date', '>=', $date)
                 ->get();
         }
+
+        // Helper to check official duty
+        $checkOfficialDuty = function ($userId) use ($officialDutyRequests) {
+            return $officialDutyRequests->firstWhere('user_id', $userId);
+        };
+
+        // Group scanned employees by employee_id - ข้าราชการสแกนแค่ตอนเช้าครั้งเดียว
+        $scannedEmployeeLogs = $employeeLogRecords->groupBy('employee_id')->map(function ($empLogs) use ($checkOfficialDuty) {
+            // ใช้ log แรกของวัน (เรียงตาม scan_time แล้ว)
+            $firstLog = $empLogs->first();
+            $employee = $firstLog->employee;
+
+            // Check Official Duty FIRST
+            $onDuty = $checkOfficialDuty($employee->user_id);
+
+            if ($onDuty) {
+                $status = 'ไปราชการ';
+            } else {
+                $status = 'ปกติ';
+                $isLate = $firstLog && $firstLog->is_late;
+
+                if ($isLate) {
+                    $status = 'มาสาย';
+                }
+                if (!$firstLog) {
+                    $status = 'ไม่มาลงชื่อ';
+                }
+            }
+
+            return [
+                'employee' => $employee,
+                'morning' => $firstLog, // ใช้ log แรกเป็น morning
+                'afternoon' => null,
+                'morning_late' => $firstLog ? $firstLog->is_late : false,
+                'afternoon_late' => false,
+                'status' => $status,
+            ];
+        })->values();
 
         // Add absent employees (those who haven't scanned at all)
         $absentEmployeeLogs = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
             return !$scannedEmployeeIds->contains($employee->id);
-        })->map(function ($employee) use ($officialDutyRequests) {
-            $duty = $officialDutyRequests->firstWhere('user_id', $employee->user_id);
+        })->map(function ($employee) use ($checkOfficialDuty) {
+            $onDuty = $checkOfficialDuty($employee->user_id);
             return [
                 'employee' => $employee,
                 'morning' => null,
                 'afternoon' => null,
                 'morning_late' => false,
                 'afternoon_late' => false,
-                'status' => $duty ? 'ไปราชการ' : 'ไม่มาลงชื่อ',
+                'status' => $onDuty ? 'ไปราชการ' : 'ไม่มาลงชื่อ',
             ];
         })->values();
 
@@ -376,10 +398,10 @@ class AttendanceReportController extends Controller
         $employeeOfficialDutyCount = $employeeLogs->where('status', 'ไปราชการ')->count();
 
         return view('attendance-reports.pdf', compact(
-            'studentLogs', 
-            'courseName', 
-            'date', 
-            'courses', 
+            'studentLogs',
+            'courseName',
+            'date',
+            'courses',
             'courseId',
             'totalStudents',
             'presentCount',
@@ -401,15 +423,15 @@ class AttendanceReportController extends Controller
     public function dashboardSummary()
     {
         $today = now()->format('Y-m-d');
-        
+
         // Total students
         $totalStudents = FaStudent::where('is_active', true)->count();
-        
+
         // Students who scanned today
         $scannedToday = FaStudentAttendanceLog::whereDate('scan_time', $today)
             ->distinct('student_id')
             ->count('student_id');
-        
+
         // Late students today
         $lateToday = FaStudentAttendanceLog::whereDate('scan_time', $today)
             ->where('is_late', true)

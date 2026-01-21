@@ -780,6 +780,76 @@
                 </div>
             @endif
 
+            <!-- Official Duty Employees Toggle Section -->
+            @if($onOfficialDutyEmployees->count() > 0)
+                <div x-data="{ open: false }"
+                    class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden group">
+                    <button @click="open = !open"
+                        class="w-full flex items-center justify-between p-8 bg-slate-50/50 hover:bg-white transition-all duration-300">
+                        <div class="flex items-center gap-6">
+                            <div class="relative">
+                                <div class="absolute inset-0 bg-blue-500 blur-xl opacity-20 animate-pulse"></div>
+                                <div
+                                    class="relative w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xl shadow-inner border border-blue-200">
+                                    {{ $onOfficialDutyEmployees->count() }}
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="font-black text-xl text-slate-800 tracking-tight">ข้าราชการที่ไปราชการ</h3>
+                                <p class="text-sm text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                                    รายชื่อผู้ปฏิบัติราชการนอกสถานที่</p>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 transition-all duration-300 group-hover:border-blue-200 group-hover:text-blue-500 shadow-sm"
+                            :class="{ 'rotate-180 bg-blue-50 border-blue-200 text-blue-600': open }">
+                            <i data-lucide="chevron-down" class="w-6 h-6"></i>
+                        </div>
+                    </button>
+
+                    <div x-show="open" x-collapse>
+                        <div class="p-8 pt-0 bg-white">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                @foreach($onOfficialDutyEmployees as $employee)
+                                    <div class="relative group/item">
+                                        <div
+                                            class="bg-slate-50 rounded-3xl p-4 border border-slate-100 transition-all duration-300 hover:bg-white hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 flex items-center gap-4">
+                                            <div class="relative w-14 h-14 flex-shrink-0">
+                                                <div
+                                                    class="absolute inset-0 bg-blue-500 rounded-2xl blur-lg opacity-0 group-hover/item:opacity-20 transition-opacity">
+                                                </div>
+                                                <div
+                                                    class="relative w-full h-full rounded-2xl overflow-hidden border-2 border-white shadow-sm">
+                                                    @if($employee->photo_path)
+                                                        <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($employee->photo_path) }}"
+                                                            class="w-full h-full object-cover">
+                                                    @else
+                                                        <div
+                                                            class="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
+                                                            <i data-lucide="user" class="w-6 h-6"></i>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h4 class="font-black text-slate-800 text-sm truncate uppercase tracking-tight">
+                                                    {{ $employee->first_name }}</h4>
+                                                <p class="text-[10px] font-bold text-slate-400 mb-1 truncate" title="{{ $employee->official_duty_reason ?? '' }}">
+                                                    {{ $employee->official_duty_reason ?? 'ไม่ระบุเหตุผล' }}</p>
+                                                <span
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-black border border-blue-100">
+                                                    ไปราชการ
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            @endif
+
             <!-- Absent Employees Toggle Section -->
             @if($absentEmployees->where('on_official_duty', false)->count() > 0)
                 <div x-data="{ open: false }"
@@ -1069,3 +1139,12 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // Force re-init icons if needed
+            if(window.lucide) lucide.createIcons();
+        });
+    </script>
+@endpush

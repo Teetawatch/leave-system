@@ -16,6 +16,58 @@
             }
          }">
         
+        <!-- Alerts -->
+        @if(session('success'))
+            <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms class="mb-6 rounded-2xl bg-emerald-50 p-4 border border-emerald-100 shadow-lg shadow-emerald-500/10 flex items-center gap-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-400 rounded-full blur-2xl opacity-10"></div>
+                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-xl"></i>
+                </div>
+                <div class="flex-1 z-10">
+                    <h4 class="font-bold text-emerald-800">ดำเนินการเรียบร้อย</h4>
+                    <p class="text-sm font-medium text-emerald-600">{{ session('success') }}</p>
+                </div>
+                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-lg p-2 text-emerald-500 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms class="mb-6 rounded-2xl bg-rose-50 p-4 border border-rose-100 shadow-lg shadow-rose-500/10 flex items-center gap-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-rose-400 rounded-full blur-2xl opacity-10"></div>
+                <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 text-rose-600">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-xl"></i>
+                </div>
+                <div class="flex-1 z-10">
+                    <h4 class="font-bold text-rose-800">เกิดข้อผิดพลาด</h4>
+                    <p class="text-sm font-medium text-rose-600">{{ session('error') }}</p>
+                </div>
+                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-lg p-2 text-rose-500 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms class="mb-6 rounded-2xl bg-rose-50 p-4 border border-rose-100 shadow-lg shadow-rose-500/10 flex items-center gap-4 relative overflow-hidden">
+                <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 text-rose-600">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-xl"></i>
+                </div>
+                <div class="flex-1 z-10">
+                    <h4 class="font-bold text-rose-800">พบข้อผิดพลาด</h4>
+                    <ul class="list-disc list-inside text-sm font-medium text-rose-600 mt-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-lg p-2 text-rose-500 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        @endif
+        
         <!-- Header & Stats -->
         <div class="mb-8 space-y-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -145,80 +197,80 @@
             <!-- Grid View -->
             <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                 @foreach($employees as $emp)
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-100 transition-all group relative">
-                    
-                    <!-- Selection Checkbox (Absolute) -->
-                    <div class="absolute top-4 right-4 z-10">
-                        <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded border-slate-300 text-indigo-600 focus:ring-0 w-5 h-5 cursor-pointer">
-                    </div>
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-100 transition-all group relative">
 
-                    <div class="flex items-start gap-4">
-                        <!-- Avatar -->
-                        <div class="flex-shrink-0">
-                             @if(isset($emp->avatar) && $emp->avatar)
-                                <img class="h-16 w-16 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition-transform" src="{{ asset('storage/'.$emp->avatar) }}" alt="">
-                            @else
-                                <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold shadow-sm group-hover:scale-105 transition-transform">
-                                    {{ substr($emp->name, 0, 1) }}
-                                </div>
-                            @endif
+                        <!-- Selection Checkbox (Absolute) -->
+                        <div class="absolute top-4 right-4 z-10">
+                            <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded border-slate-300 text-indigo-600 focus:ring-0 w-5 h-5 cursor-pointer">
                         </div>
 
-                        <!-- Info -->
-                        <div class="flex-1 min-w-0 pt-1">
-                            <h3 class="text-base font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
-                                <a href="{{ route('employees.edit', $emp->id) }}">{{ $emp->name }}</a>
-                            </h3>
-                            <p class="text-sm text-slate-500 truncate mt-0.5">{{ $emp->position ?? 'เจ้าหน้าที่' }}</p>
-                            
-                            <div class="flex items-center gap-2 mt-2">
-                                @php
-                                    $roleColor = match($emp->role) {
-                                        'admin' => 'bg-red-50 text-red-700 ring-red-600/10',
-                                        'director' => 'bg-purple-50 text-purple-700 ring-purple-600/10',
-                                        'deputy_director' => 'bg-violet-50 text-violet-700 ring-violet-600/10',
-                                        'department_head' => 'bg-orange-50 text-orange-700 ring-orange-600/10',
-                                        default => 'bg-slate-50 text-slate-600 ring-slate-500/10'
-                                    };
-                                    $roleLabel = match($emp->role) {
-                                        'admin' => 'Admin',
-                                        'director' => 'ผอ.',
-                                        'deputy_director' => 'รอง ผอ.',
-                                        'department_head' => 'หน. แผนก',
-                                        'employee' => 'User',
-                                        default => ucfirst($emp->role)
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ring-1 ring-inset {{ $roleColor }}">
-                                    {{ $roleLabel }}
-                                </span>
-                                @if($emp->department)
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-600 ring-1 ring-inset ring-slate-500/10 truncate max-w-[100px]">
-                                        {{ $emp->department }}
-                                    </span>
+                        <div class="flex items-start gap-4">
+                            <!-- Avatar -->
+                            <div class="flex-shrink-0">
+                                 @if(isset($emp->avatar) && $emp->avatar)
+                                    <img class="h-16 w-16 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition-transform" src="{{ asset('storage/' . $emp->avatar) }}" alt="">
+                                @else
+                                    <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold shadow-sm group-hover:scale-105 transition-transform">
+                                        {{ substr($emp->name, 0, 1) }}
+                                    </div>
                                 @endif
+                            </div>
+
+                            <!-- Info -->
+                            <div class="flex-1 min-w-0 pt-1">
+                                <h3 class="text-base font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
+                                    <a href="{{ route('employees.edit', $emp->id) }}">{{ $emp->name }}</a>
+                                </h3>
+                                <p class="text-sm text-slate-500 truncate mt-0.5">{{ $emp->position ?? 'เจ้าหน้าที่' }}</p>
+
+                                <div class="flex items-center gap-2 mt-2">
+                                    @php
+                                        $roleColor = match ($emp->role) {
+                                            'admin' => 'bg-red-50 text-red-700 ring-red-600/10',
+                                            'director' => 'bg-purple-50 text-purple-700 ring-purple-600/10',
+                                            'deputy_director' => 'bg-violet-50 text-violet-700 ring-violet-600/10',
+                                            'department_head' => 'bg-orange-50 text-orange-700 ring-orange-600/10',
+                                            default => 'bg-slate-50 text-slate-600 ring-slate-500/10'
+                                        };
+                                        $roleLabel = match ($emp->role) {
+                                            'admin' => 'Admin',
+                                            'director' => 'ผอ.',
+                                            'deputy_director' => 'รอง ผอ.',
+                                            'department_head' => 'หน. แผนก',
+                                            'employee' => 'User',
+                                            default => ucfirst($emp->role)
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ring-1 ring-inset {{ $roleColor }}">
+                                        {{ $roleLabel }}
+                                    </span>
+                                    @if($emp->department)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-600 ring-1 ring-inset ring-slate-500/10 truncate max-w-[100px]">
+                                            {{ $emp->department }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                            <div class="flex items-center gap-3 text-sm text-slate-500">
+                                 <a href="mailto:{{ $emp->email }}" class="flex items-center hover:text-indigo-600 transition-colors" title="{{ $emp->email }}">
+                                    <i data-lucide="mail" class="w-4 h-4 mr-1.5"></i>
+                                    <span class="truncate max-w-[140px]">{{ $emp->email }}</span>
+                                </a>
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="บันทึกการไปราชการ">
+                                    <i data-lucide="plane" class="w-4 h-4"></i>
+                                </button>
+                                <a href="{{ route('employees.edit', $emp->id) }}" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-
-                    <div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
-                        <div class="flex items-center gap-3 text-sm text-slate-500">
-                             <a href="mailto:{{ $emp->email }}" class="flex items-center hover:text-indigo-600 transition-colors" title="{{ $emp->email }}">
-                                <i data-lucide="mail" class="w-4 h-4 mr-1.5"></i>
-                                <span class="truncate max-w-[140px]">{{ $emp->email }}</span>
-                            </a>
-                        </div>
-                        
-                        <div class="flex items-center gap-1">
-                            <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="บันทึกการไปราชการ">
-                                <i data-lucide="plane" class="w-4 h-4"></i>
-                            </button>
-                            <a href="{{ route('employees.edit', $emp->id) }}" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
                 @endforeach
             </div>
 
@@ -240,81 +292,81 @@
                         </thead>
                         <tbody class="divide-y divide-slate-50">
                             @foreach($employees as $emp)
-                            <tr class="hover:bg-slate-50/80 transition-colors group">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded border-slate-300 text-indigo-600 focus:ring-0">
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-4">
-                                        <div class="flex-shrink-0 h-10 w-10">
-                                            @if(isset($emp->avatar) && $emp->avatar)
-                                                <img class="h-10 w-10 rounded-full object-cover shadow-sm bg-white" src="{{ asset('storage/'.$emp->avatar) }}" alt="">
-                                            @else
-                                                <div class="h-10 w-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
-                                                    {{ substr($emp->name, 0, 1) }}
+                                <tr class="hover:bg-slate-50/80 transition-colors group">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded border-slate-300 text-indigo-600 focus:ring-0">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                @if(isset($emp->avatar) && $emp->avatar)
+                                                    <img class="h-10 w-10 rounded-full object-cover shadow-sm bg-white" src="{{ asset('storage/' . $emp->avatar) }}" alt="">
+                                                @else
+                                                    <div class="h-10 w-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                                                        {{ substr($emp->name, 0, 1) }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                    {{ $emp->name }}
                                                 </div>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                                {{ $emp->name }}
+                                                <div class="text-xs text-slate-500">{{ $emp->email }}</div>
                                             </div>
-                                            <div class="text-xs text-slate-500">{{ $emp->email }}</div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-slate-700 font-medium">{{ $emp->position ?? '-' }}</span>
-                                        <span class="text-xs text-slate-500">{{ $emp->department ?? '-' }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @php
-                                        // Reuse role styling logic
-                                        $roleColor = match($emp->role) {
-                                            'admin' => 'bg-red-50 text-red-700 ring-red-600/10',
-                                            'director' => 'bg-purple-50 text-purple-700 ring-purple-600/10',
-                                            'deputy_director' => 'bg-violet-50 text-violet-700 ring-violet-600/10',
-                                            'department_head' => 'bg-orange-50 text-orange-700 ring-orange-600/10',
-                                            default => 'bg-slate-50 text-slate-600 ring-slate-500/10'
-                                        };
-                                        $roleLabel = match($emp->role) {
-                                            'admin' => 'ผู้ดูแลระบบ',
-                                            'director' => 'ผอ.',
-                                            'deputy_director' => 'รอง ผอ.',
-                                            'department_head' => 'หน. แผนก',
-                                            'employee' => 'ข้าราชการ',
-                                            default => $emp->role
-                                        };
-                                    @endphp
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset {{ $roleColor }}">
-                                        {{ $roleLabel }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($emp->supervisor)
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-bold">
-                                                {{ substr($emp->supervisor->name, 0, 1) }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex flex-col">
+                                            <span class="text-sm text-slate-700 font-medium">{{ $emp->position ?? '-' }}</span>
+                                            <span class="text-xs text-slate-500">{{ $emp->department ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            // Reuse role styling logic
+                                            $roleColor = match ($emp->role) {
+                                                'admin' => 'bg-red-50 text-red-700 ring-red-600/10',
+                                                'director' => 'bg-purple-50 text-purple-700 ring-purple-600/10',
+                                                'deputy_director' => 'bg-violet-50 text-violet-700 ring-violet-600/10',
+                                                'department_head' => 'bg-orange-50 text-orange-700 ring-orange-600/10',
+                                                default => 'bg-slate-50 text-slate-600 ring-slate-500/10'
+                                            };
+                                            $roleLabel = match ($emp->role) {
+                                                'admin' => 'ผู้ดูแลระบบ',
+                                                'director' => 'ผอ.',
+                                                'deputy_director' => 'รอง ผอ.',
+                                                'department_head' => 'หน. แผนก',
+                                                'employee' => 'ข้าราชการ',
+                                                default => $emp->role
+                                            };
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset {{ $roleColor }}">
+                                            {{ $roleLabel }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($emp->supervisor)
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-bold">
+                                                    {{ substr($emp->supervisor->name, 0, 1) }}
+                                                </div>
+                                                <div class="text-xs text-slate-600">{{ $emp->supervisor->name }}</div>
                                             </div>
-                                            <div class="text-xs text-slate-600">{{ $emp->supervisor->name }}</div>
+                                        @else
+                                            <span class="text-xs text-slate-400 italic">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="text-slate-400 hover:text-blue-600 transition-colors inline-block p-1" title="ไปราชการ">
+                                                <i data-lucide="plane" class="w-4 h-4"></i>
+                                            </button>
+                                            <a href="{{ route('employees.edit', $emp->id) }}" class="text-slate-400 hover:text-indigo-600 transition-colors inline-block p-1">
+                                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                            </a>
                                         </div>
-                                    @else
-                                        <span class="text-xs text-slate-400 italic">-</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex items-center justify-end gap-1">
-                                        <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="text-slate-400 hover:text-blue-600 transition-colors inline-block p-1" title="ไปราชการ">
-                                            <i data-lucide="plane" class="w-4 h-4"></i>
-                                        </button>
-                                        <a href="{{ route('employees.edit', $emp->id) }}" class="text-slate-400 hover:text-indigo-600 transition-colors inline-block p-1">
-                                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -340,7 +392,7 @@
                 </div>
             @endif
         </div>
-    </div>
+
 
     <!-- Scripts for Bulk Action -->
     <script>
@@ -422,90 +474,116 @@
                 }
             });
         });
-        <!-- Official Duty Modal -->
-        <div x-show="showOfficialDutyModal" 
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             x-cloak
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0">
-            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 transition-opacity bg-slate-900/50 backdrop-blur-sm" @click="showOfficialDutyModal = false"></div>
+    </script>
 
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+    <!-- Official Duty Modal -->
+    <div x-show="showOfficialDutyModal" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-slate-900/50 backdrop-blur-sm" @click="showOfficialDutyModal = false"></div>
 
-                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
-                    
-                    <div class="px-6 py-6 bg-slate-50 border-b border-slate-100">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                                    <i data-lucide="plane" class="w-5 h-5"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-900">บันทึกการไปราชการ</h3>
-                                    <p class="text-xs text-slate-500 font-medium" x-text="'ข้าราชการ: ' + selectedEmployee.name"></p>
-                                </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+                
+                <div class="px-6 py-6 bg-slate-50 border-b border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <i data-lucide="plane" class="w-5 h-5"></i>
                             </div>
-                            <button @click="showOfficialDutyModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                                <i data-lucide="x" class="w-6 h-6"></i>
-                            </button>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">บันทึกการไปราชการ</h3>
+                                <p class="text-xs text-slate-500 font-medium" x-text="'ข้าราชการ: ' + selectedEmployee.name"></p>
+                            </div>
+                        </div>
+                        <button @click="showOfficialDutyModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <form :action="'{{ route('employees.index') }}/' + selectedEmployee.id + '/official-duty'" method="POST" class="p-6 space-y-5">
+                    @csrf
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่เริ่มต้น</label>
+                            <input type="date" name="start_date" required 
+                                   class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่สิ้นสุด</label>
+                            <input type="date" name="end_date" required 
+                                   class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
                         </div>
                     </div>
 
-                    <form :action="'/employees/' + selectedEmployee.id + '/official-duty'" method="POST" class="p-6 space-y-5">
-                        @csrf
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่เริ่มต้น</label>
-                                <input type="date" name="start_date" required 
-                                       class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่สิ้นสุด</label>
-                                <input type="date" name="end_date" required 
-                                       class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
-                            </div>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">สถานที่ไปราชการ (จังหวัด)</label>
+                        <input type="text" name="location" required 
+                               class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all"
+                               placeholder="เช่น กรุงเทพมหานคร">
+                    </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">สถานที่ไปราชการ (จังหวัด)</label>
-                            <input type="text" name="location" required 
-                                   class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all"
-                                   placeholder="เช่น กรุงเทพมหานคร">
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วัตถุประสงค์ / รายละเอียด</label>
+                        <textarea name="reason" rows="3" required 
+                                  class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all resize-none"
+                                  placeholder="เช่น เข้าร่วมงานสัมมนา..."></textarea>
+                    </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วัตถุประสงค์ / รายละเอียด</label>
-                            <textarea name="reason" rows="3" required 
-                                      class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all resize-none"
-                                      placeholder="เช่น เข้าร่วมงานสัมมนา..."></textarea>
-                        </div>
-
-                        <div class="pt-2">
-                            <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-2">
-                                <i data-lucide="save" class="w-5 h-5"></i>
-                                บันทึกข้อมูล
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-2">
+                            <i data-lucide="save" class="w-5 h-5"></i>
+                            บันทึกข้อมูล
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
     
     @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-             // Force re-init icons if needed
-            if(window.lucide) lucide.createIcons();
-        });
-    </script>
+        <script>
+            function initLucide() {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                    document.querySelectorAll('i[data-lucide]').forEach(el => {
+                        if (!el.querySelector('svg')) {
+                            const attr = el.getAttribute('data-lucide');
+                            const iconName = attr.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+                            if (window.lucide.icons[iconName]) {
+                                const classAttr = el.getAttribute('class') || '';
+                                const svg = window.lucide.icons[iconName].toSvg({ 'class': classAttr });
+                                el.innerHTML = svg;
+                                el.replaceWith(el.firstElementChild);
+                            }
+                        }
+                    });
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                initLucide();
+                setTimeout(initLucide, 100);
+                setTimeout(initLucide, 500);
+                setTimeout(initLucide, 1000);
+            });
+
+            document.addEventListener('alpine:initialized', () => {
+                initLucide();
+                setTimeout(initLucide, 100);
+            });
+        </script>
     @endpush
 </x-app-layout>

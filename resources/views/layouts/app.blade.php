@@ -50,7 +50,27 @@
             </div>
 
             <!-- Right: Actions -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- Mobile Weather Widget (Header) -->
+                <div x-data="envStatus()" x-init="init()" class="hidden xs:flex items-center gap-2 mr-1">
+                    <!-- Weather -->
+                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1">
+                        <div class="relative w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br shadow-sm"
+                            :class="weatherBg">
+                            <i :data-lucide="weatherIcon" class="w-3.5 h-3.5 text-white"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700" x-text="temp + '°C'">--°C</span>
+                    </div>
+
+                    <!-- PM 2.5 -->
+                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1">
+                        <div class="relative w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br shadow-sm"
+                            :class="aqiBg">
+                            <i data-lucide="wind" class="w-3.5 h-3.5 text-white"></i>
+                        </div>
+                        <span class="text-xs font-bold" :class="aqiTextColor" x-text="aqi">--</span>
+                    </div>
+                </div>
                 <!-- Notifications -->
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
@@ -196,38 +216,7 @@
                 </div>
             </div>
 
-            <!-- Mobile Weather Widget -->
-            <div class="px-3 pt-3 pb-0 md:hidden">
-                <div x-data="envStatus()" x-init="init()"
-                    class="bg-slate-50/50 rounded-xl p-3 border border-slate-100 flex items-center justify-between gap-2">
-                    <!-- Weather -->
-                    <div class="flex items-center gap-2">
-                        <div class="relative w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br shadow-sm"
-                            :class="weatherBg">
-                            <i :data-lucide="weatherIcon" class="w-4 h-4 text-white"></i>
-                        </div>
-                        <div class="flex flex-col text-left">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase leading-none">สภาพอากาศ</span>
-                            <span class="text-xs font-black text-slate-800" x-text="temp + '°C'">--°C</span>
-                        </div>
-                    </div>
 
-                    <div class="w-px h-6 bg-slate-200"></div>
-
-                    <!-- PM 2.5 -->
-                    <div class="flex items-center gap-2">
-                        <div class="relative w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br shadow-sm"
-                            :class="aqiBg">
-                            <i data-lucide="wind" class="w-4 h-4 text-white"></i>
-                        </div>
-                        <div class="flex flex-col text-right">
-                            <span
-                                class="text-[9px] font-bold text-slate-400 uppercase leading-none">ดัชนีคุณภาพอากาศ</span>
-                            <span class="text-xs font-black" :class="aqiTextColor" x-text="aqi">--</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Sidebar Profile Removed -->
 
@@ -532,7 +521,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <span
-                                    class="hidden lg:block text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Weather</span>
+                                    class="hidden lg:block text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">สภาพอากาศ</span>
                                 <span class="text-xs xl:text-sm font-black text-slate-800 tracking-tight"
                                     x-text="temp + '°C'">--°C</span>
                             </div>
@@ -548,8 +537,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <span
-                                    class="hidden lg:block text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">PM
-                                    2.5</span>
+                                    class="hidden lg:block text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">ดัชนีคุณภาพอากาศ</span>
                                 <span class="text-xs xl:text-sm font-black tracking-tight flex items-center gap-1.5"
                                     :class="aqiTextColor">
                                     <span x-text="aqi">--</span>
@@ -560,7 +548,6 @@
                         </div>
                     </div>
 
-                    <!-- Notifications -->
                     <!-- Notifications -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" @click.away="open = false"
@@ -734,7 +721,7 @@
 
     <!-- Lucide Icons (Local) -->
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script>
         // Wait for lucide to load and then create icons
         function initLucideIcons() {
