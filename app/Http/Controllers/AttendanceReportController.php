@@ -146,32 +146,58 @@ class AttendanceReportController extends Controller
                 ->get();
         }
 
-        // Absent employees (haven't checked in at all)
-        $absentEmployees = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
-            return !$scannedEmployeeIds->contains($employee->id);
-        })->map(function ($employee) use ($officialDutyRequests) {
-            // Check if this employee has an official duty duty request
-            // We assume employee->user_id links to our User model
-            $duty = $officialDutyRequests->firstWhere('user_id', $employee->user_id);
-            $employee->on_official_duty = $duty ? true : false;
-            $employee->official_duty_reason = $duty ? $duty->reason : null;
-            return $employee;
-        });
-
-        // Match official duty requests to FaEmployees
+        // 1. Process Official Duty Mapping (Hybrid Match: ID or Name)
         $onOfficialDutyEmployees = collect();
         if ($officialDutyRequests->isNotEmpty()) {
             $userIdsOnDuty = $officialDutyRequests->pluck('user_id')->unique();
-            $onOfficialDutyEmployees = $allEmployees->whereIn('user_id', $userIdsOnDuty)->map(function ($emp) use ($officialDutyRequests) {
-                $duty = $officialDutyRequests->firstWhere('user_id', $emp->user_id);
-                $emp->official_duty_reason = $duty ? $duty->reason : null;
-                $emp->on_official_duty = true;
-                return $emp;
+            $usersOnDuty = \App\Models\User::whereIn('id', $userIdsOnDuty)->get();
+
+            // Map official duty status to FaEmployees (and return the subset of employees on duty)
+            $onOfficialDutyEmployees = $allEmployees->filter(function ($emp) use ($officialDutyRequests, $usersOnDuty) {
+                // Default status
+                $emp->on_official_duty = false;
+
+                // Construct full name
+                $empFullName = trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
+
+                // Match User
+                // Match User
+                $matchedUser = $usersOnDuty->first(function ($user) use ($emp, $empFullName) {
+                    if ($emp->user_id && $emp->user_id == $user->id)
+                        return true;
+
+                    // Fallback: Check if Employee Name (Longer, with title) contains User Name (Shorter, no title)
+                    $userParts = array_filter(explode(' ', $user->name));
+                    if (empty($userParts))
+                        return false;
+
+                    foreach ($userParts as $part) {
+                        if (!str_contains($empFullName, trim($part))) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+
+                if ($matchedUser) {
+                    $duty = $officialDutyRequests->firstWhere('user_id', $matchedUser->id);
+                    $emp->official_duty_reason = $duty ? $duty->reason : null;
+                    $emp->on_official_duty = true;
+                    if (!$emp->user_id)
+                        $emp->user_id = $matchedUser->id; // Fix missing ID
+                    return true;
+                }
+                return false;
             });
         }
 
-        // Split absent into actually absent and on official duty
-        // Actually absent = Absent AND Not on official duty
+        // 2. Identify Abstract Employees (Not scanned)
+        $absentEmployees = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
+            return !$scannedEmployeeIds->contains($employee->id);
+        });
+
+        // 3. Split Absent into 'Actually Absent' vs 'Official Duty'
+        // actuallyAbsentEmployees should exclude those who are on official duty
         $actuallyAbsentEmployees = $absentEmployees->where('on_official_duty', false);
 
         // Update counts
@@ -334,9 +360,38 @@ class AttendanceReportController extends Controller
                 ->get();
         }
 
-        // Helper to check official duty
-        $checkOfficialDuty = function ($userId) use ($officialDutyRequests) {
-            return $officialDutyRequests->firstWhere('user_id', $userId);
+        // Fetch Users for Name Matching
+        $usersOnDuty = collect();
+        if ($officialDutyRequests->isNotEmpty()) {
+            $usersOnDuty = \App\Models\User::whereIn('id', $officialDutyRequests->pluck('user_id'))->get();
+        }
+
+        // Helper to check official duty (Robust ID/Name Match)
+        $checkOfficialDuty = function ($employee) use ($officialDutyRequests, $usersOnDuty) {
+            $empFullName = trim(($employee->first_name ?? '') . ' ' . ($employee->last_name ?? ''));
+
+            // Match User
+            $matchedUser = $usersOnDuty->first(function ($user) use ($employee, $empFullName) {
+                if ($employee->user_id && $employee->user_id == $user->id)
+                    return true;
+
+                // Fallback: Check if Employee Name (Longer, with title) contains User Name (Shorter, no title)
+                $userParts = array_filter(explode(' ', $user->name));
+                if (empty($userParts))
+                    return false;
+
+                foreach ($userParts as $part) {
+                    if (!str_contains($empFullName, trim($part))) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            if ($matchedUser) {
+                return $officialDutyRequests->firstWhere('user_id', $matchedUser->id);
+            }
+            return null;
         };
 
         // Group scanned employees by employee_id - ข้าราชการสแกนแค่ตอนเช้าครั้งเดียว
@@ -346,7 +401,7 @@ class AttendanceReportController extends Controller
             $employee = $firstLog->employee;
 
             // Check Official Duty FIRST
-            $onDuty = $checkOfficialDuty($employee->user_id);
+            $onDuty = $checkOfficialDuty($employee);
 
             if ($onDuty) {
                 $status = 'ไปราชการ';
@@ -376,7 +431,7 @@ class AttendanceReportController extends Controller
         $absentEmployeeLogs = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
             return !$scannedEmployeeIds->contains($employee->id);
         })->map(function ($employee) use ($checkOfficialDuty) {
-            $onDuty = $checkOfficialDuty($employee->user_id);
+            $onDuty = $checkOfficialDuty($employee);
             return [
                 'employee' => $employee,
                 'morning' => null,

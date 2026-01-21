@@ -761,8 +761,8 @@
 
                         // Fetch Weather & AQI from Open-Meteo (Free, no key required)
                         const [weatherRes, aqiRes] = await Promise.all([
-                            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`),
-                            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5`)
+                            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${13.667605}&longitude=${100.583562}&current=temperature_2m,weather_code`),
+                            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${13.667605}&longitude=${100.583562}&current=pm2_5`)
                         ]);
 
                         const weatherData = await weatherRes.json();
