@@ -47,7 +47,8 @@ class LeaveRequestController extends Controller
 
     public function create()
     {
-        $leaveTypes = LeaveType::all();
+        // Exclude 'official-duty' from standard leave request form
+        $leaveTypes = LeaveType::where('slug', '!=', 'official-duty')->get();
         return view('leave_request.create', compact('leaveTypes'));
     }
 
