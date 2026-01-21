@@ -211,7 +211,7 @@
                         
                         <div class="flex items-center gap-1">
                             <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="บันทึกการไปราชการ">
-                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                <i data-lucide="plane" class="w-4 h-4"></i>
                             </button>
                             <a href="{{ route('employees.edit', $emp->id) }}" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
                                 <i data-lucide="pencil" class="w-4 h-4"></i>
@@ -307,7 +307,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center justify-end gap-1">
                                         <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="text-slate-400 hover:text-blue-600 transition-colors inline-block p-1" title="ไปราชการ">
-                                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                            <i data-lucide="plane" class="w-4 h-4"></i>
                                         </button>
                                         <a href="{{ route('employees.edit', $emp->id) }}" class="text-slate-400 hover:text-indigo-600 transition-colors inline-block p-1">
                                             <i data-lucide="pencil" class="w-4 h-4"></i>
@@ -446,7 +446,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                                    <i data-lucide="plane" class="w-5 h-5"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-lg font-bold text-slate-900">บันทึกการไปราชการ</h3>
@@ -499,4 +499,13 @@
             </div>
         </div>
     </div>
+    
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // Force re-init icons if needed
+            if(window.lucide) lucide.createIcons();
+        });
+    </script>
+    @endpush
 </x-app-layout>
