@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\FaceAttendance\FaStudent;
 use App\Models\FaceAttendance\FaStudentAttendanceLog;
 use App\Models\FaceAttendance\FaCourse;
+use App\Models\FaceAttendance\FaEmployee;
+use App\Models\FaceAttendance\FaAttendanceLog;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -100,6 +102,49 @@ class AttendanceReportController extends Controller
         $absentCount = $absentStudents->count();
         $lateCount = $lateStudents->unique('student_id')->count();
 
+        // ===== ข้อมูลข้าราชการ (Employees) =====
+        
+        // Get employee attendance logs
+        $employeeLogsQuery = FaAttendanceLog::with(['employee'])
+            ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $employeeLogs = $employeeLogsQuery->orderBy('scan_time', 'desc')->paginate(20, ['*'], 'emp_page');
+
+        // Total employee scans
+        $totalEmployeeScans = FaAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])->count();
+
+        // Unique employees scanned
+        $uniqueEmployeesCount = FaAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->distinct('employee_id')
+            ->count('employee_id');
+
+        // Total active employees
+        $totalEmployees = FaEmployee::where('is_active', true)->count();
+
+        // Get all active employees
+        $allEmployees = FaEmployee::where('is_active', true)->get();
+
+        // Get employee IDs who have scanned (check-in) in the date range
+        $scannedEmployeeIds = FaAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('scan_type', 'in')
+            ->pluck('employee_id')
+            ->unique();
+
+        // Absent employees (haven't checked in at all)
+        $absentEmployees = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
+            return !$scannedEmployeeIds->contains($employee->id);
+        });
+
+        // Late employees (scanned with is_late = true)
+        $lateEmployeesQuery = FaAttendanceLog::with('employee')
+            ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('scan_type', 'in')
+            ->where('is_late', true);
+        $lateEmployees = $lateEmployeesQuery->orderBy('scan_time', 'desc')->get();
+
+        // Count employee statistics
+        $absentEmployeeCount = $absentEmployees->count();
+        $lateEmployeeCount = $lateEmployees->unique('employee_id')->count();
+
         return view('attendance-reports.index', compact(
             'logs',
             'courses',
@@ -112,7 +157,16 @@ class AttendanceReportController extends Controller
             'absentStudents',
             'lateStudents',
             'absentCount',
-            'lateCount'
+            'lateCount',
+            // Employee data
+            'employeeLogs',
+            'totalEmployeeScans',
+            'uniqueEmployeesCount',
+            'totalEmployees',
+            'absentEmployees',
+            'lateEmployees',
+            'absentEmployeeCount',
+            'lateEmployeeCount'
         ));
     }
 
@@ -204,6 +258,69 @@ class AttendanceReportController extends Controller
         $courseName = $courseId ? FaCourse::find($courseId)?->name : 'ทุกหลักสูตร';
         $courses = FaCourse::orderBy('created_at', 'desc')->get();
 
+        // ===== ข้อมูลข้าราชการ (Employees) =====
+        
+        // Get all active employees
+        $allEmployees = FaEmployee::where('is_active', true)->get();
+
+        // Build query - get all employee logs for the selected date
+        $employeeQuery = FaAttendanceLog::with(['employee'])
+            ->whereDate('scan_time', $date);
+
+        $employeeLogRecords = $employeeQuery->orderBy('employee_id')->orderBy('scan_time')->get();
+
+        // Get employee IDs who have scanned on this date
+        $scannedEmployeeIds = $employeeLogRecords->pluck('employee_id')->unique();
+
+        // Group scanned employees by employee_id - ข้าราชการสแกนแค่ตอนเช้าครั้งเดียว
+        $scannedEmployeeLogs = $employeeLogRecords->groupBy('employee_id')->map(function ($empLogs) {
+            // ใช้ log แรกของวัน (เรียงตาม scan_time แล้ว)
+            $firstLog = $empLogs->first();
+            
+            // Determine status based on is_late field
+            $status = 'ปกติ';
+            $isLate = $firstLog && $firstLog->is_late;
+            
+            if ($isLate) {
+                $status = 'มาสาย';
+            }
+            if (!$firstLog) {
+                $status = 'ไม่มาลงชื่อ';
+            }
+            
+            return [
+                'employee' => $firstLog->employee,
+                'morning' => $firstLog, // ใช้ log แรกเป็น morning
+                'afternoon' => null,
+                'morning_late' => $isLate,
+                'afternoon_late' => false,
+                'status' => $status,
+            ];
+        })->values();
+
+        // Add absent employees (those who haven't scanned at all)
+        $absentEmployeeLogs = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
+            return !$scannedEmployeeIds->contains($employee->id);
+        })->map(function ($employee) {
+            return [
+                'employee' => $employee,
+                'morning' => null,
+                'afternoon' => null,
+                'morning_late' => false,
+                'afternoon_late' => false,
+                'status' => 'ไม่มาลงชื่อ',
+            ];
+        })->values();
+
+        // Merge scanned employees and absent employees
+        $employeeLogs = $scannedEmployeeLogs->concat($absentEmployeeLogs);
+
+        // Calculate employee totals
+        $totalEmployees = $allEmployees->count();
+        $employeePresentCount = $employeeLogs->where('status', 'ปกติ')->count();
+        $employeeLateCount = $employeeLogs->where('status', 'มาสาย')->count();
+        $employeeAbsentCount = $employeeLogs->where('status', 'ไม่มาลงชื่อ')->count();
+
         return view('attendance-reports.pdf', compact(
             'studentLogs', 
             'courseName', 
@@ -213,7 +330,13 @@ class AttendanceReportController extends Controller
             'totalStudents',
             'presentCount',
             'lateCount',
-            'absentCount'
+            'absentCount',
+            // Employee data
+            'employeeLogs',
+            'totalEmployees',
+            'employeePresentCount',
+            'employeeLateCount',
+            'employeeAbsentCount'
         ));
     }
 

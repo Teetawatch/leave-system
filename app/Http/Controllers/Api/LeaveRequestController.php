@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\NewLeaveRequestNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LeaveRequestController extends Controller
 {
@@ -95,7 +96,7 @@ class LeaveRequestController extends Controller
         // Business Rules Validation
 
         // 1. Advance Notice Check
-        if ($leaveType->requires_advance_notice) {
+        if ($leaveType->requires_advance_notice && $leaveType->slug !== 'personal') {
             $daysInAdvance = now()->diffInDays($startDate, false);
             if ($daysInAdvance < $leaveType->advance_notice_days) {
                 return response()->json([

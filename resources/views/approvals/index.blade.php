@@ -153,6 +153,7 @@
                                 
                                 // Check if this is Step 2 (Deputy Director - no signature needed)
                                 $isDeputyDirectorStep = $req->status == 'pending_deputy_director';
+                                $isManagerStep = $req->status == 'pending_manager';
                                 $isVacation = strtolower($req->leaveType->slug ?? '') === 'vacation';
                             @endphp
                             
@@ -175,6 +176,8 @@
                                     <i data-lucide="check" class="w-4 h-4 text-lg group-hover:scale-110 transition-transform"></i>
                                     @if($req->status == 'pending_supervisor')
                                         อนุญาต
+                                    @elseif($req->status == 'pending_manager')
+                                        อนุมัติ
                                     @elseif($req->status == 'pending_deputy_director')
                                         รับทราบ
                                     @elseif($req->status == 'pending_director')
@@ -225,9 +228,11 @@
                                     <input type="hidden" name="is_acknowledge" value="{{ $isAcknowledgeAction ? '1' : '0' }}">
                                     
                                     <div class="bg-white p-8">
-                                        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full {{ $isAcknowledgeAction ? 'bg-blue-50 text-blue-500' : 'bg-emerald-50 text-emerald-500' }} mb-6 shadow-inner">
+                                        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full {{ $isAcknowledgeAction ? 'bg-blue-50 text-blue-500' : ($isManagerStep ? 'bg-amber-50 text-amber-500' : 'bg-emerald-50 text-emerald-500') }} mb-6 shadow-inner">
                                             @if($isAcknowledgeAction)
                                                 <i data-lucide="eye" class="w-10 h-10"></i>
+                                            @elseif($isManagerStep)
+                                                <i data-lucide="shield-check" class="w-10 h-10"></i>
                                             @else
                                                 <i data-lucide="check" class="w-10 h-10"></i>
                                             @endif
@@ -236,6 +241,8 @@
                                             <h3 class="text-2xl font-black text-slate-900 tracking-tight" id="modal-title">
                                                 @if($req->status == 'pending_supervisor')
                                                     อนุญาตคำขอ
+                                                @elseif($req->status == 'pending_manager')
+                                                    อนุมัติคำขอ (ผู้บังคับบัญชา)
                                                 @elseif($req->status == 'pending_deputy_director')
                                                     รับทราบคำขอ
                                                 @elseif($req->status == 'pending_director')
@@ -251,6 +258,8 @@
                                             <div class="mt-2 text-base text-slate-500">
                                                 @if($req->status == 'pending_supervisor')
                                                     อนุญาต
+                                                @elseif($req->status == 'pending_manager')
+                                                    อนุมัติ
                                                 @elseif($req->status == 'pending_deputy_director')
                                                     รับทราบ
                                                 @elseif($req->status == 'pending_director')
@@ -325,14 +334,18 @@
                                         <button type="button" @click="openApprove = false" class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50 hover:text-slate-800 focus:outline-none transition-all">
                                             ยกเลิก
                                         </button>
-                                        <button type="{{ $isAcknowledgeAction ? 'submit' : 'button' }}" {{ $isAcknowledgeAction ? '' : '@click=submitForm($event)' }} class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 rounded-xl border border-transparent shadow-lg {{ $isAcknowledgeAction ? 'shadow-blue-500/30 bg-blue-500 hover:bg-blue-600' : 'shadow-emerald-500/30 bg-emerald-500 hover:bg-emerald-600' }} text-white font-bold focus:outline-none transform hover:-translate-y-0.5 transition-all">
+                                        <button type="{{ $isAcknowledgeAction ? 'submit' : 'button' }}" {{ $isAcknowledgeAction ? '' : '@click=submitForm($event)' }} class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 rounded-xl border border-transparent shadow-lg {{ $isAcknowledgeAction ? 'shadow-blue-500/30 bg-blue-500 hover:bg-blue-600' : ($isManagerStep ? 'shadow-amber-500/30 bg-amber-500 hover:bg-amber-600' : 'shadow-emerald-500/30 bg-emerald-500 hover:bg-emerald-600') }} text-white font-bold focus:outline-none transform hover:-translate-y-0.5 transition-all">
                                             @if($isAcknowledgeAction)
                                                 <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
+                                            @elseif($isManagerStep)
+                                                <i data-lucide="shield-check" class="w-4 h-4 mr-2"></i>
                                             @else
                                                 <i data-lucide="check" class="w-4 h-4 mr-2"></i>
                                             @endif 
                                             @if($req->status == 'pending_supervisor')
                                                 ยืนยันอนุญาต
+                                            @elseif($req->status == 'pending_manager')
+                                                ยืนยันอนุมัติ
                                             @elseif($req->status == 'pending_deputy_director')
                                                 ยืนยันรับทราบ
                                             @elseif($req->status == 'pending_director')

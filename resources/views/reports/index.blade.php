@@ -60,7 +60,7 @@
                         <div>
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">รออนุมัติ</p>
                             <h3 class="text-2xl font-bold text-slate-800 mt-1">
-                                {{ \App\Models\LeaveRequest::whereIn('status', ['pending_supervisor', 'pending_head', 'pending_deputy_director'])->count() }}
+                                {{ \App\Models\LeaveRequest::whereIn('status', ['pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director'])->count() }}
                             </h3>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">

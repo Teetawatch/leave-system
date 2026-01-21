@@ -72,7 +72,7 @@ class LeaveRequestController extends Controller
 
         // 1. Check specific Leave Type rules
         // Advance Notice
-        if ($leaveType->requires_advance_notice) {
+        if ($leaveType->requires_advance_notice && $leaveType->slug !== 'personal') {
             $daysInAdvance = now()->diffInDays($startDate, false);
             // $daysInAdvance is negative if startDate is in past
             if ($daysInAdvance < $leaveType->advance_notice_days) {
@@ -211,7 +211,22 @@ class LeaveRequestController extends Controller
         if ($user->supervisor_id) {
             $supervisor = User::find($user->supervisor_id);
             if ($supervisor) {
+                // Send Database Notification
                 $supervisor->notify(new NewLeaveRequestNotification($leaveRequest, $user));
+                
+                // Send Push Notification via FCM
+                if ($supervisor->fcm_token) {
+                    $fcmService = new \App\Services\FCMService();
+                    $fcmService->sendNotification(
+                        $supervisor->fcm_token,
+                        'มีใบลาเข้ามาใหม่ 🔔',
+                        "{$user->rank} {$user->name} ขอ{$leaveType->name} จำนวน {$diffDays} วัน รอการอนุมัติจากคุณ",
+                        [
+                            'type' => 'new_leave_request',
+                            'request_id' => $leaveRequest->id,
+                        ]
+                    );
+                }
             }
         }
 

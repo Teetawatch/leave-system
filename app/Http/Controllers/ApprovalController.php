@@ -14,6 +14,22 @@ use App\Notifications\NewLeaveRequestNotification;
 
 class ApprovalController extends Controller
 {
+    /**
+     * หลักสูตรที่ต้องใช้ 2 ขั้นตอนอนุมัติ (หัวหน้าแผนก + ผู้บังคับบัญชา)
+     */
+    protected const STUDENT_COURSES = [
+        'หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69',
+        'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.',
+    ];
+
+    /**
+     * ตรวจสอบว่าผู้ใช้เป็นนักเรียนในหลักสูตรที่กำหนดหรือไม่
+     */
+    protected function isStudentCourse($user): bool
+    {
+        return in_array($user->department, self::STUDENT_COURSES);
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -26,19 +42,25 @@ class ApprovalController extends Controller
                       $q->where('supervisor_id', $user->id);
                   });
         })->orWhere(function($query) use ($user) {
-            // Case 2: Pending Deputy Director (Step 2) AND User is Deputy Director
+            // Case 2: Pending Manager (Step 2 for students) AND User is Manager
+            $query->where('status', 'pending_manager')
+                  ->whereHas('user', function($q) use ($user) {
+                      $q->where('manager_id', $user->id);
+                  });
+        })->orWhere(function($query) use ($user) {
+            // Case 3: Pending Deputy Director (Step 2) AND User is Deputy Director
             if ($user->role === 'deputy_director') {
                 $query->where('status', 'pending_deputy_director');
             }
         })->orWhere(function($query) use ($user) {
-            // Case 3: Pending Director (Step 3) AND User is Director
+            // Case 4: Pending Director (Step 3) AND User is Director
             if ($user->role === 'director') {
                 $query->where('status', 'pending_director');
             }
         })->orWhere(function($query) use ($user) {
              // Admin sees all pending requests
              if ($user->role === 'admin') {
-                 $query->whereIn('status', ['pending_supervisor', 'pending_deputy_director', 'pending_director']);
+                 $query->whereIn('status', ['pending_supervisor', 'pending_manager', 'pending_deputy_director', 'pending_director']);
              }
         })
         ->orderBy('created_at', 'desc')
@@ -59,6 +81,7 @@ class ApprovalController extends Controller
         // Get leave type info
         $leaveSlug = strtolower($leaveRequest->leaveType->slug ?? '');
         $isVacation = $leaveSlug === 'vacation' || str_contains($leaveRequest->leaveType->name ?? '', 'พักผ่อน');
+        $isSickOrPersonal = in_array($leaveSlug, ['sick', 'personal']);
 
         // Handle Signature Upload (for steps that require it)
         $signaturePath = null;
@@ -114,7 +137,35 @@ class ApprovalController extends Controller
                 return redirect()->back()->with('success', 'อนุมัติลาชั่วกาลเรียบร้อยแล้ว');
             }
 
-            // Move to Step 2: pending_deputy_director (for non-temporary leave)
+            // ========== สำหรับนักเรียนหลักสูตร: ลากิจ/ลาป่วย ต้องผ่าน 2 ขั้นตอน ==========
+            $isStudentCourse = $this->isStudentCourse($requester);
+            $hasManager = !empty($requester->manager_id);
+
+            if ($isStudentCourse && $isSickOrPersonal && $hasManager) {
+                // นักเรียนหลักสูตร: ส่งไปให้ผู้บังคับบัญชาอนุมัติขั้นที่ 2
+                $leaveRequest->status = 'pending_manager';
+                $leaveRequest->save();
+                
+                // Log approval for step 1
+                $leaveRequest->approvals()->create([
+                    'approver_id' => $user->id,
+                    'step' => 'supervisor',
+                    'action' => 'approved',
+                    'comment' => $request->input('comment'),
+                    'signature' => $signaturePath,
+                    'ip_address' => $request->ip()
+                ]);
+                
+                // Notify Manager about the new pending approval
+                $manager = User::find($requester->manager_id);
+                if ($manager) {
+                    $manager->notify(new NewLeaveRequestNotification($leaveRequest, $requester));
+                }
+                
+                return redirect()->back()->with('success', 'อนุญาตขั้นที่ 1 เรียบร้อยแล้ว รอผู้บังคับบัญชาอนุมัติขั้นสุดท้าย');
+            }
+
+            // Move to Step 2: pending_deputy_director (for regular employees)
             $leaveRequest->status = 'pending_deputy_director';
             $leaveRequest->save();
             
@@ -136,8 +187,38 @@ class ApprovalController extends Controller
             
             return redirect()->back()->with('success', 'อนุญาตและลงลายมือชื่อเรียบร้อยแล้ว รอ รอง ผอ. รับทราบ');
         }
+
+        // ========== STEP 2 (นักเรียน): ผู้บังคับบัญชาอนุมัติ (ต้องลงลายเซ็น) ==========
+        if ($leaveRequest->status == 'pending_manager') {
+            if ($requester->manager_id !== $user->id && !in_array($user->role, ['admin', 'director', 'deputy_director'])) {
+                 abort(403, 'Not authorized for this approval stage.');
+            }
+            
+            // Final Approval by Manager
+            $leaveRequest->status = 'approved';
+            $leaveRequest->save();
+            
+            // Log final approval for manager
+            LeaveApproval::create([
+                'leave_request_id' => $leaveRequest->id,
+                'approver_id' => $user->id,
+                'step' => 'manager',
+                'action' => 'approved',
+                'comment' => $request->input('comment'),
+                'signature' => $signaturePath,
+                'ip_address' => $request->ip()
+            ]);
+
+            // Deduct Balance
+            $this->deductBalance($leaveRequest);
+
+            // Notify User
+            $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
+
+            return redirect()->back()->with('success', 'อนุมัติการลาขั้นสุดท้ายเรียบร้อยแล้ว');
+        }
         
-        // ========== STEP 2: รอง ผอ. รับทราบ (ไม่ต้องลงลายเซ็น) ==========
+        // ========== STEP 2 (ข้าราชการ): รอง ผอ. รับทราบ (ไม่ต้องลงลายเซ็น) ==========
         if ($leaveRequest->status == 'pending_deputy_director') {
             if ($user->role !== 'deputy_director' && $user->role !== 'admin') {
                  abort(403, 'Not authorized for this approval stage.');
@@ -167,7 +248,7 @@ class ApprovalController extends Controller
             return redirect()->back()->with('success', 'รับทราบคำขอเรียบร้อยแล้ว รอ ผอ. ดำเนินการขั้นสุดท้าย');
         }
 
-        // ========== STEP 3: ผอ. รับทราบ/อนุญาต (ต้องลงลายเซ็น) ==========
+        // ========== STEP 3 (ข้าราชการ): ผอ. รับทราบ/อนุญาต (ต้องลงลายเซ็น) ==========
         if ($leaveRequest->status == 'pending_director') {
             if ($user->role !== 'director' && $user->role !== 'admin') {
                  abort(403, 'Not authorized for this approval stage.');

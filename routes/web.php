@@ -145,7 +145,7 @@ Route::get('/dashboard', function () {
 
     // 3. Pending Requests
     $pendingCount = \App\Models\LeaveRequest::where('user_id', $user->id)
-        ->whereIn('status', ['pending_supervisor', 'pending_head'])
+        ->whereIn('status', ['pending_supervisor', 'pending_head', 'pending_manager', 'pending_deputy_director', 'pending_director'])
         ->count();
 
     // 4. Colleagues on leave today (for wider visibility or just dept)

@@ -133,13 +133,15 @@
                                         'approved' => ['bg' => 'bg-emerald-500', 'text' => 'text-emerald-50', 'icon' => 'check', 'label' => 'อนุมัติแล้ว'],
                                         'rejected' => ['bg' => 'bg-rose-500', 'text' => 'text-rose-50', 'icon' => 'x', 'label' => 'ถูกปฏิเสธ'],
                                         'cancelled' => ['bg' => 'bg-slate-400', 'text' => 'text-white', 'icon' => 'ban', 'label' => 'ยกเลิกแล้ว'],
-                                        'pending_supervisor', 'pending_head', 'pending_deputy_director' => ['bg' => 'bg-amber-400', 'text' => 'text-white', 'icon' => 'hourglass', 'label' => 'รออนุมัติ'],
+                                        'pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director' => ['bg' => 'bg-amber-400', 'text' => 'text-white', 'icon' => 'hourglass', 'label' => 'รออนุมัติ'],
                                         default => ['bg' => 'bg-slate-200', 'text' => 'text-slate-500', 'icon' => 'help-circle', 'label' => ucfirst($req->status)]
                                     };
                                     
                                     if ($req->status == 'pending_supervisor') $statusConfig['label'] = 'รอหัวหน้าแผนก';
                                     if ($req->status == 'pending_head') $statusConfig['label'] = 'รอหัวหน้าแผนก';
+                                    if ($req->status == 'pending_manager') $statusConfig['label'] = 'รอผู้บังคับบัญชา';
                                     if ($req->status == 'pending_deputy_director') $statusConfig['label'] = 'รอ รอง ผอ.';
+                                    if ($req->status == 'pending_director') $statusConfig['label'] = 'รอ ผอ.';
                                 @endphp
 
                                 <div class="flex flex-col items-end w-full">
@@ -157,7 +159,7 @@
                                         <i data-lucide="file-text" class="w-4 h-4 group-hover/btn:scale-110 transition-transform"></i> PDF
                                     </button>
 
-                                    @if(in_array($req->status, ['pending_supervisor', 'pending_head', 'pending_deputy_director']))
+                                    @if(in_array($req->status, ['pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director']))
                                         <form action="{{ route('leave-request.cancel', $req->id) }}" method="POST" onsubmit="return confirm('คุณแน่ใจว่าต้องการยกเลิกคำขอนี้?');" class="w-full">
                                             @csrf
                                             @method('PUT')
