@@ -7,6 +7,12 @@
             toggleView(mode) {
                 this.viewMode = mode;
                 localStorage.setItem('employeeViewMode', mode);
+            },
+            showOfficialDutyModal: false,
+            selectedEmployee: { id: '', name: '' },
+            openOfficialDutyModal(id, name) {
+                this.selectedEmployee = { id: id, name: name };
+                this.showOfficialDutyModal = true;
             }
          }">
         
@@ -203,9 +209,14 @@
                             </a>
                         </div>
                         
-                        <a href="{{ route('employees.edit', $emp->id) }}" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                        </a>
+                        <div class="flex items-center gap-1">
+                            <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="บันทึกการไปราชการ">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                            </button>
+                            <a href="{{ route('employees.edit', $emp->id) }}" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
                 @endforeach
@@ -294,9 +305,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('employees.edit', $emp->id) }}" class="text-slate-400 hover:text-indigo-600 transition-colors inline-block p-1">
-                                        <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    </a>
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="text-slate-400 hover:text-blue-600 transition-colors inline-block p-1" title="ไปราชการ">
+                                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                        </button>
+                                        <a href="{{ route('employees.edit', $emp->id) }}" class="text-slate-400 hover:text-indigo-600 transition-colors inline-block p-1">
+                                            <i data-lucide="pencil" class="w-4 h-4"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -406,5 +422,81 @@
                 }
             });
         });
+        <!-- Official Duty Modal -->
+        <div x-show="showOfficialDutyModal" 
+             class="fixed inset-0 z-50 overflow-y-auto" 
+             x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity bg-slate-900/50 backdrop-blur-sm" @click="showOfficialDutyModal = false"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+                    
+                    <div class="px-6 py-6 bg-slate-50 border-b border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-900">บันทึกการไปราชการ</h3>
+                                    <p class="text-xs text-slate-500 font-medium" x-text="'ข้าราชการ: ' + selectedEmployee.name"></p>
+                                </div>
+                            </div>
+                            <button @click="showOfficialDutyModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form :action="'/employees/' + selectedEmployee.id + '/official-duty'" method="POST" class="p-6 space-y-5">
+                        @csrf
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่เริ่มต้น</label>
+                                <input type="date" name="start_date" required 
+                                       class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่สิ้นสุด</label>
+                                <input type="date" name="end_date" required 
+                                       class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">สถานที่ไปราชการ (จังหวัด)</label>
+                            <input type="text" name="location" required 
+                                   class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all"
+                                   placeholder="เช่น กรุงเทพมหานคร">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วัตถุประสงค์ / รายละเอียด</label>
+                            <textarea name="reason" rows="3" required 
+                                      class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all resize-none"
+                                      placeholder="เช่น เข้าร่วมงานสัมมนา..."></textarea>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-2">
+                                <i data-lucide="save" class="w-5 h-5"></i>
+                                บันทึกข้อมูล
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </script>
 </x-app-layout>

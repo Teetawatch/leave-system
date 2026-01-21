@@ -7,6 +7,8 @@ use App\Models\FaceAttendance\FaStudentAttendanceLog;
 use App\Models\FaceAttendance\FaCourse;
 use App\Models\FaceAttendance\FaEmployee;
 use App\Models\FaceAttendance\FaAttendanceLog;
+use App\Models\LeaveRequest;
+use App\Models\LeaveType;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -123,18 +125,55 @@ class AttendanceReportController extends Controller
         // Get all active employees
         $allEmployees = FaEmployee::where('is_active', true)->get();
 
-        // Get employee IDs who have scanned (check-in) in the date range
+        // Get employee IDs who have scanning (check-in) in the date range
         $scannedEmployeeIds = FaAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('scan_type', 'in')
             ->pluck('employee_id')
             ->unique();
 
+        // Get approved official duty requests for the date range
+        $officialDutyType = LeaveType::where('slug', 'official-duty')->first();
+        $officialDutyRequests = collect();
+        if ($officialDutyType) {
+            $officialDutyRequests = LeaveRequest::where('leave_type_id', $officialDutyType->id)
+                ->where('status', 'approved')
+                ->where(function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('start_date', [$startDate, $endDate])
+                      ->orWhereBetween('end_date', [$startDate, $endDate])
+                      ->orWhere(function ($q2) use ($startDate, $endDate) {
+                          $q2->where('start_date', '<=', $startDate)
+                             ->where('end_date', '>=', $endDate);
+                      });
+                })
+                ->get();
+        }
+
         // Absent employees (haven't checked in at all)
         $absentEmployees = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
             return !$scannedEmployeeIds->contains($employee->id);
+        })->map(function ($employee) use ($officialDutyRequests) {
+            // Check if this employee has an official duty duty request
+            // We assume employee->user_id links to our User model
+            $duty = $officialDutyRequests->firstWhere('user_id', $employee->user_id);
+            $employee->on_official_duty = $duty ? true : false;
+            $employee->official_duty_reason = $duty ? $duty->reason : null;
+            return $employee;
         });
 
-        // Late employees (scanned with is_late = true)
+        // Split absent into actually absent and on official duty
+        $onOfficialDutyEmployees = $absentEmployees->where('on_official_duty', true);
+        $actuallyAbsentEmployees = $absentEmployees->where('on_official_duty', false);
+
+        // Update counts
+        $absentEmployeeCount = $actuallyAbsentEmployees->count();
+        $officialDutyCount = $onOfficialDutyEmployees->count();
+        $lateEmployeeCount = FaAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('scan_type', 'in')
+            ->where('is_late', true)
+            ->distinct('employee_id')
+            ->count('employee_id');
+
+        // Late employees list
         $lateEmployeesQuery = FaAttendanceLog::with('employee')
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('scan_type', 'in')
@@ -166,7 +205,9 @@ class AttendanceReportController extends Controller
             'absentEmployees',
             'lateEmployees',
             'absentEmployeeCount',
-            'lateEmployeeCount'
+            'lateEmployeeCount',
+            'officialDutyCount',
+            'onOfficialDutyEmployees'
         ));
     }
 
@@ -298,17 +339,29 @@ class AttendanceReportController extends Controller
             ];
         })->values();
 
+        // Get approved official duty requests for the selected date
+        $officialDutyType = LeaveType::where('slug', 'official-duty')->first();
+        $officialDutyRequests = collect();
+        if ($officialDutyType) {
+            $officialDutyRequests = LeaveRequest::where('leave_type_id', $officialDutyType->id)
+                ->where('status', 'approved')
+                ->where('start_date', '<=', $date)
+                ->where('end_date', '>=', $date)
+                ->get();
+        }
+
         // Add absent employees (those who haven't scanned at all)
         $absentEmployeeLogs = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
             return !$scannedEmployeeIds->contains($employee->id);
-        })->map(function ($employee) {
+        })->map(function ($employee) use ($officialDutyRequests) {
+            $duty = $officialDutyRequests->firstWhere('user_id', $employee->user_id);
             return [
                 'employee' => $employee,
                 'morning' => null,
                 'afternoon' => null,
                 'morning_late' => false,
                 'afternoon_late' => false,
-                'status' => 'ไม่มาลงชื่อ',
+                'status' => $duty ? 'ไปราชการ' : 'ไม่มาลงชื่อ',
             ];
         })->values();
 
@@ -320,6 +373,7 @@ class AttendanceReportController extends Controller
         $employeePresentCount = $employeeLogs->where('status', 'ปกติ')->count();
         $employeeLateCount = $employeeLogs->where('status', 'มาสาย')->count();
         $employeeAbsentCount = $employeeLogs->where('status', 'ไม่มาลงชื่อ')->count();
+        $employeeOfficialDutyCount = $employeeLogs->where('status', 'ไปราชการ')->count();
 
         return view('attendance-reports.pdf', compact(
             'studentLogs', 
@@ -336,7 +390,8 @@ class AttendanceReportController extends Controller
             'totalEmployees',
             'employeePresentCount',
             'employeeLateCount',
-            'employeeAbsentCount'
+            'employeeAbsentCount',
+            'employeeOfficialDutyCount'
         ));
     }
 

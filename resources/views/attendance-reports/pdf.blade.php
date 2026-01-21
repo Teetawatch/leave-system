@@ -339,7 +339,7 @@
             </div>
 
             <!-- Summary Stats -->
-            <div class="grid grid-cols-4 border-b border-slate-200 bg-indigo-50 print:bg-indigo-50">
+            <div class="grid grid-cols-5 border-b border-slate-200 bg-indigo-50 print:bg-indigo-50">
                 <div class="p-4 text-center border-r border-slate-200">
                     <div class="text-xs text-indigo-600 uppercase font-bold tracking-wider">ข้าราชการทั้งหมด</div>
                     <div class="text-2xl font-bold text-indigo-700 mt-1">{{ $totalEmployees }}</div>
@@ -352,9 +352,13 @@
                     <div class="text-xs text-amber-600 uppercase font-bold tracking-wider">มาสาย</div>
                     <div class="text-2xl font-bold text-amber-600 mt-1">{{ $employeeLateCount }}</div>
                 </div>
-                <div class="p-4 text-center">
-                    <div class="text-xs text-rose-600 uppercase font-bold tracking-wider">ไม่มาลงชื่อ</div>
+                <div class="p-4 text-center border-r border-slate-200">
+                    <div class="text-xs text-rose-600 uppercase font-bold tracking-wider">ยังไม่ลงชื่อ</div>
                     <div class="text-2xl font-bold text-rose-600 mt-1">{{ $employeeAbsentCount }}</div>
+                </div>
+                <div class="p-4 text-center">
+                    <div class="text-xs text-blue-600 uppercase font-bold tracking-wider">ไปราชการ</div>
+                    <div class="text-2xl font-bold text-blue-600 mt-1">{{ $employeeOfficialDutyCount }}</div>
                 </div>
             </div>
 
@@ -424,6 +428,10 @@
                                 @elseif($row['status'] == 'ไม่มาลงชื่อ')
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200">
                                         ไม่มาลงชื่อ
+                                    </span>
+                                @elseif($row['status'] == 'ไปราชการ')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                        ไปราชการ
                                     </span>
                                 @else
                                     -
