@@ -498,5 +498,5 @@
                 </div>
             </div>
         </div>
-    </script>
+    </div>
 </x-app-layout>
