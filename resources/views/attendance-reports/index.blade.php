@@ -784,27 +784,7 @@
             @if($onOfficialDutyEmployees->count() > 0)
                 <div x-data="{ open: false }"
                     class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden group">
-                    <button @click="open = !open"
-                        class="w-full flex items-center justify-between p-8 bg-slate-50/50 hover:bg-white transition-all duration-300">
-                        <div class="flex items-center gap-6">
-                            <div class="relative">
-                                <div class="absolute inset-0 bg-blue-500 blur-xl opacity-20 animate-pulse"></div>
-                                <div
-                                    class="relative w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xl shadow-inner border border-blue-200">
-                                    {{ $onOfficialDutyEmployees->count() }}
-                                </div>
-                            </div>
-                            <div class="text-left">
-                                <h3 class="font-black text-xl text-slate-800 tracking-tight">ข้าราชการที่ไปราชการ</h3>
-                                <p class="text-sm text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                                    รายชื่อผู้ปฏิบัติราชการนอกสถานที่</p>
-                            </div>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 transition-all duration-300 group-hover:border-blue-200 group-hover:text-blue-500 shadow-sm"
-                            :class="{ 'rotate-180 bg-blue-50 border-blue-200 text-blue-600': open }">
-                            <i data-lucide="chevron-down" class="w-6 h-6"></i>
-                        </div>
-                    </button>
+
 
                     <div x-show="open" x-collapse>
                         <div class="p-8 pt-0 bg-white">

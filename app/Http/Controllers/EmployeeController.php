@@ -22,11 +22,11 @@ class EmployeeController extends Controller
 
         if ($request->has('search')) {
             $search = $request->get('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('department', 'like', "%{$search}%")
-                  ->orWhere('position', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('department', 'like', "%{$search}%")
+                    ->orWhere('position', 'like', "%{$search}%");
             });
         }
 
@@ -36,7 +36,7 @@ class EmployeeController extends Controller
 
         $employees = $query->orderBy('name')->paginate(10);
         $departments = \App\Models\Department::all();
-        
+
         return view('employees.index', compact('employees', 'departments'));
     }
 
@@ -97,9 +97,9 @@ class EmployeeController extends Controller
     public function edit(string $id)
     {
         $employee = User::findOrFail($id);
-        $supervisors = User::where('id', '!=', $id)->get(); 
+        $supervisors = User::where('id', '!=', $id)->get();
         $departments = \App\Models\Department::all();
-        
+
         // Get current vacation quota
         $vacationType = LeaveType::where('slug', 'vacation')->first();
         $currentVacationQuota = 10;
@@ -122,10 +122,10 @@ class EmployeeController extends Controller
     public function update(Request $request, string $id)
     {
         $employee = User::findOrFail($id);
-        
+
         // Email is required only if already registered or being set
         $emailRule = $employee->is_registered ? 'required|email|unique:users,email,' . $id : 'nullable|email|unique:users,email,' . $id;
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => $emailRule,
@@ -163,7 +163,7 @@ class EmployeeController extends Controller
             $vacationType = LeaveType::where('slug', 'vacation')->first();
             if ($vacationType) {
                 $days = $request->input('vacation_leave_days');
-                
+
                 $balance = LeaveBalance::where('user_id', $id)
                     ->where('leave_type_id', $vacationType->id)
                     ->where('year', date('Y'))
@@ -245,7 +245,7 @@ class EmployeeController extends Controller
             $updateCount = $import->getUpdateCount();
             $rowCount = $import->getRowCount();
             $errorMessages = $import->getErrorMessages();
-            
+
             $messageParts = [];
             if ($successCount > 0) {
                 $messageParts[] = "เพิ่มใหม่ {$successCount} รายการ";
@@ -254,10 +254,10 @@ class EmployeeController extends Controller
                 $messageParts[] = "อัปเดต {$updateCount} รายการ";
             }
             $message = "นำเข้าข้อมูลพนักงานสำเร็จ: " . implode(', ', $messageParts) . " (จากทั้งหมด {$rowCount} แถว)";
-            
+
             // Show error messages if any
             $allErrors = $errorMessages;
-            
+
             if (count($allErrors) > 0) {
                 return redirect()->route('employees.import')
                     ->with('success', $message)
@@ -298,18 +298,21 @@ class EmployeeController extends Controller
 
         try {
             $file = $request->file('file');
-            
+
             // Read raw data from Excel
             $data = Excel::toArray(new class implements \Maatwebsite\Excel\Concerns\ToArray {
-                public function array(array $array) { return $array; }
+                public function array(array $array)
+                {
+                    return $array;
+                }
             }, $file);
-            
+
             $preview = [];
             if (!empty($data) && !empty($data[0])) {
                 // Get first 10 rows
                 $preview = array_slice($data[0], 0, 10);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'total_rows' => count($data[0] ?? []),
@@ -334,7 +337,7 @@ class EmployeeController extends Controller
             ->where('registration_status', 'pending')
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
-            
+
         return view('employees.pending-registrations', compact('pendingUsers'));
     }
 
@@ -356,7 +359,7 @@ class EmployeeController extends Controller
     public function rejectRegistration(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-        
+
         // Reset to unregistered state so they can try again
         $user->is_registered = false;
         $user->email = null;
@@ -376,6 +379,7 @@ class EmployeeController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string|max:500',
             'location' => 'required|string|max:255',
+            'attachment' => 'nullable|file|mimes:pdf|max:10240',
         ]);
 
         $employee = User::findOrFail($id);
@@ -388,6 +392,11 @@ class EmployeeController extends Controller
         $startDate = \Carbon\Carbon::parse($request->start_date);
         $endDate = \Carbon\Carbon::parse($request->end_date);
         $totalDays = $startDate->diffInDays($endDate) + 1;
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('leave_attachments', 'public');
+        }
 
         \App\Models\LeaveRequest::create([
             'user_id' => $employee->id,
@@ -403,6 +412,7 @@ class EmployeeController extends Controller
                 'tambon' => '-',
                 'amphoe' => '-'
             ],
+            'attachment_path' => $attachmentPath,
             'status' => 'approved', // Auto-approved because it's entered by Admin
             'approved_at' => now(),
         ]);

@@ -513,7 +513,7 @@
                     </div>
                 </div>
 
-                <form :action="'{{ route('employees.index') }}/' + selectedEmployee.id + '/official-duty'" method="POST" class="p-6 space-y-5">
+                <form :action="'{{ route('employees.index') }}/' + selectedEmployee.id + '/official-duty'" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
                     @csrf
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -540,6 +540,12 @@
                         <textarea name="reason" rows="3" required 
                                   class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all resize-none"
                                   placeholder="เช่น เข้าร่วมงานสัมมนา..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">เอกสารแนบ (PDF)</label>
+                        <input type="file" name="attachment" accept=".pdf" 
+                               class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
 
                     <div class="pt-2">
