@@ -241,8 +241,11 @@
                         </div>
 
                         @php
-                            // Step 2 (Deputy Director) does NOT require signature
-                            $isAcknowledgeAction = $req->status == 'pending_deputy_director';
+                            // Step 2 (Deputy Director) does NOT require signature normally.
+                            // However, if Director is approving at this stage, it IS a full approval (needs signature).
+                            $isDeputyDirectorStep = $req->status == 'pending_deputy_director';
+                            $userRole = Auth::user()->role;
+                            $isAcknowledgeAction = $isDeputyDirectorStep && ($userRole === 'deputy_director' || $userRole === 'admin');
                         @endphp
 
                         <!-- Approve Modal -->
@@ -288,7 +291,7 @@
                                                         @elseif($req->status == 'pending_manager')
                                                             อนุมัติคำขอ (ผู้บังคับบัญชา)
                                                         @elseif($req->status == 'pending_deputy_director')
-                                                            รับทราบคำขอ
+                                                            {{ $isAcknowledgeAction ? 'รับทราบคำขอ' : 'อนุญาตคำขอ (ขั้นสุดท้าย)' }}
                                                         @elseif($req->status == 'pending_director')
                                                             @if($isVacation)
                                                                 อนุญาตคำขอ
@@ -422,7 +425,7 @@
                                                     @elseif($req->status == 'pending_manager')
                                                         ยืนยันอนุมัติ
                                                     @elseif($req->status == 'pending_deputy_director')
-                                                        ยืนยันรับทราบ
+                                                        {{ $isAcknowledgeAction ? 'ยืนยันรับทราบ' : 'ยืนยันอนุญาต' }}
                                                     @elseif($req->status == 'pending_director')
                                                         @if($isVacation)
                                                             ยืนยันอนุญาต
