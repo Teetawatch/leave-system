@@ -61,6 +61,17 @@ class LeaveTypeSeeder extends Seeder
                 'requires_file' => false,
                 'created_at' => now(),
                 'updated_at' => now()
+            ],
+            [
+                'name' => 'ไปราชการ',
+                'slug' => 'official-duty',
+                'max_days_per_year' => 999,
+                'requires_advance_notice' => false,
+                'advance_notice_days' => 0,
+                'allows_retroactive' => true,
+                'requires_file' => false,
+                'created_at' => now(),
+                'updated_at' => now()
             ]
         ]);
     }
