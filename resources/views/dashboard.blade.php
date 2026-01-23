@@ -38,7 +38,7 @@
                     </h1>
                     <p class="text-slate-400 text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
                         ยินดีต้อนรับสู่ระบบบริหารจัดการการลาและเวรยาม <span
-                            class="text-brand-400 font-black">กองโรงเรียนพลาธิการ</span>
+                            class="text-brand-400 font-black">โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ</span>
                         พร้อมสนับสนุนการทำงานของคุณในวันนี้
                     </p>
                 </div>
@@ -352,63 +352,63 @@
                             @else
                                 <div class="space-y-2">
                                     @foreach($recentRequests->take(6) as $req)
-                                                    <div class="p-6 hover:bg-slate-50 rounded-[1.75rem] transition-all group/item cursor-pointer flex items-center gap-6"
-                                                        onclick="window.location='{{ route('leave-request.show', $req->id) }}'">
+                                        <div class="p-6 hover:bg-slate-50 rounded-[1.75rem] transition-all group/item cursor-pointer flex items-center gap-6"
+                                            onclick="window.location='{{ route('leave-request.show', $req->id) }}'">
 
-                                                        @php
-                                                            $style = match ($req->leaveType->slug) {
-                                                                'sick' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-600', 'icon' => 'thermometer', 'ring' => 'ring-rose-100'],
-                                                                'vacation' => ['bg' => 'bg-brand-50', 'text' => 'text-brand-600', 'icon' => 'palmtree', 'ring' => 'ring-brand-100'],
-                                                                default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-600', 'icon' => 'briefcase', 'ring' => 'ring-amber-100'],
-                                                            };
-                                                        @endphp
+                                            @php
+                                                $style = match ($req->leaveType->slug) {
+                                                    'sick' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-600', 'icon' => 'thermometer', 'ring' => 'ring-rose-100'],
+                                                    'vacation' => ['bg' => 'bg-brand-50', 'text' => 'text-brand-600', 'icon' => 'palmtree', 'ring' => 'ring-brand-100'],
+                                                    default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-600', 'icon' => 'briefcase', 'ring' => 'ring-amber-100'],
+                                                };
+                                            @endphp
 
-                                                        <div class="relative">
-                                                            <div
-                                                                class="w-14 h-14 rounded-2xl {{ $style['bg'] }} {{ $style['text'] }} flex items-center justify-center flex-shrink-0 group-hover/item:scale-110 group-hover/item:rotate-6 transition-all duration-500 shadow-sm ring-1 {{ $style['ring'] }}">
-                                                                <i data-lucide="{{ $style['icon'] }}" class="w-7 h-7"></i>
-                                                            </div>
-                                                        </div>
+                                            <div class="relative">
+                                                <div
+                                                    class="w-14 h-14 rounded-2xl {{ $style['bg'] }} {{ $style['text'] }} flex items-center justify-center flex-shrink-0 group-hover/item:scale-110 group-hover/item:rotate-6 transition-all duration-500 shadow-sm ring-1 {{ $style['ring'] }}">
+                                                    <i data-lucide="{{ $style['icon'] }}" class="w-7 h-7"></i>
+                                                </div>
+                                            </div>
 
-                                                        <div class="flex-1 min-w-0">
-                                                            <div
-                                                                class="flex items-center gap-3 mb-1.5 font-black text-slate-800 text-lg tracking-tight">
-                                                                {{ $req->leaveType->name }}
-                                                                <span
-                                                                    class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-500 text-[10px] tracking-[0.2em] font-black uppercase">{{ $req->total_days + 0 }}
-                                                                    วัน</span>
-                                                            </div>
-                                                            <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-400">
-                                                                <span class="flex items-center gap-1.5"><i data-lucide="calendar"
-                                                                        class="w-3.5 h-3.5"></i> @thaidate($req->start_date) -
-                                                                    @thaidate($req->end_date)</span>
-                                                                <span class="flex items-center gap-1.5 opacity-60"><i data-lucide="clock"
-                                                                        class="w-3.5 h-3.5"></i>
-                                                                    {{ $req->created_at->diffForHumans() }}</span>
-                                                            </div>
-                                                        </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div
+                                                    class="flex items-center gap-3 mb-1.5 font-black text-slate-800 text-lg tracking-tight">
+                                                    {{ $req->leaveType->name }}
+                                                    <span
+                                                        class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-500 text-[10px] tracking-[0.2em] font-black uppercase">{{ $req->total_days + 0 }}
+                                                        วัน</span>
+                                                </div>
+                                                <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-400">
+                                                    <span class="flex items-center gap-1.5"><i data-lucide="calendar"
+                                                            class="w-3.5 h-3.5"></i> @thaidate($req->start_date) -
+                                                        @thaidate($req->end_date)</span>
+                                                    <span class="flex items-center gap-1.5 opacity-60"><i data-lucide="clock"
+                                                            class="w-3.5 h-3.5"></i>
+                                                        {{ $req->created_at->diffForHumans() }}</span>
+                                                </div>
+                                            </div>
 
-                                                        <div class="text-right">
-                                                            @php
-                                                                $statusStyle = match ($req->status) {
-                                                                    'approved' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                                                    'rejected' => 'bg-rose-50 text-rose-600 border-rose-100',
-                                                                    'cancelled' => 'bg-slate-50 text-slate-400 border-slate-100',
-                                                                    default => 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
-                                                                };
-                                                                $statusLabel = match ($req->status) {
-                                                                    'approved' => 'อนุมัติแล้ว',
-                                                                    'rejected' => 'ปฏิเสธแล้ว',
-                                                                    'cancelled' => 'ยกเลิกรายการ',
-                                                                    default => 'รออนุมัติ'
-                                                                };
-                                                            @endphp
-                                        <span
-                                                                class="inline-flex items-center px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border {{ $statusStyle }} shadow-sm">
-                                                                {{ $statusLabel }}
-                                                            </span>
-                                                        </div>
-                                                    </div>
+                                            <div class="text-right">
+                                                @php
+                                                    $statusStyle = match ($req->status) {
+                                                        'approved' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                                        'rejected' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                                        'cancelled' => 'bg-slate-50 text-slate-400 border-slate-100',
+                                                        default => 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
+                                                    };
+                                                    $statusLabel = match ($req->status) {
+                                                        'approved' => 'อนุมัติแล้ว',
+                                                        'rejected' => 'ปฏิเสธแล้ว',
+                                                        'cancelled' => 'ยกเลิกรายการ',
+                                                        default => 'รออนุมัติ'
+                                                    };
+                                                @endphp
+                                                <span
+                                                    class="inline-flex items-center px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border {{ $statusStyle }} shadow-sm">
+                                                    {{ $statusLabel }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     @endforeach
                                 </div>
                             @endif
