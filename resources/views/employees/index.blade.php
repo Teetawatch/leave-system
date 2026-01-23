@@ -1,5 +1,5 @@
 ﻿<x-app-layout>
-    @section('title', 'จัดการพนักงาน')
+    @section('title', 'จัดการข้าราชการ')
 
     <div class="max-w-[95rem] mx-auto py-8 sm:px-6 lg:px-8" 
          x-data="{ 
@@ -18,107 +18,112 @@
         
         <!-- Alerts -->
         @if(session('success'))
-            <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms class="mb-6 rounded-2xl bg-emerald-50 p-4 border border-emerald-100 shadow-lg shadow-emerald-500/10 flex items-center gap-4 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-400 rounded-full blur-2xl opacity-10"></div>
-                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
-                    <i data-lucide="check-circle" class="w-5 h-5 text-xl"></i>
+            <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="mb-6 rounded-3xl bg-emerald-50 p-4 border border-emerald-100 shadow-xl shadow-emerald-500/10 flex items-center gap-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-400 rounded-full blur-3xl opacity-10 -mr-16 -mt-16"></div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600 shadow-inner rotate-3">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
                 </div>
                 <div class="flex-1 z-10">
-                    <h4 class="font-bold text-emerald-800">ดำเนินการเรียบร้อย</h4>
-                    <p class="text-sm font-medium text-emerald-600">{{ session('success') }}</p>
+                    <h4 class="font-black text-emerald-800">ดำเนินการเรียบร้อย</h4>
+                    <p class="text-sm font-bold text-emerald-600/80">{{ session('success') }}</p>
                 </div>
-                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-lg p-2 text-emerald-500 transition-colors">
+                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-xl p-2.5 text-emerald-500 transition-all hover:rotate-90 active:scale-95 shadow-sm">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
         @endif
 
-        @if(session('error'))
-            <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms class="mb-6 rounded-2xl bg-rose-50 p-4 border border-rose-100 shadow-lg shadow-rose-500/10 flex items-center gap-4 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-rose-400 rounded-full blur-2xl opacity-10"></div>
-                <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 text-rose-600">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-xl"></i>
+        @if(session('error') || $errors->any())
+            <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="mb-6 rounded-3xl bg-rose-50 p-4 border border-rose-100 shadow-xl shadow-rose-500/10 flex items-center gap-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-rose-400 rounded-full blur-3xl opacity-10 -mr-16 -mt-16"></div>
+                <div class="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center flex-shrink-0 text-rose-600 shadow-inner rotate-3">
+                    <i data-lucide="alert-circle" class="w-6 h-6"></i>
                 </div>
                 <div class="flex-1 z-10">
-                    <h4 class="font-bold text-rose-800">เกิดข้อผิดพลาด</h4>
-                    <p class="text-sm font-medium text-rose-600">{{ session('error') }}</p>
+                    <h4 class="font-black text-rose-800">เกิดข้อผิดพลาด</h4>
+                    @if(session('error'))
+                        <p class="text-sm font-bold text-rose-600/80">{{ session('error') }}</p>
+                    @endif
+                    @if($errors->any())
+                        <ul class="list-disc list-inside text-sm font-bold text-rose-600/80 mt-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
-                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-lg p-2 text-rose-500 transition-colors">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms class="mb-6 rounded-2xl bg-rose-50 p-4 border border-rose-100 shadow-lg shadow-rose-500/10 flex items-center gap-4 relative overflow-hidden">
-                <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 text-rose-600">
-                    <i data-lucide="alert-triangle" class="w-5 h-5 text-xl"></i>
-                </div>
-                <div class="flex-1 z-10">
-                    <h4 class="font-bold text-rose-800">พบข้อผิดพลาด</h4>
-                    <ul class="list-disc list-inside text-sm font-medium text-rose-600 mt-1">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-lg p-2 text-rose-500 transition-colors">
+                <button @click="show = false" class="z-10 bg-white/50 hover:bg-white rounded-xl p-2.5 text-rose-500 transition-all hover:rotate-90 active:scale-95 shadow-sm">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
         @endif
         
-        <!-- Header & Stats -->
-        <div class="mb-8 space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">กำลังพลทั้งหมด</h1>
-                    <p class="text-slate-500 mt-1">จัดการข้อมูลรายชื่อ ตำแหน่ง และสิทธิ์การใช้งาน</p>
+        <!-- Header & Top Actions -->
+        <div class="mb-10 space-y-8">
+            <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div class="relative">
+                    <div class="absolute -left-4 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-brand-500 rounded-full shadow-[0_0_15px_rgba(var(--color-brand-500),0.5)]"></div>
+                    <h1 class="text-4xl font-black text-slate-800 tracking-tight">บุคลากรทั้งหมด</h1>
+                    <p class="text-slate-500 mt-1 text-lg">บริหารจัดการข้อมูลรายชื่อ ยศ ตำแหน่ง และสิทธิ์การใช้งานระบบ</p>
                 </div>
                 
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('employees.export') }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm">
-                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
-                        Export
-                    </a>
-                    
-                    <a href="{{ route('employees.import') }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 hover:text-emerald-600 transition-colors shadow-sm">
-                        <i data-lucide="upload" class="w-4 h-4 mr-2"></i>
-                        Import
-                    </a>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100">
+                         <a href="{{ route('employees.export') }}" class="inline-flex items-center px-4 py-2 text-slate-600 font-black text-sm hover:text-brand-600 transition-colors gap-2 group">
+                            <i data-lucide="download" class="w-4 h-4 group-hover:-translate-y-0.5 transition-transform"></i>
+                            Export
+                        </a>
+                        <div class="w-px h-4 bg-slate-200 mx-2"></div>
+                        <a href="{{ route('employees.import') }}" class="inline-flex items-center px-4 py-2 text-slate-600 font-black text-sm hover:text-emerald-600 transition-colors gap-2 group">
+                            <i data-lucide="upload" class="w-4 h-4 group-hover:-translate-y-0.5 transition-transform"></i>
+                            Import
+                        </a>
+                    </div>
 
-                    <a href="{{ route('employees.create') }}" class="inline-flex items-center px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5">
-                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                        เพิ่มพนักงาน
+                    <a href="{{ route('employees.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-black rounded-2xl shadow-xl shadow-brand-500/20 transition-all hover:-translate-y-1 active:scale-95 gap-2">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                        เพิ่มข้าราชการใหม่
                     </a>
                 </div>
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Total Employees -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between group hover:border-indigo-100 transition-all">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">พนักงานทั้งหมด</p>
-                        <h3 class="text-3xl font-bold text-slate-800 mt-1 group-hover:text-indigo-600 transition-colors">
-                            {{ \App\Models\User::count() }}
-                        </h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <i data-lucide="users" class="w-6 h-6"></i>
+                <div class="relative overflow-hidden bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-50 group hover:-translate-y-1 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">ยอดรวมกำลังพล</p>
+                            <h3 class="text-4xl font-black text-slate-800 group-hover:text-indigo-600 transition-colors">
+                                {{ \App\Models\User::count() }}
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mt-2 font-bold flex items-center gap-1">
+                                <span class="text-emerald-500">Active</span> ใช้งานอยู่หน้าเว็บ
+                            </p>
+                        </div>
+                        <div class="w-16 h-16 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner group-hover:rotate-6 transition-transform">
+                            <i data-lucide="users-round" class="w-8 h-8"></i>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Departments -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between group hover:border-emerald-100 transition-all">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">แผนกทั้งหมด</p>
-                        <h3 class="text-3xl font-bold text-slate-800 mt-1 group-hover:text-emerald-600 transition-colors">
-                            {{ $departments->count() }}
-                        </h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <i data-lucide="building-2" class="w-6 h-6"></i>
+                <div class="relative overflow-hidden bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-50 group hover:-translate-y-1 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">แผนกทั้งหมด</p>
+                            <h3 class="text-4xl font-black text-slate-800 group-hover:text-emerald-600 transition-colors">
+                                {{ $departments->count() }}
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mt-2 font-bold flex items-center gap-1">
+                                ตามที่กำหนดใน <span class="text-brand-500">โครงสร้างองค์กร</span>
+                            </p>
+                        </div>
+                        <div class="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner group-hover:-rotate-6 transition-transform">
+                            <i data-lucide="building-2" class="w-8 h-8"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -126,67 +131,74 @@
                 @php
                     $pendingCount = \App\Models\User::where('is_registered', true)->where('registration_status', 'pending')->count();
                 @endphp
-                <a href="{{ route('employees.pending-registrations') }}" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between group hover:border-amber-100 transition-all relative overflow-hidden">
-                    <div class="relative z-10">
-                        <p class="text-sm font-medium text-slate-500">รออนุมัติลงทะเบียน</p>
-                        <h3 class="text-3xl font-bold text-slate-800 mt-1 group-hover:text-amber-500 transition-colors">
-                            {{ $pendingCount }}
-                        </h3>
+                <a href="{{ route('employees.pending-registrations') }}" class="relative overflow-hidden bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-50 group hover:-translate-y-1 transition-all duration-300">
+                    <div class="absolute top-0 right-0 w-32 h-32 {{ $pendingCount > 0 ? 'bg-rose-50' : 'bg-slate-50' }} rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">ค้างอนุมัติลงทะเบียน</p>
+                            <h3 class="text-4xl font-black {{ $pendingCount > 0 ? 'text-rose-600 animate-pulse' : 'text-slate-800' }} group-hover:scale-105 transition-transform origin-left">
+                                {{ $pendingCount }}
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mt-2 font-bold flex items-center gap-1">
+                                @if($pendingCount > 0)
+                                    มีคำขอลาใหม่ <span class="text-rose-500">รอการตรวจสอบ</span>
+                                @else
+                                    ไม่มีรายการค้าง <span class="text-emerald-500">เรียบร้อยดี</span>
+                                @endif
+                            </p>
+                        </div>
+                        <div class="w-16 h-16 rounded-3xl {{ $pendingCount > 0 ? 'bg-rose-50 text-rose-600 shadow-rose-100' : 'bg-slate-50 text-slate-400' }} flex items-center justify-center shadow-inner group-hover:rotate-12 transition-transform">
+                            <i data-lucide="user-plus" class="w-8 h-8"></i>
+                        </div>
                     </div>
-                    <div class="relative z-10 w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <i data-lucide="user-plus" class="w-6 h-6"></i>
-                    </div>
-                    @if($pendingCount > 0)
-                        <div class="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
-                    @endif
                 </a>
             </div>
         </div>
 
         <!-- Toolbar -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-6 flex flex-col lg:flex-row items-center justify-between gap-4 sticky top-24 z-30">
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/40 border border-white p-4 mb-8 flex flex-col lg:flex-row items-center justify-between gap-6 sticky top-24 z-30 transition-all hover:shadow-2xl">
             <!-- Search & Filter -->
-            <form action="{{ route('employees.index') }}" method="GET" class="w-full lg:w-auto flex flex-col sm:flex-row gap-3 flex-1">
-                <div class="relative flex-1 max-w-lg">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+            <form action="{{ route('employees.index') }}" method="GET" class="w-full lg:w-auto flex flex-col sm:flex-row gap-4 flex-1">
+                <div class="relative flex-1 group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
+                        <i data-lucide="search" class="w-5 h-5"></i>
                     </div>
                     <input type="text" name="search" value="{{ request('search') }}" 
-                        class="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border-transparent focus:bg-white focus:border-indigo-500 focus:ring-0 rounded-xl text-sm transition-all" 
-                        placeholder="ค้นหาชื่อ, อีเมล, ตำแหน่ง...">
+                        class="block w-full pl-12 pr-4 py-3.5 bg-slate-100/50 border-transparent focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 rounded-2xl text-sm font-bold transition-all text-slate-700" 
+                        placeholder="พิมพ์เพื่อค้นหาชื่อ, อีเมล, หรือตำแหน่ง...">
                 </div>
 
-                <div class="relative min-w-[200px]">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i data-lucide="filter" class="w-4 h-4 text-slate-400"></i>
+                <div class="relative min-w-[240px] group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
                     </div>
-                    <select name="department" onchange="this.form.submit()" class="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border-transparent focus:bg-white focus:border-indigo-500 focus:ring-0 rounded-xl text-sm appearance-none cursor-pointer transition-all">
-                        <option value="">ทุกแผนก</option>
+                    <select name="department" onchange="this.form.submit()" class="block w-full pl-11 pr-10 py-3.5 bg-slate-100/50 border-transparent focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 rounded-2xl text-sm font-bold appearance-none cursor-pointer transition-all text-slate-700">
+                        <option value="">ทุกแผนก/ฝ่าย</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>
                                 {{ $dept->name }}
                             </option>
                         @endforeach
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
                         <i data-lucide="chevron-down" class="w-4 h-4"></i>
                     </div>
                 </div>
             </form>
 
             <!-- View Toggle & Bulk Action -->
-            <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-                <button id="bulk-delete-btn" class="hidden items-center px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-xl transition-all">
+            <div class="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
+                <button id="bulk-delete-btn" class="hidden items-center px-5 py-3.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-black text-sm rounded-2xl transition-all shadow-sm border border-rose-100 active:scale-95">
                     <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
-                    ลบ <span id="selected-count" class="mx-1 font-bold">0</span> คน
+                    ลบที่เลือก (<span id="selected-count">0</span>)
                 </button>
 
-                <div class="flex bg-slate-100 p-1 rounded-xl">
-                    <button @click="toggleView('grid')" :class="viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="p-2 rounded-lg transition-all">
-                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <div class="flex bg-slate-100 p-1.5 rounded-[1.25rem]">
+                    <button @click="toggleView('grid')" :class="viewMode === 'grid' ? 'bg-white text-brand-600 shadow-md scale-105' : 'text-slate-500 hover:text-slate-800'" class="p-2.5 rounded-xl transition-all duration-300">
+                        <i data-lucide="layout-grid" class="w-5 h-5"></i>
                     </button>
-                    <button @click="toggleView('list')" :class="viewMode === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="p-2 rounded-lg transition-all">
-                        <i data-lucide="list" class="w-4 h-4"></i>
+                    <button @click="toggleView('list')" :class="viewMode === 'list' ? 'bg-white text-brand-600 shadow-md scale-105' : 'text-slate-500 hover:text-slate-800'" class="p-2.5 rounded-xl transition-all duration-300">
+                        <i data-lucide="list-tree" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
@@ -195,43 +207,46 @@
         <!-- Content Area -->
         <div class="min-h-[500px]">
             <!-- Grid View -->
-            <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8" x-transition:enter="transition ease-out duration-400" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
                 @foreach($employees as $emp)
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-100 transition-all group relative">
+                    <div class="bg-white rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 border border-slate-50 hover:shadow-2xl hover:border-brand-200 transition-all duration-500 group relative flex flex-col h-full overflow-hidden">
+                        
+                        <!-- Premium Background Pattern (Subtle) -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-brand-50 transition-colors duration-500"></div>
 
                         <!-- Selection Checkbox (Absolute) -->
-                        <div class="absolute top-4 right-4 z-10">
-                            <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded border-slate-300 text-indigo-600 focus:ring-0 w-5 h-5 cursor-pointer">
+                        <div class="absolute top-5 right-5 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded-lg border-slate-300 text-brand-600 focus:ring-0 w-6 h-6 cursor-pointer shadow-sm transition-all hover:scale-110">
                         </div>
 
-                        <div class="flex items-start gap-4">
-                            <!-- Avatar -->
-                            <div class="flex-shrink-0">
+                        <div class="relative flex flex-col items-center flex-1">
+                            <!-- Avatar with Ring -->
+                            <div class="relative mb-4 group-hover:-translate-y-2 transition-transform duration-500">
+                                <div class="absolute -inset-1 rounded-[2rem] bg-gradient-to-br from-brand-500 to-indigo-500 blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
                                  @if(isset($emp->avatar) && $emp->avatar)
-                                    <img class="h-16 w-16 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition-transform" src="{{ asset('storage/' . $emp->avatar) }}" alt="">
+                                    <img class="relative h-24 w-24 rounded-[1.75rem] object-cover ring-4 ring-white shadow-xl" src="{{ asset('storage/' . $emp->avatar) }}" alt="">
                                 @else
-                                    <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold shadow-sm group-hover:scale-105 transition-transform">
+                                    <div class="relative h-24 w-24 rounded-[1.75rem] bg-gradient-to-br from-brand-50 to-indigo-50 text-brand-600 flex items-center justify-center text-3xl font-black ring-4 ring-white shadow-xl">
                                         {{ substr($emp->name, 0, 1) }}
                                     </div>
                                 @endif
+                                <!-- Role Badge (Mini) -->
+                                <div class="absolute -bottom-2 -right-2 p-1 bg-white rounded-xl shadow-lg border border-slate-50">
+                                    <div class="w-7 h-7 rounded-lg {{ $emp->role === 'admin' ? 'bg-rose-50 text-rose-500' : 'bg-brand-50 text-brand-500' }} flex items-center justify-center">
+                                        <i data-lucide="{{ $emp->role === 'admin' ? 'shield-check' : 'user' }}" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Info -->
-                            <div class="flex-1 min-w-0 pt-1">
-                                <h3 class="text-base font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
-                                    <a href="{{ route('employees.edit', $emp->id) }}">{{ $emp->name }}</a>
+                            <!-- Name & Position -->
+                            <div class="text-center w-full px-2">
+                                <h3 class="text-lg font-black text-slate-800 line-clamp-1 group-hover:text-brand-600 transition-colors duration-300">
+                                    {{ $emp->rank }}{{ $emp->name }}
                                 </h3>
-                                <p class="text-sm text-slate-500 truncate mt-0.5">{{ $emp->position ?? 'เจ้าหน้าที่' }}</p>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1 mb-3 truncate">{{ $emp->position ?? 'ข้าราชการ/เจ้าหน้าที่' }}</p>
 
-                                <div class="flex items-center gap-2 mt-2">
-                                    @php
-                                        $roleColor = match ($emp->role) {
-                                            'admin' => 'bg-red-50 text-red-700 ring-red-600/10',
-                                            'director' => 'bg-purple-50 text-purple-700 ring-purple-600/10',
-                                            'deputy_director' => 'bg-violet-50 text-violet-700 ring-violet-600/10',
-                                            'department_head' => 'bg-orange-50 text-orange-700 ring-orange-600/10',
-                                            default => 'bg-slate-50 text-slate-600 ring-slate-500/10'
-                                        };
+                                <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
+                                     @php
                                         $roleLabel = match ($emp->role) {
                                             'admin' => 'Admin',
                                             'director' => 'ผอ.',
@@ -240,12 +255,19 @@
                                             'employee' => 'User',
                                             default => ucfirst($emp->role)
                                         };
+                                        $roleBg = match ($emp->role) {
+                                            'admin' => 'bg-rose-50 text-rose-600',
+                                            'director' => 'bg-purple-50 text-purple-600',
+                                            'deputy_director' => 'bg-indigo-50 text-indigo-600',
+                                            'department_head' => 'bg-amber-50 text-amber-600',
+                                            default => 'bg-slate-100 text-slate-600'
+                                        };
                                     @endphp
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ring-1 ring-inset {{ $roleColor }}">
+                                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {{ $roleBg }}">
                                         {{ $roleLabel }}
                                     </span>
                                     @if($emp->department)
-                                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-600 ring-1 ring-inset ring-slate-500/10 truncate max-w-[100px]">
+                                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-100 line-clamp-1 max-w-[120px]">
                                             {{ $emp->department }}
                                         </span>
                                     @endif
@@ -253,20 +275,23 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
-                            <div class="flex items-center gap-3 text-sm text-slate-500">
-                                 <a href="mailto:{{ $emp->email }}" class="flex items-center hover:text-indigo-600 transition-colors" title="{{ $emp->email }}">
-                                    <i data-lucide="mail" class="w-4 h-4 mr-1.5"></i>
-                                    <span class="truncate max-w-[140px]">{{ $emp->email }}</span>
-                                </a>
-                            </div>
+                        <!-- Footer Actions -->
+                        <div class="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                            <a href="mailto:{{ $emp->email }}" class="flex items-center gap-2 text-slate-400 hover:text-brand-600 transition-colors group/mail">
+                                <div class="p-2 rounded-lg bg-slate-50 group-hover/mail:bg-brand-50 transition-colors">
+                                    <i data-lucide="mail" class="w-4 h-4"></i>
+                                </div>
+                                <span class="text-[11px] font-black tracking-tight truncate max-w-[100px]">{{ $emp->email }}</span>
+                            </a>
 
-                            <div class="flex items-center gap-1">
-                                <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="บันทึกการไปราชการ">
+                            <div class="flex items-center gap-2">
+                                <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" 
+                                        class="p-2.5 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90" title="บันทึกการไปราชการ">
                                     <i data-lucide="plane" class="w-4 h-4"></i>
                                 </button>
-                                <a href="{{ route('employees.edit', $emp->id) }}" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                <a href="{{ route('employees.edit', $emp->id) }}" 
+                                   class="p-2.5 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all active:scale-90 shadow-sm border border-slate-50 bg-white">
+                                    <i data-lucide="settings-2" class="w-4 h-4"></i>
                                 </a>
                             </div>
                         </div>
@@ -275,94 +300,93 @@
             </div>
 
             <!-- List View -->
-            <div x-show="viewMode === 'list'" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+            <div x-show="viewMode === 'list'" class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden transition-all" x-transition:enter="transition ease-out duration-400" x-transition:enter-start="opacity-0 scale-[0.98]" x-transition:enter-end="opacity-100 scale-100">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-100">
-                        <thead class="bg-slate-50/50">
-                            <tr>
-                                <th scope="col" class="px-6 py-4 text-left">
-                                    <input type="checkbox" id="select-all" class="rounded border-slate-300 text-indigo-600 focus:ring-0">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-slate-50/50">
+                                <th scope="col" class="px-8 py-6 text-left">
+                                    <input type="checkbox" id="select-all" class="rounded-lg border-slate-300 text-brand-600 focus:ring-0 w-5 h-5 cursor-pointer shadow-sm">
                                 </th>
-                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">ชื่อ-นามสกุล</th>
-                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">ตำแหน่ง/แผนก</th>
-                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">สถานะ</th>
-                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">หัวหน้างาน</th>
-                                <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">จัดการ</th>
+                                <th scope="col" class="px-6 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">ข้อมูลข้าราชการ</th>
+                                <th scope="col" class="px-6 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">ยศ - ตำแหน่ง</th>
+                                <th scope="col" class="px-6 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">บทบาท/สถานะ</th>
+                                <th scope="col" class="px-6 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">ผู้อนุมัติ (Step 1)</th>
+                                <th scope="col" class="px-8 py-6 text-right text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
                             @foreach($employees as $emp)
-                                <tr class="hover:bg-slate-50/80 transition-colors group">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded border-slate-300 text-indigo-600 focus:ring-0">
+                                <tr class="hover:bg-brand-50/30 transition-all duration-300 group">
+                                    <td class="px-8 py-5">
+                                        <input type="checkbox" name="selected_users[]" value="{{ $emp->id }}" class="user-checkbox rounded-lg border-slate-300 text-brand-600 focus:ring-0 w-5 h-5 cursor-pointer shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-5 whitespace-nowrap">
                                         <div class="flex items-center gap-4">
-                                            <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="relative">
                                                 @if(isset($emp->avatar) && $emp->avatar)
-                                                    <img class="h-10 w-10 rounded-full object-cover shadow-sm bg-white" src="{{ asset('storage/' . $emp->avatar) }}" alt="">
+                                                    <img class="h-12 w-12 rounded-2xl object-cover ring-2 ring-white shadow-md bg-white" src="{{ asset('storage/' . $emp->avatar) }}" alt="">
                                                 @else
-                                                    <div class="h-10 w-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                                                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-brand-50 to-indigo-50 text-brand-600 flex items-center justify-center font-black text-sm ring-2 ring-white shadow-md">
                                                         {{ substr($emp->name, 0, 1) }}
                                                     </div>
                                                 @endif
+                                                <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white"></div>
                                             </div>
                                             <div>
-                                                <div class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                <div class="text-sm font-black text-slate-800 group-hover:text-brand-600 transition-colors">
                                                     {{ $emp->name }}
                                                 </div>
-                                                <div class="text-xs text-slate-500">{{ $emp->email }}</div>
+                                                <div class="text-[11px] font-bold text-slate-400 mt-0.5 tracking-tight">{{ $emp->email }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-5 whitespace-nowrap">
                                         <div class="flex flex-col">
-                                            <span class="text-sm text-slate-700 font-medium">{{ $emp->position ?? '-' }}</span>
-                                            <span class="text-xs text-slate-500">{{ $emp->department ?? '-' }}</span>
+                                            <span class="text-sm font-black text-slate-700 leading-none mb-1">{{ $emp->rank ?? '-' }}</span>
+                                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{{ $emp->position ?? 'ไม่ได้ระบุตำแหน่ง' }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-5 whitespace-nowrap">
                                         @php
-                                            // Reuse role styling logic
-                                            $roleColor = match ($emp->role) {
-                                                'admin' => 'bg-red-50 text-red-700 ring-red-600/10',
-                                                'director' => 'bg-purple-50 text-purple-700 ring-purple-600/10',
-                                                'deputy_director' => 'bg-violet-50 text-violet-700 ring-violet-600/10',
-                                                'department_head' => 'bg-orange-50 text-orange-700 ring-orange-600/10',
-                                                default => 'bg-slate-50 text-slate-600 ring-slate-500/10'
-                                            };
-                                            $roleLabel = match ($emp->role) {
-                                                'admin' => 'ผู้ดูแลระบบ',
-                                                'director' => 'ผอ.',
-                                                'deputy_director' => 'รอง ผอ.',
-                                                'department_head' => 'หน. แผนก',
-                                                'employee' => 'ข้าราชการ',
-                                                default => $emp->role
+                                            $roleBg = match ($emp->role) {
+                                                'admin' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                                'director' => 'bg-purple-50 text-purple-600 border-purple-100',
+                                                'deputy_director' => 'bg-indigo-50 text-indigo-600 border-indigo-100',
+                                                'department_head' => 'bg-amber-50 text-amber-600 border-amber-100',
+                                                default => 'bg-slate-50 text-slate-500 border-slate-100'
                                             };
                                         @endphp
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset {{ $roleColor }}">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border {{ $roleBg }}">
                                             {{ $roleLabel }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-5 whitespace-nowrap">
                                         @if($emp->supervisor)
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-bold">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-black shadow-inner">
                                                     {{ substr($emp->supervisor->name, 0, 1) }}
                                                 </div>
-                                                <div class="text-xs text-slate-600">{{ $emp->supervisor->name }}</div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-[11px] font-black text-slate-700 leading-none">{{ $emp->supervisor->name }}</span>
+                                                    <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase">Approver 1</span>
+                                                </div>
                                             </div>
                                         @else
-                                            <span class="text-xs text-slate-400 italic">-</span>
+                                            <div class="text-[11px] font-bold text-slate-300 italic flex items-center gap-1">
+                                                <i data-lucide="user-x" class="w-3 h-3"></i> ยังไม่มีสายงาน
+                                            </div>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex items-center justify-end gap-1">
-                                            <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" class="text-slate-400 hover:text-blue-600 transition-colors inline-block p-1" title="ไปราชการ">
+                                    <td class="px-8 py-5 whitespace-nowrap text-right">
+                                        <div class="flex items-center justify-end gap-2 translate-x-2 group-hover:translate-x-0 transition-transform">
+                                            <button @click="openOfficialDutyModal('{{ $emp->id }}', '{{ $emp->name }}')" 
+                                                    class="p-2.5 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90" title="บันทึกการไปราชการ">
                                                 <i data-lucide="plane" class="w-4 h-4"></i>
                                             </button>
-                                            <a href="{{ route('employees.edit', $emp->id) }}" class="text-slate-400 hover:text-indigo-600 transition-colors inline-block p-1">
-                                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                            <a href="{{ route('employees.edit', $emp->id) }}" 
+                                               class="p-2.5 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all active:scale-90 bg-white shadow-sm border border-slate-100 group-hover:border-brand-100">
+                                                <i data-lucide="settings-2" class="w-4 h-4"></i>
                                             </a>
                                         </div>
                                     </td>
@@ -374,21 +398,29 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-6">
+            <div class="mt-10 px-4">
                 {{ $employees->links() }}
             </div>
             
             <!-- Empty State -->
             @if($employees->count() === 0)
-                <div class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200 mt-6">
-                    <div class="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                        <i data-lucide="search-x" class="w-8 h-8 text-slate-300"></i>
+                <div class="text-center py-20 bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-100 mt-8 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+                    <div class="relative z-10">
+                        <div class="mx-auto w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner rotate-12">
+                            <i data-lucide="search-x" class="w-12 h-12 text-slate-300"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-900 tracking-tight">ไม่พบข้อมูลที่ต้องการ</h3>
+                        <p class="text-slate-500 mt-2 font-bold max-w-sm mx-auto">ระบบไม่พบข้าราชการตามเงื่อนไขที่คุณระบุ ลองเปลี่ยนคำค้นหาหรือล้างตัวกรองเพื่อเริ่มค้นหาใหม่อีกครั้ง</p>
+                        <div class="mt-8 flex items-center justify-center gap-4">
+                            <a href="{{ route('employees.index') }}" class="px-8 py-3.5 bg-brand-50 text-brand-600 hover:bg-brand-100 font-black rounded-2xl transition-all active:scale-95 flex items-center gap-2 shadow-sm">
+                                <i data-lucide="refresh-ccw" class="w-4 h-4"></i> รีเซ็ตตัวกรอง
+                            </a>
+                            <a href="{{ route('employees.create') }}" class="px-8 py-3.5 bg-slate-800 text-white hover:bg-slate-900 font-black rounded-2xl transition-all active:scale-95 flex items-center gap-2 shadow-lg">
+                                <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มใหม่ทันที
+                            </a>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-medium text-slate-900">ไม่พบข้อมูลพนักงาน</h3>
-                    <p class="text-slate-500 mt-1">ลองเปลี่ยนคำค้นหาหรือตัวกรองดูใหม่อีกครั้ง</p>
-                    <a href="{{ route('employees.index') }}" class="inline-flex items-center mt-4 text-indigo-600 hover:text-indigo-700 font-medium text-sm">
-                        <i data-lucide="refresh-ccw" class="w-4 h-4 mr-1.5"></i> ล้างค่าการค้นหา
-                    </a>
                 </div>
             @endif
         </div>
@@ -398,8 +430,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const selectAll = document.getElementById('select-all');
-            // Since we have multiple views, checkboxes might be in grid or list. 
-            // We target all checkboxes with name 'selected_users[]'
             
             function getCheckboxes() {
                 return document.querySelectorAll('input[name="selected_users[]"]');
@@ -416,6 +446,7 @@
                 if (checkedCount > 0) {
                     bulkDeleteBtn.classList.remove('hidden');
                     bulkDeleteBtn.classList.add('inline-flex');
+                    bulkDeleteBtn.classList.add('animate-in', 'fade-in', 'slide-in-from-bottom-2');
                 } else {
                     bulkDeleteBtn.classList.add('hidden');
                     bulkDeleteBtn.classList.remove('inline-flex');
@@ -430,20 +461,18 @@
                 });
             }
 
-            // Delegation for dynamically toggled views (though Alpine handles visibility, elements exist in DOM)
             document.addEventListener('change', function(e) {
                 if (e.target.classList.contains('user-checkbox')) {
                     const checkboxes = getCheckboxes();
                     if (!e.target.checked && selectAll) {
                         selectAll.checked = false;
                     } 
-                    // Optional: check selectAll if all checked
                     updateBulkDeleteBtn();
                 }
             });
 
             bulkDeleteBtn.addEventListener('click', async function() {
-                if (!confirm('คุณแน่ใจหรือไม่ที่จะลบพนักงานที่เลือก? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
+                if (!confirm('ยืนยันการลบข้าราชการที่เลือกทั้งหมด? การกระทำนี้สำคัญมากและไม่สามารถย้อนกลับได้')) {
                     return;
                 }
 
@@ -470,15 +499,15 @@
                         alert('เกิดข้อผิดพลาด: ' + (data.message || 'Unknown error'));
                     }
                 } catch (error) {
-                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่ภายหลัง');
                 }
             });
         });
     </script>
 
-    <!-- Official Duty Modal -->
+    <!-- Official Duty Modal (Polished) -->
     <div x-show="showOfficialDutyModal" 
-         class="fixed inset-0 z-50 overflow-y-auto" 
+         class="fixed inset-0 z-[100] overflow-y-auto" 
          x-cloak
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -487,71 +516,104 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 transition-opacity bg-slate-900/50 backdrop-blur-sm" @click="showOfficialDutyModal = false"></div>
+            <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-md" @click="showOfficialDutyModal = false"></div>
 
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
-            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-white"
                  x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+                 x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-[0.9] rotate-3"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100 rotate-0">
                 
-                <div class="px-6 py-6 bg-slate-50 border-b border-slate-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                                <i data-lucide="plane" class="w-5 h-5"></i>
+                <!-- Modal Header -->
+                <div class="px-8 py-8 bg-gradient-to-br from-slate-50 to-white border-b border-slate-100 relative">
+                    <div class="absolute -top-12 -right-12 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
+                    <div class="flex items-center justify-between relative z-10">
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner rotate-6 group">
+                                <i data-lucide="plane" class="w-7 h-7 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-slate-900">บันทึกการไปราชการ</h3>
-                                <p class="text-xs text-slate-500 font-medium" x-text="'ข้าราชการ: ' + selectedEmployee.name"></p>
+                                <h3 class="text-2xl font-black text-slate-900 leading-tight tracking-tight">บันทึกการไปราชการ</h3>
+                                <p class="text-xs text-slate-400 font-black uppercase tracking-[0.2em] mt-1" x-text="selectedEmployee.name"></p>
                             </div>
                         </div>
-                        <button @click="showOfficialDutyModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <button @click="showOfficialDutyModal = false" class="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-500 transition-all hover:rotate-90 active:scale-95">
                             <i data-lucide="x" class="w-6 h-6"></i>
                         </button>
                     </div>
                 </div>
 
-                <form :action="'{{ route('employees.index') }}/' + selectedEmployee.id + '/official-duty'" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
+                <form :action="'{{ route('employees.index') }}/' + selectedEmployee.id + '/official-duty'" method="POST" enctype="multipart/form-data" class="p-8 space-y-6 relative z-10">
                     @csrf
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่เริ่มต้น</label>
-                            <input type="date" name="start_date" required 
-                                   class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">วันที่เริ่มต้น</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-500 transition-colors">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                                </div>
+                                <input type="date" name="start_date" required 
+                                    class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl text-sm font-bold text-slate-700 transition-all">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วันที่สิ้นสุด</label>
-                            <input type="date" name="end_date" required 
-                                   class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all">
+                        <div class="space-y-2">
+                            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">วันที่สิ้นสุด</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-500 transition-colors">
+                                    <i data-lucide="clock" class="w-4 h-4"></i>
+                                </div>
+                                <input type="date" name="end_date" required 
+                                    class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl text-sm font-bold text-slate-700 transition-all">
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">สถานที่ไปราชการ (จังหวัด)</label>
-                        <input type="text" name="location" required 
-                               class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all"
-                               placeholder="เช่น กรุงเทพมหานคร">
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">สถานที่ไปราชการ (จังหวัด)</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-500 transition-colors">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                            </div>
+                            <input type="text" name="location" required 
+                                class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl text-sm font-bold text-slate-700 transition-all"
+                                placeholder="เช่น กรุงเทพมหานคร, ชลบุรี">
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วัตถุประสงค์ / รายละเอียด</label>
-                        <textarea name="reason" rows="3" required 
-                                  class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all resize-none"
-                                  placeholder="เช่น เข้าร่วมงานสัมมนา..."></textarea>
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">วัตถุประสงค์ / รายละเอียด</label>
+                        <div class="relative group">
+                            <div class="absolute top-4 left-4 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-500 transition-colors">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                            </div>
+                            <textarea name="reason" rows="3" required 
+                                    class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl text-sm font-bold text-slate-700 transition-all resize-none"
+                                    placeholder="ระบุสาเหตุหรือหมายเลขคำสั่ง..."></textarea>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">เอกสารแนบ (PDF)</label>
-                        <input type="file" name="attachment" accept=".pdf" 
-                               class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-0 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">เอกสารแนบ (PDF)</label>
+                        <div class="relative bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-4 hover:bg-white hover:border-blue-400 transition-all group/upload">
+                            <input type="file" name="attachment" accept=".pdf" 
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="flex items-center gap-4 relative z-0">
+                                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover/upload:scale-110 transition-transform shadow-inner">
+                                    <i data-lucide="file-up" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-black text-slate-700 leading-none mb-1">เลือกไฟล์ PDF ที่ต้องการ</p>
+                                    <p class="text-[10px] font-bold text-slate-400 tracking-tight">ลากและวางไฟล์ หรือคลิกเพื่อเปิด (ขนาดไม่เกิน 5MB)</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="pt-2">
-                        <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-2">
-                            <i data-lucide="save" class="w-5 h-5"></i>
-                            บันทึกข้อมูล
+                    <div class="pt-4">
+                        <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-3xl shadow-[0_15px_30px_-10px_rgba(59,130,246,0.3)] transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3">
+                            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                            ยืนยันการบันทึกข้อมูล
                         </button>
                     </div>
                 </form>
@@ -564,31 +626,17 @@
             function initLucide() {
                 if (window.lucide) {
                     window.lucide.createIcons();
-                    document.querySelectorAll('i[data-lucide]').forEach(el => {
-                        if (!el.querySelector('svg')) {
-                            const attr = el.getAttribute('data-lucide');
-                            const iconName = attr.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
-                            if (window.lucide.icons[iconName]) {
-                                const classAttr = el.getAttribute('class') || '';
-                                const svg = window.lucide.icons[iconName].toSvg({ 'class': classAttr });
-                                el.innerHTML = svg;
-                                el.replaceWith(el.firstElementChild);
-                            }
-                        }
-                    });
                 }
             }
 
             document.addEventListener('DOMContentLoaded', () => {
                 initLucide();
-                setTimeout(initLucide, 100);
-                setTimeout(initLucide, 500);
-                setTimeout(initLucide, 1000);
+                // Periodic re-init to catch Alpine.js changes
+                setInterval(initLucide, 2000);
             });
 
             document.addEventListener('alpine:initialized', () => {
                 initLucide();
-                setTimeout(initLucide, 100);
             });
         </script>
     @endpush
