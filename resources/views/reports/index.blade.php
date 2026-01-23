@@ -1,397 +1,356 @@
 ﻿<x-app-layout>
     @section('title', 'รายงานสรุปการลา')
 
-    <div class="max-w-[95rem] mx-auto py-8 sm:px-6 lg:px-8">
-
-        <!-- Header & Toolbar -->
-        <div class="mb-8 space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">รายงานสรุปการลา</h1>
-                    <p class="text-slate-500 mt-1">วิเคราะห์สถิติและเรียกดูประวัติการลาทั้งหมด</p>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <button type="submit" form="filter-form" formaction="{{ route('reports.export') }}"
-                        class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 hover:text-emerald-600 transition-colors shadow-sm">
-                        <i data-lucide="sheet" class="w-4 h-4 mr-2"></i>
-                        Export Excel
-                    </button>
-
-                    <button type="button" onclick="window.print()"
-                        class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 hover:text-indigo-600 transition-colors shadow-sm">
-                        <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
-                        Print
-                    </button>
-                </div>
+    <div class="min-h-screen bg-[#f8fafc] pb-20">
+        <!-- Cinematic Analytics Header -->
+        <div class="relative bg-slate-900 pt-16 pb-32 overflow-hidden">
+            <div class="absolute inset-0">
+                <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] -ml-24 -mb-24"></div>
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]"></div>
             </div>
 
-            <!-- Stats Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Total Requests -->
-                <div
-                    class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-full group hover:border-indigo-100 transition-all">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">คำขอทั้งหมด</p>
-                            <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ $requests->total() }}</h3>
+            <div class="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                                <i data-lucide="line-chart" class="w-6 h-6"></i>
+                            </span>
+                            <span class="text-emerald-400 font-black tracking-[0.2em] uppercase text-sm">สถิติวิเคราะห์การลา</span>
                         </div>
-                        <div
-                            class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i data-lucide="files" class="w-5 h-5"></i>
-                        </div>
+                        <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight">
+                            รายงานสรุปการลา
+                        </h1>
+                        <p class="text-slate-400 mt-4 max-w-2xl text-lg font-medium leading-relaxed">
+                            ระบบรวบรวมและวิเคราะห์สถิติจัดการทรัพยากรบุคคล 
+                            สำหรับการติดตามสิทธิ์และประวัติการใช้ใบลาภาพรวมขององค์กร
+                        </p>
                     </div>
-                </div>
 
-                <!-- Approved -->
-                <div
-                    class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-full group hover:border-emerald-100 transition-all">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">อนุมัติแล้ว</p>
-                            <h3 class="text-2xl font-bold text-slate-800 mt-1">
-                                {{ \App\Models\LeaveRequest::where('status', 'approved')->count() }}
-                            </h3>
-                        </div>
-                        <div
-                            class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pending -->
-                <div
-                    class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-full group hover:border-amber-100 transition-all">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">รออนุมัติ</p>
-                            <h3 class="text-2xl font-bold text-slate-800 mt-1">
-                                {{ \App\Models\LeaveRequest::whereIn('status', ['pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director'])->count() }}
-                            </h3>
-                        </div>
-                        <div
-                            class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i data-lucide="clock" class="w-5 h-5"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rejected -->
-                <div
-                    class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-full group hover:border-rose-100 transition-all">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">ถูกปฏิเสธ/ยกเลิก</p>
-                            <h3 class="text-2xl font-bold text-slate-800 mt-1">
-                                {{ \App\Models\LeaveRequest::whereIn('status', ['rejected', 'cancelled'])->count() }}
-                            </h3>
-                        </div>
-                        <div
-                            class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i data-lucide="x-circle" class="w-5 h-5"></i>
-                        </div>
+                    <div class="flex items-center gap-4">
+                        <button type="submit" form="filter-form" formaction="{{ route('reports.export') }}"
+                            class="px-8 py-4 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white rounded-2xl backdrop-blur-md border border-emerald-500/20 transition-all font-black uppercase tracking-widest text-xs flex items-center gap-3 group">
+                            <i data-lucide="download" class="w-5 h-5 group-hover:-translate-y-1 transition-transform"></i>
+                            ส่งออกรายงาน
+                        </button>
+                        <button type="button" onclick="window.print()" class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md border border-white/10 transition-all font-black uppercase tracking-widest text-xs flex items-center gap-3 group">
+                            <i data-lucide="printer" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                            พิมพ์รายงาน
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Filter & Content Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6" x-data="{ showFilters: false }">
-
-            <!-- Sidebar Filters (Desktop) -->
-            <div class="hidden lg:block lg:col-span-1 space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-24">
-                    <div class="p-4 border-b border-slate-50 flex items-center gap-2">
-                        <i data-lucide="filter" class="w-4 h-4 text-slate-400"></i>
-                        <h3 class="font-bold text-slate-700">ตัวกรองข้อมูล</h3>
+        <div class="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <!-- Total Requests -->
+                <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group hover:-translate-y-1 transition-all duration-500">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
+                            <i data-lucide="files" class="w-7 h-7"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">รายการทั้งหมด</span>
                     </div>
+                    <h3 class="text-4xl font-black text-slate-900 mb-4">{{ $requests->total() }}</h3>
+                    <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
+                        <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 100%"></div>
+                    </div>
+                </div>
 
-                    <form method="GET" action="{{ route('reports.index') }}" id="filter-form" class="p-4 space-y-5">
-
-                        <!-- Date Range -->
-                        <div class="space-y-3">
-                            <label class="text-xs font-bold text-slate-500 uppercase">ช่วงเวลา</label>
-                            <div class="space-y-2">
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-xs text-slate-400">จาก</span>
-                                    </div>
-                                    <input type="date" name="start_date" value="{{ request('start_date') }}"
-                                        class="block w-full pl-10 pr-3 py-2 border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition-all">
-                                </div>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-xs text-slate-400">ถึง</span>
-                                    </div>
-                                    <input type="date" name="end_date" value="{{ request('end_date') }}"
-                                        class="block w-full pl-10 pr-3 py-2 border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition-all">
-                                </div>
-                            </div>
+                <!-- Approved -->
+                <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group hover:-translate-y-1 transition-all duration-500">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500">
+                            <i data-lucide="check-circle" class="w-7 h-7"></i>
                         </div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">อนุมัติแล้ว</span>
+                    </div>
+                    <h3 class="text-4xl font-black text-slate-900 mb-4">{{ \App\Models\LeaveRequest::where('status', 'approved')->count() }}</h3>
+                    <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
+                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-1000" style="width: {{ $requests->total() > 0 ? (\App\Models\LeaveRequest::where('status', 'approved')->count() / max($requests->total(), 1)) * 100 : 0 }}%"></div>
+                    </div>
+                </div>
 
-                        <!-- Department -->
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase">แผนก</label>
-                            <select name="department"
-                                class="block w-full py-2 pl-3 pr-8 border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition-all">
-                                <option value="">ทุกแผนก</option>
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
-                                @endforeach
-                            </select>
+                <!-- Pending -->
+                <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group hover:-translate-y-1 transition-all duration-500">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all duration-500">
+                            <i data-lucide="clock" class="w-7 h-7"></i>
                         </div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">รอตรวจสอบ</span>
+                    </div>
+                    <h3 class="text-4xl font-black text-slate-900 mb-4">{{ \App\Models\LeaveRequest::whereIn('status', ['pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director'])->count() }}</h3>
+                    <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
+                        <div class="bg-amber-400 h-full rounded-full transition-all duration-1000" style="width: {{ $requests->total() > 0 ? (\App\Models\LeaveRequest::whereIn('status', ['pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director'])->count() / max($requests->total(), 1)) * 100 : 0 }}%"></div>
+                    </div>
+                </div>
 
-                        <!-- Leave Type -->
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase">ประเภทการลา</label>
-                            <select name="leave_type_id"
-                                class="block w-full py-2 pl-3 pr-8 border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition-all">
-                                <option value="">ทั้งหมด</option>
-                                @foreach($leaveTypes as $type)
-                                    <option value="{{ $type->id }}" {{ request('leave_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
-                                @endforeach
-                            </select>
+                <!-- Rejected -->
+                <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group hover:-translate-y-1 transition-all duration-500">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white transition-all duration-500">
+                            <i data-lucide="x-circle" class="w-7 h-7"></i>
                         </div>
-
-                        <!-- Status -->
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase">สถานะ</label>
-                            <select name="status"
-                                class="block w-full py-2 pl-3 pr-8 border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 transition-all">
-                                <option value="">ทั้งหมด</option>
-                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>
-                                    อนุมัติแล้ว</option>
-                                <option value="pending" {{ str_contains(request('status') ?? '', 'pending') ? 'selected' : '' }}>รออนุมัติ</option>
-                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>ถูกปฏิเสธ
-                                </option>
-                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ยกเลิก
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="pt-4 border-t border-slate-50 space-y-3">
-                            <button type="submit"
-                                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 transition-all">
-                                ค้นหา
-                            </button>
-                            <a href="{{ route('reports.index') }}"
-                                class="block w-full py-2.5 text-center text-slate-500 hover:text-slate-700 font-medium text-sm hover:bg-slate-50 rounded-xl transition-all">
-                                ล้างค่า
-                            </a>
-                        </div>
-                    </form>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ปฏิเสธ/ยกเลิก</span>
+                    </div>
+                    <h3 class="text-4xl font-black text-slate-900 mb-4">{{ \App\Models\LeaveRequest::whereIn('status', ['rejected', 'cancelled'])->count() }}</h3>
+                    <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
+                        <div class="bg-rose-500 h-full rounded-full transition-all duration-1000" style="width: {{ $requests->total() > 0 ? (\App\Models\LeaveRequest::whereIn('status', ['rejected', 'cancelled'])->count() / max($requests->total(), 1)) * 100 : 0 }}%"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Main Content Area -->
-            <div class="col-span-1 lg:col-span-3 space-y-6">
+            <!-- Dashboard Content -->
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Data Filter Console -->
+                <div class="lg:w-80 flex-shrink-0">
+                    <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 p-8 sticky top-24">
+                        <div class="flex items-center gap-3 mb-8">
+                            <i data-lucide="sliders" class="w-5 h-5 text-emerald-500"></i>
+                            <h3 class="font-black text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรองข้อมูล</h3>
+                        </div>
 
-                <!-- Mobile Filter Toggle -->
-                <div class="lg:hidden">
-                    <button @click="showFilters = !showFilters"
-                        class="w-full py-3 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold shadow-sm flex items-center justify-center gap-2">
-                        <i data-lucide="filter" class="w-4 h-4"></i>
-                        ตัวกรองข้อมูล
-                    </button>
+                        <form method="GET" action="{{ route('reports.index') }}" id="filter-form" class="space-y-6">
+                            <!-- Date Frames -->
+                            <div class="space-y-3">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">ช่วงเวลา</label>
+                                <div class="grid grid-cols-1 gap-3">
+                                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all">
+                                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all">
+                                </div>
+                            </div>
 
-                    <!-- Mobile Filters -->
-                    <div x-show="showFilters" class="mt-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100"
-                        style="display: none;">
-                        <!-- (Reuse form content for mobile if needed, or keeping it simple for now) -->
-                        <p class="text-center text-slate-400 text-sm italic">ใช้ตัวกรองด้านบน (Desktop Mode)
-                            เพื่อผลลัพธ์ที่ดีที่สุด</p>
+                            <!-- Department Context -->
+                            <div class="space-y-3">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">หน่วยงาน/แผนก</label>
+                                <select name="department" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
+                                    <option value="">ทุกหน่วยงาน</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Leave Metadata -->
+                            <div class="space-y-3">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">ประเภทการลา</label>
+                                <select name="leave_type_id" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
+                                    <option value="">ทุกประเภท</option>
+                                    @foreach($leaveTypes as $type)
+                                        <option value="{{ $type->id }}" {{ request('leave_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Transaction Status -->
+                            <div class="space-y-3">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">สถานะรายการ</label>
+                                <select name="status" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
+                                    <option value="">ทุกสถานะ</option>
+                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>อนุมัติแล้ว</option>
+                                    <option value="pending" {{ str_contains(request('status') ?? '', 'pending') ? 'selected' : '' }}>รอตรวจสอบ</option>
+                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>ปฏิเสธ</option>
+                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ยกเลิก</option>
+                                </select>
+                            </div>
+
+                            <div class="pt-6 flex flex-col gap-3">
+                                <button type="submit" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:shadow-emerald-500/30 hover:-translate-y-1 transition-all">
+                                    กรองข้อมูล
+                                </button>
+                                <a href="{{ route('reports.index') }}" class="w-full py-4 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-50 text-center transition-all">
+                                    ล้างค่า
+                                </a>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
-                <!-- Analysis Cards -->
-                @if(isset($topLeavers) && $topLeavers->isNotEmpty())
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Top Leavers -->
-                        <div
-                            class="bg-indigo-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-indigo-200">
-                            <div
-                                class="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full blur-3xl opacity-20 -mr-16 -mt-16 pointer-events-none">
-                            </div>
+                <!-- Main Matrix & Visualizations -->
+                <div class="flex-1 min-w-0 space-y-8">
+                    @if(isset($topLeavers) && $topLeavers->isNotEmpty())
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Leaderboard Analysis -->
+                            <div class="bg-indigo-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-indigo-200/50 group">
+                                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                                <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px] -mr-24 -mt-24 group-hover:scale-125 transition-transform duration-[2s]"></div>
 
-                            <div class="flex items-center gap-3 mb-6 relative z-10">
-                                <div
-                                    class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
-                                    <i data-lucide="trophy" class="w-5 h-5 text-yellow-300"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-lg">Top 5 ใช้สิทธิ์สูงสุด</h3>
-                                    <p class="text-indigo-200 text-xs">พิจารณาจากจำนวนวันที่ได้รับการอนุมัติ</p>
-                                </div>
-                            </div>
-
-                            <div class="space-y-4 relative z-10">
-                                @foreach($topLeavers->take(3) as $index => $leaver)
-                                    <div class="flex items-center gap-3">
-                                        <div class="font-mono font-bold text-indigo-300 w-4">#{{ $index + 1 }}</div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center justify-between">
-                                                <p class="font-bold text-sm truncate">{{ $leaver->user->name }}</p>
-                                                <span class="text-yellow-300 font-bold text-sm">{{ $leaver->total_leave_days }}
-                                                    วัน</span>
-                                            </div>
-                                            <p class="text-xs text-indigo-300 truncate">{{ $leaver->user->department }}</p>
-                                        </div>
+                                <div class="flex items-center gap-4 mb-8 relative z-10">
+                                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/10 shadow-lg">
+                                        <i data-lucide="award" class="w-8 h-8 text-emerald-400"></i>
                                     </div>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Usage Stats -->
-                        <div
-                            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col relative overflow-hidden">
-                            <div class="flex items-center gap-3 mb-6 relative z-10">
-                                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                                    <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-600"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-lg text-slate-800">สัดส่วนการลา</h3>
-                                    <p class="text-slate-500 text-xs">แยกตามประเภท</p>
-                                </div>
-                            </div>
-
-                            <div class="space-y-4 flex-1 relative z-10">
-                                @foreach($popularLeaveTypes->take(3) as $type)
                                     <div>
-                                        <div class="flex justify-between text-sm mb-1">
-                                            <span class="font-medium text-slate-700">{{ $type->leaveType->name }}</span>
-                                            <span class="font-bold text-slate-900">{{ $type->usage_count }} ครั้ง</span>
-                                        </div>
-                                        <div class="w-full bg-slate-100 rounded-full h-2">
-                                            <div class="bg-indigo-500 h-2 rounded-full"
-                                                style="width: {{ min(($type->usage_count / max($popularLeaveTypes->max('usage_count'), 1)) * 100, 100) }}%">
-                                            </div>
-                                        </div>
+                                        <h3 class="text-xl font-black tracking-tight">สถิติการลาสูงสุด</h3>
+                                        <p class="text-indigo-300 text-[10px] font-black uppercase tracking-widest">รายชื่อผู้ที่สถิติการลาสูงสุด</p>
                                     </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                @endif
+                                </div>
 
-                <!-- Data Table -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-100">
-                            <thead class="bg-slate-50/50">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        พนักงาน</th>
-                                    <th scope="col"
-                                        class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        ประเภท</th>
-                                    <th scope="col"
-                                        class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        ช่วงเวลา</th>
-                                    <th scope="col"
-                                        class="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        จำนวนวัน</th>
-                                    <th scope="col"
-                                        class="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        สถานะ</th>
-                                    <th scope="col"
-                                        class="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        เอกสาร</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50 bg-white">
-                                @forelse($requests as $req)
-                                    <tr class="hover:bg-slate-50/80 transition-colors group">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center gap-3">
-                                                @if($req->user->avatar)
-                                                    <img class="h-9 w-9 rounded-full object-cover shadow-sm"
-                                                        src="{{ asset('storage/' . $req->user->avatar) }}" alt="">
-                                                @else
-                                                    <div
-                                                        class="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">
-                                                        {{ substr($req->user->rank ?? $req->user->name, 0, 1) }}
-                                                    </div>
-                                                @endif
-                                                <div>
-                                                    <div class="text-sm font-bold text-slate-900">
-                                                        {{ $req->user->rank ? $req->user->rank . ' ' : '' }}{{ $req->user->name }}
-                                                    </div>
-                                                    <div class="text-xs text-slate-500">{{ $req->user->department }}</div>
+                                <div class="space-y-6 relative z-10">
+                                    @foreach($topLeavers->take(3) as $index => $leaver)
+                                        <div class="flex items-center gap-4 group/item">
+                                            <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center font-black text-indigo-400 border border-white/5 group-hover/item:bg-emerald-500 group-hover/item:text-white transition-all">
+                                                {{ $index + 1 }}
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-baseline mb-1">
+                                                    <p class="font-black text-sm group-hover/item:translate-x-1 transition-transform">{{ $leaver->user->name }}</p>
+                                                    <span class="text-emerald-400 font-black text-sm">{{ $leaver->total_leave_days }} วัน</span>
+                                                </div>
+                                                <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                                    <div class="bg-indigo-400 h-full rounded-full transition-all duration-1000 group-hover/item:bg-emerald-500" style="width: {{ ($leaver->total_leave_days / max($topLeavers->max('total_leave_days'), 1)) * 100 }}%"></div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                class="text-sm text-slate-700 font-medium">{{ $req->leaveType->name }}</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-slate-700">@thaidate($req->start_date)</div>
-                                            <div class="text-xs text-slate-400">ถึง @thaidate($req->end_date)</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            <span
-                                                class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold">
-                                                {{ $req->total_days }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            @php
-                                                $statusConfig = match ($req->status) {
-                                                    'approved' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'ring-emerald-600/20', 'label' => 'อนุมัติ'],
-                                                    'rejected' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'ring-rose-600/20', 'label' => 'ไม่อนุมัติ'],
-                                                    'cancelled' => ['bg' => 'bg-slate-50', 'text' => 'text-slate-500', 'border' => 'ring-slate-500/20', 'label' => 'ยกเลิก'],
-                                                    default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'ring-amber-600/20', 'label' => 'รออนุมัติ']
-                                                };
-                                            @endphp
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} {{ $statusConfig['border'] }}">
-                                                {{ $statusConfig['label'] }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            <div class="flex items-center justify-center gap-1">
-                                                {{-- Generated PDF Form --}}
-                                                <a href="{{ route('leave-request.pdf', $req->id) }}" target="_blank"
-                                                    class="p-2 inline-flex text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                                                    title="ใบลา (PDF)">
-                                                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                                                </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
 
-                                                {{-- Attached File (Official Duty Only) --}}
-                                                @if($req->leaveType->slug === 'official-duty' && $req->attachment_path)
-                                                    <a href="{{ route('storage.file', $req->attachment_path) }}" target="_blank"
-                                                        class="p-2 inline-flex text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                        title="เอกสารแนบ">
-                                                        <i data-lucide="paperclip" class="w-4 h-4"></i>
+                            <!-- Distribution Analysis -->
+                            <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 group">
+                                <div class="flex items-center gap-4 mb-8">
+                                    <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 transition-all duration-500 shadow-sm border border-slate-50">
+                                        <i data-lucide="bar-chart-3" class="w-8 h-8 text-indigo-500 group-hover:text-white transition-all duration-500"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-black text-slate-900 tracking-tight">สัดส่วนการลา</h3>
+                                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">ความถี่ตามประเภทการลา</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-6">
+                                    @foreach($popularLeaveTypes->take(3) as $type)
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-slate-500 px-1">
+                                                <span>{{ $type->leaveType->name }}</span>
+                                                <span class="text-indigo-600">{{ $type->usage_count }} รายการ</span>
+                                            </div>
+                                            <div class="h-3 bg-slate-50 rounded-full overflow-hidden ring-4 ring-slate-50/50">
+                                                <div class="bg-indigo-500 h-full rounded-full group-hover:bg-indigo-600 transition-all duration-[1.5s]" 
+                                                     style="width: {{ ($type->usage_count / max($popularLeaveTypes->max('usage_count'), 1)) * 100 }}%"></div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Data Grid Container -->
+                    <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-100 text-left">
+                                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ชื่อ-นามสกุล</th>
+                                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ประเภท</th>
+                                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ระยะเวลา</th>
+                                        <th class="px-8 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">จำนวนวัน</th>
+                                        <th class="px-8 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">สถานะ</th>
+                                        <th class="px-8 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">เอกสาร</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    @forelse($requests as $req)
+                                        <tr class="group hover:bg-slate-50/50 transition-colors">
+                                            <td class="px-8 py-6 whitespace-nowrap">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-12 h-12 rounded-[1.2rem] bg-slate-100 flex items-center justify-center font-black text-slate-400 text-sm overflow-hidden ring-4 ring-white shadow-sm transition-transform group-hover:scale-110">
+                                                        @if($req->user->avatar)
+                                                            <img src="{{ asset('storage/' . $req->user->avatar) }}" class="w-full h-full object-cover">
+                                                        @else
+                                                            {{ substr($req->user->name, 0, 1) }}
+                                                        @endif
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-black text-slate-900 leading-tight">
+                                                            {{ $req->user->rank ? $req->user->rank . ' ' : '' }}{{ $req->user->name }}
+                                                        </p>
+                                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ $req->user->department }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-6 whitespace-nowrap">
+                                                <span class="inline-flex px-3 py-1 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg shadow-slate-900/10">
+                                                    {{ $req->leaveType->name }}
+                                                </span>
+                                            </td>
+                                            <td class="px-8 py-6 whitespace-nowrap">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-black text-slate-700">@thaidate($req->start_date)</span>
+                                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 mt-1">
+                                                        <i data-lucide="arrow-right" class="w-2.5 h-2.5"></i>
+                                                        @thaidate($req->end_date)
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-6 whitespace-nowrap text-center">
+                                                <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center mx-auto transition-transform group-hover:bg-indigo-50 group-hover:border-indigo-100">
+                                                    <span class="text-sm font-black text-slate-800">{{ $req->total_days + 0 }}</span>
+                                                    <span class="text-[8px] font-black text-slate-400 uppercase leading-none">วัน</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-6 whitespace-nowrap text-center">
+                                                @php
+                                                    $statusConfig = match ($req->status) {
+                                                        'approved' => ['bg' => 'bg-emerald-50 text-emerald-600 border-emerald-100', 'dot' => 'bg-emerald-500', 'label' => 'อนุมัติแล้ว'],
+                                                        'rejected' => ['bg' => 'bg-rose-50 text-rose-600 border-rose-100', 'dot' => 'bg-rose-500', 'label' => 'ปฏิเสธ'],
+                                                        'cancelled' => ['bg' => 'bg-slate-50 text-slate-400 border-slate-200', 'dot' => 'bg-slate-400', 'label' => 'ยกเลิก'],
+                                                        default => ['bg' => 'bg-amber-50 text-amber-600 border-amber-100', 'dot' => 'bg-amber-500', 'label' => 'รอตรวจสอบ']
+                                                    };
+                                                @endphp
+                                                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl {{ $statusConfig['bg'] }} border shadow-sm">
+                                                    <span class="relative flex h-2 w-2">
+                                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $statusConfig['dot'] }}"></span>
+                                                        <span class="relative inline-flex rounded-full h-2 w-2 {{ $statusConfig['dot'] }}"></span>
+                                                    </span>
+                                                    <span class="text-[10px] font-black uppercase tracking-widest">{{ $statusConfig['label'] }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-6 whitespace-nowrap text-center">
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <a href="{{ route('leave-request.pdf', $req->id) }}" target="_blank"
+                                                        class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all border border-slate-100 hover:border-slate-900"
+                                                        title="ใบลา (PDF)">
+                                                        <i data-lucide="file-text" class="w-5 h-5"></i>
                                                     </a>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="px-6 py-12 text-center">
-                                            <div
-                                                class="mx-auto w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                                                <i data-lucide="search-x" class="w-6 h-6 text-slate-300"></i>
-                                            </div>
-                                            <p class="text-slate-500 font-medium">ไม่พบข้อมูลตามเงื่อนไขที่กำหนด</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                                    @if($req->leaveType->slug === 'official-duty' && $req->attachment_path)
+                                                        <a href="{{ route('storage.file', $req->attachment_path) }}" target="_blank"
+                                                            class="w-10 h-10 rounded-xl bg-orange-50 text-orange-400 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all border border-orange-100 hover:border-orange-500"
+                                                            title="เอกสารแนบ">
+                                                            <i data-lucide="paperclip" class="w-5 h-5"></i>
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="px-8 py-32 text-center">
+                                                <div class="flex flex-col items-center justify-center">
+                                                    <div class="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner ring-8 ring-slate-50/50">
+                                                        <i data-lucide="database-zap" class="w-12 h-12 text-slate-200"></i>
+                                                    </div>
+                                                    <h4 class="text-2xl font-black text-slate-900 mb-2">มิติข้อมูลว่างเปล่า</h4>
+                                                    <p class="text-sm font-medium text-slate-500 max-w-sm mx-auto">ไม่พบเอกสารหรือข้อมูลการลาภายใต้เงื่อนไขที่คุณระบุ กรุณาตรวจสอบการกรองข้อมูลอีกครั้ง</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Pagination -->
-                @if($requests->hasPages())
-                    <div class="mt-4">
-                        {{ $requests->links() }}
-                    </div>
-                @endif
+                    <!-- Intelligence Pagination -->
+                    @if($requests->hasPages())
+                        <div class="mt-10">
+                            {{ $requests->links() }}
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

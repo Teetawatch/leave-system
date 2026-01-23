@@ -210,33 +210,56 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('signaturePad', (id) => ({
             signaturePad: null,
-            useSaved: true,
+            useSaved: {{ Auth::user()->signature ? 'true' : 'false' }},
+            isCanvasEmpty: true,
             init() {
                 this.$watch('openApprove', (value) => {
                     if (value) {
                         this.$nextTick(() => {
-                            const canvas = document.getElementById('signature-canvas-' + id);
-                            if (canvas) {
-                                this.signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgba(255, 255, 255, 0)' });
-                                this.resize(canvas);
+                            if (!this.signaturePad) {
+                                this.initCanvas();
+                            } else {
+                                this.resizeCanvas();
                             }
                         });
                     }
                 });
             },
-            resize(canvas) {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-                this.signaturePad.clear();
+            initCanvas() {
+                const canvas = document.getElementById('signature-canvas-' + id);
+                if (canvas) {
+                    this.signaturePad = new SignaturePad(canvas, {
+                        backgroundColor: 'rgba(255, 255, 255, 0)',
+                        penColor: 'rgb(15, 23, 42)',
+                        onBegin: () => {
+                            this.isCanvasEmpty = false;
+                        }
+                    });
+                    this.resizeCanvas();
+                }
             },
-            clear() { this.signaturePad.clear(); },
-            submit(e) {
+            resizeCanvas() {
+                const canvas = document.getElementById('signature-canvas-' + id);
+                if (canvas && this.signaturePad) {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                    this.signaturePad.clear();
+                    this.isCanvasEmpty = true;
+                }
+            },
+            clearSignature() {
+                if (this.signaturePad) {
+                    this.signaturePad.clear();
+                    this.isCanvasEmpty = true;
+                }
+            },
+            submit(event) {
                 if (this.signaturePad && !this.signaturePad.isEmpty() && !this.useSaved) {
                     document.getElementById('signature-input-' + id).value = this.signaturePad.toDataURL();
                 }
-                e.target.closest('form').submit();
+                event.target.closest('form').submit();
             }
         }));
     });
