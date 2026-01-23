@@ -51,21 +51,23 @@
                 <!-- Mobile Weather & AQI -->
                 <div x-data="envStatus()" x-init="init()" class="flex items-center gap-2 mr-1">
                     <!-- Weather -->
-                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1.5 shadow-sm">
+                    <div
+                        class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1.5 shadow-sm">
                         <div class="relative w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br"
                             :class="weatherBg">
                             <i :data-lucide="weatherIcon" class="w-3 text-white"></i>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-700" x-text="temp + '°C'">--°C</span>
+                        <span class="text-xs font-bold text-slate-700" x-text="temp + '°C'">--°C</span>
                     </div>
 
                     <!-- PM 2.5 -->
-                    <div class="hidden sm:flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1.5 shadow-sm">
+                    <div
+                        class="hidden sm:flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1.5 shadow-sm">
                         <div class="relative w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br"
                             :class="aqiBg">
                             <i data-lucide="wind" class="w-3 text-white"></i>
                         </div>
-                        <span class="text-[10px] font-bold" :class="aqiTextColor" x-text="aqi">--</span>
+                        <span class="text-xs font-bold" :class="aqiTextColor" x-text="aqi">--</span>
                     </div>
                 </div>
 
@@ -76,7 +78,7 @@
                         <i data-lucide="bell" class="w-4 h-4"></i>
                         @if(($navNotificationCount ?? 0) > 0)
                             <span
-                                class="absolute top-0 right-0 h-4 w-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+                                class="absolute top-0 right-0 h-4 w-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
                                 {{ ($navNotificationCount ?? 0) > 9 ? '9+' : ($navNotificationCount ?? 0) }}
                             </span>
                         @endif
@@ -130,7 +132,7 @@
                                 <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar"
                                     class="w-full h-full object-cover">
                             @else
-                                <span class="font-bold text-brand-600 text-[10px]">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                                <span class="font-bold text-brand-600 text-xs">{{ substr(Auth::user()->name, 0, 1) }}</span>
                             @endif
                         </div>
                     </button>
@@ -148,19 +150,24 @@
                         <!-- User Info -->
                         <div class="px-4 py-3 border-b border-slate-50 mb-1">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-sm">
-                                    <div class="w-full h-full rounded-lg bg-white flex items-center justify-center overflow-hidden">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-sm">
+                                    <div
+                                        class="w-full h-full rounded-lg bg-white flex items-center justify-center overflow-hidden">
                                         @if(Auth::user()->avatar)
                                             <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar"
                                                 class="w-full h-full object-cover">
                                         @else
-                                            <span class="font-bold text-brand-600 text-xs">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                                            <span
+                                                class="font-bold text-brand-600 text-xs">{{ substr(Auth::user()->name, 0, 1) }}</span>
                                         @endif
                                     </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-bold text-slate-800 text-sm truncate">{{ Auth::user()->rank }}{{ Auth::user()->name }}</p>
-                                    <p class="text-[10px] text-slate-500 truncate uppercase tracking-wider">{{ Auth::user()->department ?? 'Staff' }}</p>
+                                    <p class="font-bold text-slate-800 text-sm truncate">
+                                        {{ Auth::user()->rank }}{{ Auth::user()->name }}</p>
+                                    <p class="text-xs text-slate-500 truncate uppercase tracking-wider">
+                                        {{ Auth::user()->department ?? 'Staff' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -190,13 +197,13 @@
                     <i data-lucide="menu" class="w-4 h-4"></i>
                 </button>
             </div>
-            </div>
         </div>
+    </div>
 
-        <!-- Page Title Bar (Mobile) -->
-        <div class="bg-white/80 backdrop-blur-sm px-4 py-2 border-b border-slate-100">
-            <h1 class="text-base font-bold text-slate-800 truncate">@yield('title', 'หน้าหลัก')</h1>
-        </div>
+    <!-- Page Title Bar (Mobile) -->
+    <div class="bg-white/80 backdrop-blur-sm px-4 py-2 border-b border-slate-100">
+        <h1 class="text-base font-bold text-slate-800 truncate">@yield('title', 'หน้าหลัก')</h1>
+    </div>
     </div>
 
     <div class="flex min-h-screen">
@@ -224,9 +231,9 @@
                 </div>
 
                 <div class="relative">
-                    <h1 class="text-base font-bold text-slate-800 tracking-tight leading-tight mb-1">
+                    <h1 class="text-lg font-bold text-slate-800 tracking-tight leading-tight mb-1">
                         ระบบบริหารจัดการ<br>งานกำลังพล</h1>
-                    <p class="text-[9px] text-brand-600 uppercase tracking-[0.2em] font-bold opacity-70">
+                    <p class="text-[10px] text-brand-600 uppercase tracking-[0.2em] font-bold opacity-70">
                         โรงเรียนพลาธิการ พธ.ทร.</p>
                 </div>
             </div>
@@ -308,7 +315,7 @@
                             <span class="text-sm font-bold text-slate-800 tracking-tight">งานเวรยาม</span>
                             @if(isset($navGuardChangePendingMe) && $navGuardChangePendingMe > 0)
                                 <span
-                                    class="ml-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangePendingMe }}</span>
+                                    class="ml-2 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangePendingMe }}</span>
                             @endif
                         </div>
                         <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 transition-transform duration-300"
@@ -340,7 +347,7 @@
                             <span class="ml-3 text-sm font-bold tracking-tight flex-1">คำขอหาฉัน</span>
                             @if(isset($navGuardChangePendingMe) && $navGuardChangePendingMe > 0)
                                 <span
-                                    class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangePendingMe }}</span>
+                                    class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangePendingMe }}</span>
                             @endif
                         </a>
                     </div>
@@ -362,7 +369,7 @@
                                 @endphp
                                 @if($totalPending > 0)
                                     <span
-                                        class="ml-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $totalPending }}</span>
+                                        class="ml-2 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $totalPending }}</span>
                                 @endif
                             </div>
                             <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 transition-transform duration-300"
@@ -382,7 +389,7 @@
                                 <span class="ml-3 text-sm font-bold tracking-tight flex-1">อนุมัติใบลา</span>
                                 @if(isset($navPendingCount) && $navPendingCount > 0)
                                     <span
-                                        class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navPendingCount }}</span>
+                                        class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navPendingCount }}</span>
                                 @endif
                             </a>
 
@@ -394,7 +401,7 @@
                                     <span class="ml-3 text-sm font-bold tracking-tight flex-1">รอง ผอ. อนุมัติ</span>
                                     @if(isset($navGuardChangeDeputyCount) && $navGuardChangeDeputyCount > 0)
                                         <span
-                                            class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangeDeputyCount }}</span>
+                                            class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangeDeputyCount }}</span>
                                     @endif
                                 </a>
                             @endif
@@ -407,7 +414,7 @@
                                     <span class="ml-3 text-sm font-bold tracking-tight flex-1">ผอ. อนุมัติ</span>
                                     @if(isset($navGuardChangeFinalCount) && $navGuardChangeFinalCount > 0)
                                         <span
-                                            class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangeFinalCount }}</span>
+                                            class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangeFinalCount }}</span>
                                     @endif
                                 </a>
                             @endif
@@ -543,8 +550,8 @@
                             </div>
                             <div class="flex flex-col">
                                 <span
-                                    class="hidden lg:block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">สภาพอากาศ</span>
-                                <span class="text-xs xl:text-sm font-bold text-slate-800 tracking-tight"
+                                    class="hidden lg:block text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">สภาพอากาศ</span>
+                                <span class="text-sm xl:text-base font-bold text-slate-800 tracking-tight"
                                     x-text="temp + '°C'">--°C</span>
                             </div>
                         </div>
@@ -559,12 +566,11 @@
                             </div>
                             <div class="flex flex-col">
                                 <span
-                                    class="hidden lg:block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">ดัชนีคุณภาพอากาศ</span>
-                                <span class="text-xs xl:text-sm font-bold tracking-tight flex items-center gap-1.5"
+                                    class="hidden lg:block text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">ดัชนีคุณภาพอากาศ</span>
+                                <span class="text-sm xl:text-base font-bold tracking-tight flex items-center gap-1.5"
                                     :class="aqiTextColor">
                                     <span x-text="aqi">--</span>
-                                    <span class="hidden lg:inline text-[10px] opacity-70"
-                                        x-text="'• ' + aqiStatus"></span>
+                                    <span class="hidden lg:inline text-xs opacity-70" x-text="'• ' + aqiStatus"></span>
                                 </span>
                             </div>
                         </div>
@@ -640,7 +646,7 @@
                                                 <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">
                                                     {{ $notification->data['message'] }}
                                                 </p>
-                                                <p class="text-[10px] text-slate-400 mt-1">
+                                                <p class="text-xs text-slate-400 mt-1">
                                                     {{ $notification->created_at->diffForHumans() }}
                                                 </p>
                                             </div>
@@ -677,7 +683,7 @@
                                     class="text-sm font-bold text-slate-900 group-hover:text-brand-600 transition-colors tracking-tight">
                                     {{ Auth::user()->rank }} {{ Auth::user()->name }}
                                 </p>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
                                     {{ Auth::user()->department ?? 'กองบังคับการ' }}
                                 </p>
                             </div>

@@ -9,8 +9,7 @@
                 <div
                     class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -mr-48 -mt-48">
                 </div>
-                <div
-                    class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -ml-24 -mb-24">
+                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -ml-24 -mb-24">
                 </div>
             </div>
 
@@ -22,10 +21,10 @@
                     <span class="w-1 h-1 rounded-full bg-emerald-500/40"></span>
                     <span class="text-emerald-400">Request New Change</span>
                 </nav>
-                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+                <h1 class="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
                     แบบฟอร์มขออนุญาตเปลี่ยนยาม
                 </h1>
-                <p class="text-indigo-100/60 max-w-2xl mx-auto text-lg font-medium">
+                <p class="text-indigo-100/60 max-w-2xl mx-auto text-xl font-semibold">
                     กรุณากรอกข้อมูลการเปลี่ยนเวรยามให้ครบถ้วน เพื่อดำเนินการส่งขออนุมัติไปยังผู้บังคับบัญชาตามลำดับ
                 </p>
             </div>
@@ -41,14 +40,16 @@
 
                         <!-- Section 1: Replacement User Selection -->
                         <div
-                            class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden group">
-                            <!-- Background Decoration -->
-                            <div
-                                class="absolute top-0 right-0 w-40 h-40 bg-slate-50 rounded-bl-[4rem] -mr-10 -mt-10 opacity-50 group-hover:scale-110 transition-transform duration-500 pointer-events-none">
+                            class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative group">
+                            <!-- Background Decoration (Clipped) -->
+                            <div class="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
+                                <div
+                                    class="absolute top-0 right-0 w-40 h-40 bg-slate-50 rounded-bl-[4rem] -mr-10 -mt-10 opacity-50 group-hover:scale-110 transition-transform duration-500">
+                                </div>
                             </div>
 
                             <div class="relative z-10">
-                                <h3 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                                <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                     <div
                                         class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
                                         <i data-lucide="user-plus" class="w-6 h-6"></i>
@@ -72,7 +73,7 @@
                                             @keydown.arrow-up.prevent="highlightPrev()"
                                             @keydown.enter.prevent="selectHighlighted()"
                                             placeholder="ค้นหาชื่อ หรือตำแหน่ง..."
-                                            class="block w-full rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all py-5 pl-14 pr-12 text-lg font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-medium"
+                                            class="block w-full rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all py-5 pl-14 pr-12 text-xl font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold"
                                             autocomplete="off">
 
                                         <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -88,17 +89,17 @@
                                         <div
                                             class="mt-4 flex flex-col sm:flex-row items-center gap-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
                                             <div
-                                                class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-indigo-200">
+                                                class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg shadow-indigo-200">
                                                 <span x-text="selectedUser?.name.substring(0, 1)"></span>
                                             </div>
                                             <div class="flex-1 text-center sm:text-left">
-                                                <p class="text-sm font-black text-indigo-900"
+                                                <p class="text-base font-bold text-indigo-900"
                                                     x-text="selectedUser?.rank + selectedUser?.name"></p>
-                                                <p class="text-xs font-bold text-indigo-600/60 uppercase tracking-widest mt-0.5"
+                                                <p class="text-sm font-semibold text-indigo-600/60 uppercase tracking-widest mt-0.5"
                                                     x-text="selectedUser?.position || 'บุคลากร'"></p>
                                             </div>
                                             <div
-                                                class="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-lg shadow-emerald-200">
+                                                class="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-200">
                                                 <i data-lucide="check-circle" class="w-3 h-3"></i>
                                                 READY TO REPLACE
                                             </div>
@@ -118,9 +119,9 @@
                                                     <span x-text="user.name.substring(0, 1)"></span>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="font-black text-slate-800" x-text="user.rank + user.name">
+                                                    <p class="font-bold text-slate-800 text-lg" x-text="user.rank + user.name">
                                                     </p>
-                                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5"
+                                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-0.5"
                                                         x-text="user.position || 'บุคลากร'"></p>
                                                 </div>
                                                 <i data-lucide="chevron-right"
@@ -137,15 +138,15 @@
                                             class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                             <i data-lucide="user-x" class="w-8 h-8 text-slate-300"></i>
                                         </div>
-                                        <p class="text-slate-500 font-bold">ไม่พบข้อมูลรายชื่อที่ค้นหา</p>
-                                        <p class="text-slate-400 text-sm mt-1">กรุณาลองพิมพ์ชื่อหรือตำแหน่งใหม่อีกครั้ง
+                                        <p class="text-slate-500 font-bold text-lg">ไม่พบข้อมูลรายชื่อที่ค้นหา</p>
+                                        <p class="text-slate-400 text-base mt-1">กรุณาลองพิมพ์ชื่อหรือตำแหน่งใหม่อีกครั้ง
                                         </p>
                                     </div>
                                 </div>
 
                                 @error('replacement_user_id')
                                     <div
-                                        class="mt-4 flex items-center gap-2 text-rose-500 font-bold text-sm bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                                        class="mt-4 flex items-center gap-2 text-rose-500 font-bold text-base bg-rose-50 p-4 rounded-2xl border border-rose-100">
                                         <i data-lucide="alert-circle" class="w-4 h-4"></i>
                                         {{ $message }}
                                     </div>
@@ -161,7 +162,7 @@
                             </div>
 
                             <div class="relative z-10">
-                                <h3 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                                <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                     <div
                                         class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
                                         <i data-lucide="award" class="w-6 h-6"></i>
@@ -187,8 +188,9 @@
                                                     @endif
                                                 </div>
                                                 <p
-                                                    class="text-sm font-black text-slate-700 tracking-tight leading-tight px-2">
-                                                    {{ $label }}</p>
+                                                    class="text-base font-bold text-slate-700 tracking-tight leading-tight px-2">
+                                                    {{ $label }}
+                                                </p>
 
                                                 <div
                                                     class="absolute top-4 right-4 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center opacity-0 peer-checked:opacity-100 transition-all scale-0 peer-checked:scale-100 shadow-lg shadow-emerald-500/30">
@@ -201,7 +203,7 @@
 
                                 @error('duty_position')
                                     <div
-                                        class="mt-6 flex items-center gap-2 text-rose-500 font-bold text-sm bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                                        class="mt-6 flex items-center gap-2 text-rose-500 font-bold text-base bg-rose-50 p-4 rounded-2xl border border-rose-100">
                                         <i data-lucide="alert-circle" class="w-4 h-4"></i>
                                         {{ $message }}
                                     </div>
@@ -219,7 +221,7 @@
                                 </div>
 
                                 <div class="relative z-10 h-full flex flex-col">
-                                    <h3 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                                    <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
                                             <i data-lucide="calendar" class="w-6 h-6"></i>
@@ -231,17 +233,17 @@
                                         <div
                                             class="group/input focus-within:ring-4 focus-within:ring-blue-500/10 rounded-3xl overflow-hidden transition-all">
                                             <label
-                                                class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">SELECT
+                                                class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">SELECT
                                                 DATE</label>
                                             <input type="date" name="duty_date" x-model="dutyDate"
-                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-blue-500 p-6 rounded-3xl text-xl font-black text-slate-800 transition-all cursor-pointer"
+                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-blue-500 p-6 rounded-3xl text-2xl font-bold text-slate-800 transition-all cursor-pointer"
                                                 required>
                                         </div>
                                     </div>
 
                                     @error('duty_date')
                                         <div
-                                            class="mt-6 flex items-center gap-2 text-rose-500 font-bold text-sm bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                                            class="mt-6 flex items-center gap-2 text-rose-500 font-bold text-base bg-rose-50 p-4 rounded-2xl border border-rose-100">
                                             <i data-lucide="alert-circle" class="w-4 h-4"></i>
                                             {{ $message }}
                                         </div>
@@ -257,7 +259,7 @@
                                 </div>
 
                                 <div class="relative z-10 h-full flex flex-col">
-                                    <h3 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                                    <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm">
                                             <i data-lucide="message-square" class="w-6 h-6"></i>
@@ -269,10 +271,10 @@
                                         <div
                                             class="group/input focus-within:ring-4 focus-within:ring-purple-500/10 rounded-3xl overflow-hidden transition-all">
                                             <label
-                                                class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">REASON
+                                                class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">REASON
                                                 (OPTIONAL)</label>
                                             <textarea name="remarks" rows="2" x-model="remarks"
-                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-purple-500 p-6 rounded-3xl text-lg font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-medium transition-all resize-none"
+                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-purple-500 p-6 rounded-3xl text-xl font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold transition-all resize-none"
                                                 placeholder="ระบุเหตุผล เช่น ไปราชการ กทม..."></textarea>
                                         </div>
                                     </div>
@@ -283,7 +285,7 @@
                         <!-- Action Submit -->
                         <div class="mt-12 flex flex-col items-center">
                             <button type="submit"
-                                class="w-full sm:w-auto min-w-[300px] flex items-center justify-center gap-4 px-10 py-6 bg-slate-900 hover:bg-indigo-600 text-white font-black text-xl rounded-full shadow-2xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300 hover:-translate-y-2 group">
+                                class="w-full sm:w-auto min-w-[300px] flex items-center justify-center gap-4 px-10 py-6 bg-slate-900 hover:bg-indigo-600 text-white font-bold text-2xl rounded-full shadow-2xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300 hover:-translate-y-2 group">
                                 <i data-lucide="send"
                                     class="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
                                 ยืนยันและส่งคำขอเปลี่ยนยาม
@@ -321,7 +323,7 @@
                                 <div
                                     class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full">
                                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                    <span class="text-[10px] font-black text-white uppercase tracking-widest">DRAFTING
+                                    <span class="text-xs font-bold text-white uppercase tracking-widest">DRAFTING
                                         STATUS</span>
                                 </div>
 
@@ -331,9 +333,9 @@
                                     <div class="flex items-start justify-between mb-10">
                                         <div>
                                             <p
-                                                class="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1">
+                                                class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">
                                                 Position Duty</p>
-                                            <p class="text-xl font-black text-white leading-tight"
+                                            <p class="text-2xl font-bold text-white leading-tight"
                                                 x-text="getDutyPositionName() || 'โปรดเลือกตำแหน่ง...'"></p>
                                         </div>
                                         <div
@@ -350,9 +352,9 @@
                                             </div>
                                             <div>
                                                 <p
-                                                    class="text-[10px] font-black text-indigo-300/40 uppercase tracking-widest">
+                                                    class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest">
                                                     Target Date</p>
-                                                <p class="text-sm font-bold text-white mt-0.5"
+                                                <p class="text-base font-bold text-white mt-0.5"
                                                     x-text="formatDate(dutyDate) || 'ยังไม่กำหนด'"></p>
                                             </div>
                                         </div>
@@ -364,9 +366,9 @@
                                             </div>
                                             <div>
                                                 <p
-                                                    class="text-[10px] font-black text-indigo-300/40 uppercase tracking-widest">
+                                                    class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest">
                                                     Replacement</p>
-                                                <p class="text-sm font-bold text-white mt-0.5"
+                                                <p class="text-base font-bold text-white mt-0.5"
                                                     x-text="searchQuery || 'รอระบุรายชื่อ...'"></p>
                                             </div>
                                         </div>
@@ -377,11 +379,11 @@
 
                                     <div>
                                         <p
-                                            class="text-[10px] font-black text-indigo-300/40 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                            class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest mb-2 flex items-center gap-2">
                                             <i data-lucide="message-square" class="w-3 h-3"></i>
                                             Remarks
                                         </p>
-                                        <p class="text-sm text-white/60 font-medium italic break-words"
+                                        <p class="text-base text-white/60 font-semibold italic break-words"
                                             x-text="remarks || '- ไม่ระบุหมายเหตุ -'"></p>
                                     </div>
                                 </div>
@@ -390,7 +392,7 @@
                                 <div class="bg-indigo-500/10 rounded-2xl p-5 border border-indigo-500/20">
                                     <div class="flex gap-4">
                                         <i data-lucide="shield-alert" class="w-6 h-6 text-indigo-400 flex-shrink-0"></i>
-                                        <p class="text-xs font-bold text-indigo-100/60 leading-relaxed italic">
+                                        <p class="text-sm font-bold text-indigo-100/60 leading-relaxed italic">
                                             "กรุณาตรวจสอบข้อมูลและปรึกษาผู้รับหน้าที่แทนก่อนส่งคำขอ
                                             เพื่อความถูกต้องในการปฏิบัติหน้าที่เวรยาม"
                                         </p>
@@ -438,7 +440,7 @@
                 replacementUserId: '{{ old("replacement_user_id") }}',
                 users: [
                     @foreach($users as $user)
-                        {
+                            {
                             id: {{ $user->id }},
                             rank: "{{ $user->rank }}",
                             name: "{{ $user->name }}",
