@@ -11,7 +11,7 @@
     <!-- Google Fonts: Kanit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
     <!-- Scripts -->
@@ -35,50 +35,48 @@
         <!-- Main Mobile Bar -->
         <div
             class="flex items-center justify-between bg-white/95 backdrop-blur-lg shadow-sm px-4 py-3 border-b border-slate-100">
-            <!-- Left: Menu + Logo -->
+            <!-- Left: Logo Area -->
             <div class="flex items-center gap-3">
-                <button @click="sidebarOpen = !sidebarOpen"
-                    class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-brand-50 text-slate-500 hover:text-brand-600 flex items-center justify-center transition-all active:scale-95">
-                    <i data-lucide="menu" class="w-5 h-5"></i>
-                </button>
-                <div class="flex items-center gap-2">
-                    <img src="{{ asset('images/logonavy.png') }}" alt="Logo"
-                        class="w-10 h-10 sm:w-12 sm:h-12 object-contain flex-shrink-0">
-                    <span
-                        class="font-bold text-xs sm:text-sm text-slate-800 hidden xs:block truncate max-w-[150px] sm:max-w-none">ระบบบริหารจัดการงานธุรการด้านกำลังพล</span>
+                <div class="flex items-center gap-2.5">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-brand-500 blur-lg opacity-20"></div>
+                        <img src="{{ asset('images/logonavy.png') }}" alt="Logo"
+                            class="relative w-10 h-10 object-contain flex-shrink-0">
+                    </div>
                 </div>
             </div>
 
-            <!-- Right: Actions -->
-            <div class="flex items-center gap-1.5 sm:gap-2">
-                <!-- Mobile Weather Widget (Header) -->
-                <div x-data="envStatus()" x-init="init()" class="hidden xs:flex items-center gap-2 mr-1">
+            <!-- Right: Actions & Menu -->
+            <div class="flex items-center gap-2">
+                <!-- Mobile Weather & AQI -->
+                <div x-data="envStatus()" x-init="init()" class="flex items-center gap-2 mr-1">
                     <!-- Weather -->
-                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1">
-                        <div class="relative w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br shadow-sm"
+                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1.5 shadow-sm">
+                        <div class="relative w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br"
                             :class="weatherBg">
-                            <i :data-lucide="weatherIcon" class="w-3.5 h-3.5 text-white"></i>
+                            <i :data-lucide="weatherIcon" class="w-3 text-white"></i>
                         </div>
-                        <span class="text-xs font-bold text-slate-700" x-text="temp + '°C'">--°C</span>
+                        <span class="text-[10px] font-bold text-slate-700" x-text="temp + '°C'">--°C</span>
                     </div>
 
                     <!-- PM 2.5 -->
-                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1">
-                        <div class="relative w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br shadow-sm"
+                    <div class="hidden sm:flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2 py-1.5 shadow-sm">
+                        <div class="relative w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-md bg-gradient-to-br"
                             :class="aqiBg">
-                            <i data-lucide="wind" class="w-3.5 h-3.5 text-white"></i>
+                            <i data-lucide="wind" class="w-3 text-white"></i>
                         </div>
-                        <span class="text-xs font-bold" :class="aqiTextColor" x-text="aqi">--</span>
+                        <span class="text-[10px] font-bold" :class="aqiTextColor" x-text="aqi">--</span>
                     </div>
                 </div>
+
                 <!-- Notifications -->
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
-                        class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-amber-50 text-slate-500 hover:text-amber-600 flex items-center justify-center transition-all active:scale-95 relative">
-                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        class="w-9 h-9 rounded-xl bg-slate-50 text-slate-500 hover:text-brand-600 flex items-center justify-center transition-all active:scale-95 relative border border-slate-100 shadow-sm">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
                         @if(($navNotificationCount ?? 0) > 0)
                             <span
-                                class="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+                                class="absolute top-0 right-0 h-4 w-4 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
                                 {{ ($navNotificationCount ?? 0) > 9 ? '9+' : ($navNotificationCount ?? 0) }}
                             </span>
                         @endif
@@ -126,13 +124,13 @@
                 <!-- User Avatar/Profile -->
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
-                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md shadow-brand-500/20 active:scale-95 transition-all overflow-hidden">
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md shadow-brand-500/20 active:scale-95 transition-all overflow-hidden border border-white/20">
                         <div class="w-full h-full rounded-lg bg-white flex items-center justify-center overflow-hidden">
                             @if(Auth::user()->avatar)
                                 <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar"
                                     class="w-full h-full object-cover">
                             @else
-                                <span class="font-bold text-brand-600 text-sm">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                                <span class="font-bold text-brand-600 text-[10px]">{{ substr(Auth::user()->name, 0, 1) }}</span>
                             @endif
                         </div>
                     </button>
@@ -140,51 +138,58 @@
                     <!-- Mobile Profile Dropdown -->
                     <div x-show="open" @click.away="open = false" x-cloak
                         x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                         x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 py-2 z-[9999] border border-slate-100"
+                        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                        x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                        class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-black/5 py-2 z-[9999] border border-slate-100 origin-top-right"
                         style="display: none;">
                         <!-- User Info -->
-                        <div class="px-4 py-3 border-b border-slate-50">
+                        <div class="px-4 py-3 border-b border-slate-50 mb-1">
                             <div class="flex items-center gap-3">
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md">
-                                    <div
-                                        class="w-full h-full rounded-lg bg-white flex items-center justify-center overflow-hidden">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-sm">
+                                    <div class="w-full h-full rounded-lg bg-white flex items-center justify-center overflow-hidden">
                                         @if(Auth::user()->avatar)
                                             <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar"
                                                 class="w-full h-full object-cover">
                                         @else
-                                            <span
-                                                class="font-bold text-brand-600">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                                            <span class="font-bold text-brand-600 text-xs">{{ substr(Auth::user()->name, 0, 1) }}</span>
                                         @endif
                                     </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-bold text-slate-800 text-sm truncate">{{ Auth::user()->rank }}
-                                        {{ Auth::user()->name }}
-                                    </p>
-                                    <p class="text-xs text-slate-500 truncate">{{ Auth::user()->department ?? 'Staff' }}
-                                    </p>
+                                    <p class="font-bold text-slate-800 text-sm truncate">{{ Auth::user()->rank }}{{ Auth::user()->name }}</p>
+                                    <p class="text-[10px] text-slate-500 truncate uppercase tracking-wider">{{ Auth::user()->department ?? 'Staff' }}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <a href="{{ route('profile.edit') }}"
-                            class="flex items-center px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors">
-                            <i data-lucide="user" class="w-4 h-4 mr-3"></i> แก้ไขโปรไฟล์
-                        </a>
+                        <div class="px-1.5 space-y-0.5">
+                            <a href="{{ route('profile.edit') }}"
+                                class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-all">
+                                <i data-lucide="user-cog" class="w-4 h-4 mr-3 opacity-60"></i> จัดการโปรไฟล์
+                            </a>
 
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                class="flex w-full items-center px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                                <i data-lucide="log-out" class="w-4 h-4 mr-3"></i> ออกจากระบบ
-                            </button>
-                        </form>
+                            <div class="h-px bg-slate-50 mx-3 my-1"></div>
+
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit"
+                                    class="flex w-full items-center px-3 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
+                                    <i data-lucide="log-out" class="w-4 h-4 mr-3 opacity-60"></i> ออกจากระบบ
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Hamburger Menu (Far Right) -->
+                <button @click="sidebarOpen = !sidebarOpen"
+                    class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-slate-900/20">
+                    <i data-lucide="menu" class="w-4 h-4"></i>
+                </button>
+            </div>
             </div>
         </div>
 
@@ -203,16 +208,26 @@
 
         <!-- Sidebar (Light Theme) -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-100 transition-transform duration-300 md:translate-x-0 flex flex-col shadow-sm">
+            class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-white border-r border-slate-100 transition-transform duration-300 md:translate-x-0 flex flex-col shadow-sm">
 
             <!-- Logo Area -->
-            <div class="h-auto py-5 flex flex-col items-center px-4 border-b border-slate-50 text-center">
-                <img src="{{ asset('images/logonavy.png') }}" alt="Logo" class="w-12 h-12 object-contain mb-3">
-                <div>
-                    <h1 class="text-sm font-bold text-slate-800 tracking-tight leading-tight mb-1">
-                        ระบบบริหารจัดการงานธุรการด้านกำลังพล</h1>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">โรงเรียนพลาธิการ
-                        กรมพลาธิการทหารเรือ</p>
+            <div
+                class="py-8 flex flex-col items-center px-6 border-b border-slate-50 text-center relative overflow-hidden group">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-brand-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                </div>
+
+                <div class="relative mb-4">
+                    <div class="absolute inset-0 bg-brand-500 blur-2xl opacity-10 animate-pulse"></div>
+                    <img src="{{ asset('images/logonavy.png') }}" alt="Logo"
+                        class="relative w-16 h-16 object-contain transform group-hover:scale-110 transition-transform duration-500">
+                </div>
+
+                <div class="relative">
+                    <h1 class="text-base font-bold text-slate-800 tracking-tight leading-tight mb-1">
+                        ระบบบริหารจัดการ<br>งานกำลังพล</h1>
+                    <p class="text-[9px] text-brand-600 uppercase tracking-[0.2em] font-bold opacity-70">
+                        โรงเรียนพลาธิการ พธ.ทร.</p>
                 </div>
             </div>
 
@@ -231,99 +246,101 @@
             }">
                 <!-- Dashboard - Always visible -->
                 <a href="{{ route('dashboard') }}"
-                    class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('dashboard') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
-                    <i data-lucide="gauge"
-                        class="w-4 h-4 {{ request()->routeIs('dashboard') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                    <span class="ml-3 text-sm font-medium">หน้าหลัก</span>
+                    class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 group {{ request()->routeIs('dashboard') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                    <i data-lucide="layout-dashboard"
+                        class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                    <span class="ml-3 text-sm font-bold opacity-90">แผงควบคุม</span>
                 </a>
 
                 <!-- Calendar - Shared Leave Calendar -->
                 <a href="{{ route('calendar.index') }}"
-                    class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('calendar.*') ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
-                    <i data-lucide="calendar"
-                        class="w-4 h-4 {{ request()->routeIs('calendar.*') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}"></i>
-                    <span class="ml-3 text-sm font-medium">ปฏิทินการลา</span>
+                    class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 group {{ request()->routeIs('calendar.*') ? 'bg-indigo-50 text-indigo-700 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
+                    <i data-lucide="calendar-range"
+                        class="w-5 h-5 {{ request()->routeIs('calendar.*') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}"></i>
+                    <span class="ml-3 text-sm font-bold opacity-90">ปฏิทินการลา</span>
                 </a>
 
                 <!-- Leave Section - Collapsible -->
                 <div class="pt-3">
                     <button @click="openMenus.leave = !openMenus.leave"
-                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-brand-600 transition-all duration-200 group">
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
                         <div class="flex items-center">
-                            <div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center mr-2">
-                                <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-blue-500"></i>
+                            <div
+                                class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mr-3 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                <i data-lucide="send-to-back" class="w-4 h-4"></i>
                             </div>
-                            <span class="text-sm font-semibold text-slate-700">การลา</span>
+                            <span class="text-sm font-bold text-slate-800 tracking-tight">งานบริหารวันลา</span>
                         </div>
-                        <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 transition-transform duration-200"
-                            :class="openMenus.leave && 'rotate-180'"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 transition-transform duration-300"
+                            :class="openMenus.leave && 'rotate-90'"></i>
                     </button>
-                    <div x-show="openMenus.leave" x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 -translate-y-2"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 -translate-y-2"
-                        class="mt-1 ml-3 pl-3 border-l-2 border-slate-100 space-y-0.5">
+                    <div x-show="openMenus.leave" x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 -translate-x-2"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 -translate-x-2"
+                        class="mt-1 ml-5 pl-4 border-l-2 border-slate-100 space-y-1">
                         <a href="{{ route('leave-request.create') }}"
-                            class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('leave-request.create') ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                            class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('leave-request.create') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                             <i data-lucide="send"
-                                class="w-3.5 h-3.5 {{ request()->routeIs('leave-request.create') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                            <span class="ml-2.5 text-sm font-medium">ยื่นใบลา</span>
+                                class="w-4 h-4 {{ request()->routeIs('leave-request.create') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                            <span class="ml-3 text-sm font-bold tracking-tight">ยื่นใบลา</span>
                         </a>
                         <a href="{{ route('leave-request.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('leave-request.index') ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                            class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('leave-request.index') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                             <i data-lucide="history"
-                                class="w-3.5 h-3.5 {{ request()->routeIs('leave-request.index') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                            <span class="ml-2.5 text-sm font-medium">ประวัติการลา</span>
+                                class="w-4 h-4 {{ request()->routeIs('leave-request.index') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                            <span class="ml-3 text-sm font-bold tracking-tight">ประวัติการลา</span>
                         </a>
                     </div>
                 </div>
 
                 <!-- Guard Change Section - Collapsible -->
-                <div class="pt-2">
+                <div class="pt-3">
                     <button @click="openMenus.guard = !openMenus.guard"
-                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-emerald-600 transition-all duration-200 group">
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
                         <div class="flex items-center">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center mr-2">
-                                <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-500"></i>
+                            <div
+                                class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mr-3 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
                             </div>
-                            <span class="text-sm font-semibold text-slate-700">การเปลี่ยนยาม</span>
+                            <span class="text-sm font-bold text-slate-800 tracking-tight">งานเวรยาม</span>
                             @if(isset($navGuardChangePendingMe) && $navGuardChangePendingMe > 0)
                                 <span
-                                    class="ml-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ $navGuardChangePendingMe }}</span>
+                                    class="ml-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangePendingMe }}</span>
                             @endif
                         </div>
-                        <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 transition-transform duration-200"
-                            :class="openMenus.guard && 'rotate-180'"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 transition-transform duration-300"
+                            :class="openMenus.guard && 'rotate-90'"></i>
                     </button>
-                    <div x-show="openMenus.guard" x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 -translate-y-2"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 -translate-y-2"
-                        class="mt-1 ml-3 pl-3 border-l-2 border-slate-100 space-y-0.5">
+                    <div x-show="openMenus.guard" x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 -translate-x-2"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 -translate-x-2"
+                        class="mt-1 ml-5 pl-4 border-l-2 border-slate-100 space-y-1">
                         <a href="{{ route('guard-change.create') }}"
-                            class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.create') ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600' }}">
+                            class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.create') ? 'bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600' }}">
                             <i data-lucide="plus"
-                                class="w-3.5 h-3.5 {{ request()->routeIs('guard-change.create') ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600' }}"></i>
-                            <span class="ml-2.5 text-sm font-medium">ขอเปลี่ยนยาม</span>
+                                class="w-4 h-4 {{ request()->routeIs('guard-change.create') ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600' }}"></i>
+                            <span class="ml-3 text-sm font-bold tracking-tight">ขอเปลี่ยนยาม</span>
                         </a>
                         <a href="{{ route('guard-change.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.index') || request()->routeIs('guard-change.show') ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600' }}">
+                            class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.index') || request()->routeIs('guard-change.show') ? 'bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600' }}">
                             <i data-lucide="list"
-                                class="w-3.5 h-3.5 {{ request()->routeIs('guard-change.index') || request()->routeIs('guard-change.show') ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600' }}"></i>
-                            <span class="ml-2.5 text-sm font-medium">ประวัติของฉัน</span>
+                                class="w-4 h-4 {{ request()->routeIs('guard-change.index') || request()->routeIs('guard-change.show') ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600' }}"></i>
+                            <span class="ml-3 text-sm font-bold tracking-tight">ประวัติของฉัน</span>
                         </a>
                         <a href="{{ route('guard-change.approvals') }}"
-                            class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.approvals') ? 'bg-amber-50 text-amber-600' : 'text-slate-500 hover:bg-slate-50 hover:text-amber-600' }}">
+                            class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.approvals') ? 'bg-amber-50 text-amber-700 shadow-sm shadow-amber-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-amber-600' }}">
                             <i data-lucide="user-check"
-                                class="w-3.5 h-3.5 {{ request()->routeIs('guard-change.approvals') ? 'text-amber-600' : 'text-slate-400 group-hover:text-amber-600' }}"></i>
-                            <span class="ml-2.5 text-sm font-medium flex-1">คำขอหาฉัน</span>
+                                class="w-4 h-4 {{ request()->routeIs('guard-change.approvals') ? 'text-amber-600' : 'text-slate-400 group-hover:text-amber-600' }}"></i>
+                            <span class="ml-3 text-sm font-bold tracking-tight flex-1">คำขอหาฉัน</span>
                             @if(isset($navGuardChangePendingMe) && $navGuardChangePendingMe > 0)
                                 <span
-                                    class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ $navGuardChangePendingMe }}</span>
+                                    class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangePendingMe }}</span>
                             @endif
                         </a>
                     </div>
@@ -333,89 +350,90 @@
                     <!-- Approval Section - Collapsible -->
                     <div class="pt-2">
                         <button @click="openMenus.approval = !openMenus.approval"
-                            class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-purple-600 transition-all duration-200 group">
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
                             <div class="flex items-center">
-                                <div class="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center mr-2">
-                                    <i data-lucide="clipboard-check" class="w-3.5 h-3.5 text-purple-500"></i>
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mr-3 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                                    <i data-lucide="clipboard-check" class="w-4 h-4"></i>
                                 </div>
-                                <span class="text-sm font-semibold text-slate-700">อนุมัติ/รายงาน</span>
+                                <span class="text-sm font-bold text-slate-800 tracking-tight">การอนุมัติ/รายงาน</span>
                                 @php
                                     $totalPending = ($navPendingCount ?? 0) + ($navGuardChangeDeputyCount ?? 0) + ($navGuardChangeFinalCount ?? 0);
                                 @endphp
                                 @if($totalPending > 0)
                                     <span
-                                        class="ml-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ $totalPending }}</span>
+                                        class="ml-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $totalPending }}</span>
                                 @endif
                             </div>
-                            <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 transition-transform duration-200"
-                                :class="openMenus.approval && 'rotate-180'"></i>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 transition-transform duration-300"
+                                :class="openMenus.approval && 'rotate-90'"></i>
                         </button>
-                        <div x-show="openMenus.approval" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 -translate-y-2"
-                            x-transition:enter-end="opacity-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 -translate-y-2"
-                            class="mt-1 ml-3 pl-3 border-l-2 border-slate-100 space-y-0.5">
+                        <div x-show="openMenus.approval" x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 -translate-x-2"
+                            x-transition:enter-end="opacity-100 translate-x-0"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100 translate-x-0"
+                            x-transition:leave-end="opacity-0 -translate-x-2"
+                            class="mt-1 ml-5 pl-4 border-l-2 border-slate-100 space-y-1">
                             <a href="{{ route('approvals.index') }}"
-                                class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('approvals.index') ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                                class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('approvals.index') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                                 <i data-lucide="file-pen"
-                                    class="w-3.5 h-3.5 {{ request()->routeIs('approvals.index') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                                <span class="ml-2.5 text-sm font-medium flex-1">อนุมัติใบลา</span>
+                                    class="w-4 h-4 {{ request()->routeIs('approvals.index') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                                <span class="ml-3 text-sm font-bold tracking-tight flex-1">อนุมัติใบลา</span>
                                 @if(isset($navPendingCount) && $navPendingCount > 0)
                                     <span
-                                        class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ $navPendingCount }}</span>
+                                        class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navPendingCount }}</span>
                                 @endif
                             </a>
 
                             @if(in_array(Auth::user()->role, ['deputy_director', 'admin']))
                                 <a href="{{ route('guard-change.director-approvals') }}"
-                                    class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.director-approvals') ? 'bg-purple-50 text-purple-600' : 'text-slate-500 hover:bg-slate-50 hover:text-purple-600' }}">
+                                    class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.director-approvals') ? 'bg-purple-50 text-purple-700 shadow-sm shadow-purple-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-purple-600' }}">
                                     <i data-lucide="stamp"
-                                        class="w-3.5 h-3.5 {{ request()->routeIs('guard-change.director-approvals') ? 'text-purple-600' : 'text-slate-400 group-hover:text-purple-600' }}"></i>
-                                    <span class="ml-2.5 text-sm font-medium flex-1">รอง ผอ. อนุมัติ</span>
+                                        class="w-4 h-4 {{ request()->routeIs('guard-change.director-approvals') ? 'text-purple-600' : 'text-slate-400 group-hover:text-purple-600' }}"></i>
+                                    <span class="ml-3 text-sm font-bold tracking-tight flex-1">รอง ผอ. อนุมัติ</span>
                                     @if(isset($navGuardChangeDeputyCount) && $navGuardChangeDeputyCount > 0)
                                         <span
-                                            class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ $navGuardChangeDeputyCount }}</span>
+                                            class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangeDeputyCount }}</span>
                                     @endif
                                 </a>
                             @endif
 
                             @if(in_array(Auth::user()->role, ['director', 'admin']))
                                 <a href="{{ route('guard-change.final-approvals') }}"
-                                    class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.final-approvals') ? 'bg-rose-50 text-rose-600' : 'text-slate-500 hover:bg-slate-50 hover:text-rose-600' }}">
+                                    class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('guard-change.final-approvals') ? 'bg-rose-50 text-rose-700 shadow-sm shadow-rose-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-rose-600' }}">
                                     <i data-lucide="crown"
-                                        class="w-3.5 h-3.5 {{ request()->routeIs('guard-change.final-approvals') ? 'text-rose-600' : 'text-slate-400 group-hover:text-rose-600' }}"></i>
-                                    <span class="ml-2.5 text-sm font-medium flex-1">ผอ. อนุมัติ</span>
+                                        class="w-4 h-4 {{ request()->routeIs('guard-change.final-approvals') ? 'text-rose-600' : 'text-slate-400 group-hover:text-rose-600' }}"></i>
+                                    <span class="ml-3 text-sm font-bold tracking-tight flex-1">ผอ. อนุมัติ</span>
                                     @if(isset($navGuardChangeFinalCount) && $navGuardChangeFinalCount > 0)
                                         <span
-                                            class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ $navGuardChangeFinalCount }}</span>
+                                            class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangeFinalCount }}</span>
                                     @endif
                                 </a>
                             @endif
 
-                            <div class="pt-1 mt-1 border-t border-slate-100">
+                            <div class="pt-2 mt-2 border-t border-slate-50">
                                 <a href="{{ route('reports.index') }}"
-                                    class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('reports.index') ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                                    class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('reports.index') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                                     <i data-lucide="pie-chart"
-                                        class="w-3.5 h-3.5 {{ request()->routeIs('reports.index') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                                    <span class="ml-2.5 text-sm font-medium">รายงานการลา</span>
+                                        class="w-4 h-4 {{ request()->routeIs('reports.index') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                                    <span class="ml-3 text-sm font-bold tracking-tight">รายงานการลา</span>
                                 </a>
 
                                 @if(in_array(Auth::user()->role, ['admin', 'director', 'deputy_director']))
                                     <a href="{{ route('reports.guard-change') }}"
-                                        class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('reports.guard-change') ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
+                                        class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('reports.guard-change') ? 'bg-indigo-50 text-indigo-700 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
                                         <i data-lucide="repeat"
-                                            class="w-3.5 h-3.5 {{ request()->routeIs('reports.guard-change') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}"></i>
-                                        <span class="ml-2.5 text-sm font-medium">รายงานเปลี่ยนยาม</span>
+                                            class="w-4 h-4 {{ request()->routeIs('reports.guard-change') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}"></i>
+                                        <span class="ml-3 text-sm font-bold tracking-tight">รายงานเปลี่ยนยาม</span>
                                     </a>
                                 @endif
 
                                 <a href="{{ route('attendance-reports.index') }}"
-                                    class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('attendance-reports.*') ? 'bg-teal-50 text-teal-600' : 'text-slate-500 hover:bg-slate-50 hover:text-teal-600' }}">
+                                    class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('attendance-reports.*') ? 'bg-teal-50 text-teal-700 shadow-sm shadow-teal-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-teal-600' }}">
                                     <i data-lucide="scan"
-                                        class="w-3.5 h-3.5 {{ request()->routeIs('attendance-reports.*') ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-600' }}"></i>
-                                    <span class="ml-2.5 text-sm font-medium">รายงานการเข้างาน</span>
+                                        class="w-4 h-4 {{ request()->routeIs('attendance-reports.*') ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-600' }}"></i>
+                                    <span class="ml-3 text-sm font-bold tracking-tight">รายงานการเข้างาน</span>
                                 </a>
                             </div>
                         </div>
@@ -426,46 +444,47 @@
                     <!-- Admin Section - Collapsible -->
                     <div class="pt-2">
                         <button @click="openMenus.admin = !openMenus.admin"
-                            class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-rose-600 transition-all duration-200 group">
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
                             <div class="flex items-center">
-                                <div class="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center mr-2">
-                                    <i data-lucide="settings" class="w-3.5 h-3.5 text-rose-500"></i>
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mr-3 group-hover:bg-rose-600 group-hover:text-white transition-all">
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
                                 </div>
-                                <span class="text-sm font-semibold text-slate-700">ผู้ดูแลระบบ</span>
+                                <span class="text-sm font-bold text-slate-800 tracking-tight">ผู้ดูแลระบบ</span>
                             </div>
-                            <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 transition-transform duration-200"
-                                :class="openMenus.admin && 'rotate-180'"></i>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 transition-transform duration-300"
+                                :class="openMenus.admin && 'rotate-90'"></i>
                         </button>
-                        <div x-show="openMenus.admin" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 -translate-y-2"
-                            x-transition:enter-end="opacity-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 -translate-y-2"
-                            class="mt-1 ml-3 pl-3 border-l-2 border-slate-100 space-y-0.5">
+                        <div x-show="openMenus.admin" x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 -translate-x-2"
+                            x-transition:enter-end="opacity-100 translate-x-0"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100 translate-x-0"
+                            x-transition:leave-end="opacity-0 -translate-x-2"
+                            class="mt-1 ml-5 pl-4 border-l-2 border-slate-100 space-y-1">
                             <a href="{{ route('employees.index') }}"
-                                class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('employees.*') ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                                class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('employees.*') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                                 <i data-lucide="users"
-                                    class="w-3.5 h-3.5 {{ request()->routeIs('employees.*') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                                <span class="ml-2.5 text-sm font-medium">จัดการข้าราชการ</span>
+                                    class="w-4 h-4 {{ request()->routeIs('employees.*') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                                <span class="ml-3 text-sm font-bold tracking-tight">จัดการข้าราชการ</span>
                             </a>
                             <a href="{{ route('departments.index') }}"
-                                class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('departments.*') ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                                class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('departments.*') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                                 <i data-lucide="network"
-                                    class="w-3.5 h-3.5 {{ request()->routeIs('departments.*') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                                <span class="ml-2.5 text-sm font-medium">จัดการแผนก</span>
+                                    class="w-4 h-4 {{ request()->routeIs('departments.*') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                                <span class="ml-3 text-sm font-bold tracking-tight">จัดการแผนก</span>
                             </a>
                             <a href="{{ route('settings.index') }}"
-                                class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('settings.*') ? 'bg-brand-50 text-brand-600' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                                class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('settings.*') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
                                 <i data-lucide="settings-2"
-                                    class="w-3.5 h-3.5 {{ request()->routeIs('settings.*') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                                <span class="ml-2.5 text-sm font-medium">ตั้งค่าระบบ</span>
+                                    class="w-4 h-4 {{ request()->routeIs('settings.*') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
+                                <span class="ml-3 text-sm font-bold tracking-tight">ตั้งค่าระบบ</span>
                             </a>
                             <a href="{{ route('leave-entitlements.index') }}"
-                                class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group {{ request()->routeIs('leave-entitlements.*') ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600' }}">
+                                class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('leave-entitlements.*') ? 'bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600' }}">
                                 <i data-lucide="calendar-plus"
-                                    class="w-3.5 h-3.5 {{ request()->routeIs('leave-entitlements.*') ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600' }}"></i>
-                                <span class="ml-2.5 text-sm font-medium">จัดการสิทธิ์วันลา</span>
+                                    class="w-4 h-4 {{ request()->routeIs('leave-entitlements.*') ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600' }}"></i>
+                                <span class="ml-3 text-sm font-bold tracking-tight">จัดการสิทธิ์วันลา</span>
                             </a>
                         </div>
                     </div>
@@ -494,18 +513,21 @@
                     <nav class="flex" aria-label="Breadcrumb">
                         <ol class="flex items-center space-x-2">
                             <li>
-                                <a href="{{ route('dashboard') }}" class="text-slate-400 hover:text-slate-500">
+                                <a href="{{ route('dashboard') }}"
+                                    class="text-slate-400 hover:text-brand-600 transition-colors">
                                     <i data-lucide="home" class="w-4 h-4"></i>
                                 </a>
                             </li>
                             @if(!request()->routeIs('dashboard'))
-                                <li><span class="text-slate-300">/</span></li>
-                                <li><span class="text-sm font-medium text-slate-600">@yield('title')</span></li>
+                                <li><i data-lucide="chevron-right" class="w-3 h-3 text-slate-300"></i></li>
+                                <li><span
+                                        class="text-xs font-bold text-slate-800 uppercase tracking-widest">@yield('title')</span>
+                                </li>
                             @endif
                         </ol>
                     </nav>
-                    <h1 class="text-2xl font-bold text-slate-800 mt-1 tracking-tight">
-                        @yield('title', 'ระบบบริหารจัดการวันลา')
+                    <h1 class="text-3xl font-bold text-slate-800 mt-1 tracking-tight">
+                        @yield('title', 'แผงควบคุมหลัก')
                     </h1>
                 </div>
 
@@ -521,8 +543,8 @@
                             </div>
                             <div class="flex flex-col">
                                 <span
-                                    class="hidden lg:block text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">สภาพอากาศ</span>
-                                <span class="text-xs xl:text-sm font-black text-slate-800 tracking-tight"
+                                    class="hidden lg:block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">สภาพอากาศ</span>
+                                <span class="text-xs xl:text-sm font-bold text-slate-800 tracking-tight"
                                     x-text="temp + '°C'">--°C</span>
                             </div>
                         </div>
@@ -537,8 +559,8 @@
                             </div>
                             <div class="flex flex-col">
                                 <span
-                                    class="hidden lg:block text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">ดัชนีคุณภาพอากาศ</span>
-                                <span class="text-xs xl:text-sm font-black tracking-tight flex items-center gap-1.5"
+                                    class="hidden lg:block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">ดัชนีคุณภาพอากาศ</span>
+                                <span class="text-xs xl:text-sm font-bold tracking-tight flex items-center gap-1.5"
                                     :class="aqiTextColor">
                                     <span x-text="aqi">--</span>
                                     <span class="hidden lg:inline text-[10px] opacity-70"
@@ -652,10 +674,12 @@
                             class="flex items-center gap-3 focus:outline-none group">
                             <div class="text-right hidden md:block">
                                 <p
-                                    class="text-sm font-bold text-slate-700 group-hover:text-brand-600 transition-colors">
+                                    class="text-sm font-bold text-slate-900 group-hover:text-brand-600 transition-colors tracking-tight">
                                     {{ Auth::user()->rank }} {{ Auth::user()->name }}
                                 </p>
-                                <p class="text-xs text-slate-400">{{ Auth::user()->department ?? 'Staff' }}</p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    {{ Auth::user()->department ?? 'กองบังคับการ' }}
+                                </p>
                             </div>
                             <div
                                 class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-all overflow-hidden">
@@ -676,38 +700,41 @@
 
                         <!-- Dropdown Menu -->
                         <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 translate-y-2"
-                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                             x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 translate-y-2"
-                            class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl ring-1 ring-black ring-opacity-5 py-2 focus:outline-none z-[9999] origin-top-right"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                            class="absolute right-0 mt-4 w-64 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-100 py-3 focus:outline-none z-[9999] origin-top-right overflow-hidden"
                             style="display: none;">
 
-                            <div class="px-4 py-3 border-b border-slate-50 mb-1">
-                                <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">บัญชีผู้ใช้</p>
+                            <div class="px-6 py-4 border-b border-slate-50 mb-2 bg-slate-50/50">
+                                <p class="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-1">
+                                    Authenticated As</p>
                                 <p class="text-sm font-bold text-slate-800 truncate">{{ Auth::user()->email }}</p>
                             </div>
 
-                            <a href="{{ route('profile.edit') }}"
-                                class="flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-600 transition-colors">
-                                <i data-lucide="user" class="w-4 h-4 mr-2"></i> โปรไฟล์
-                            </a>
+                            <div class="px-2 space-y-1">
+                                <a href="{{ route('profile.edit') }}"
+                                    class="flex items-center px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-all">
+                                    <i data-lucide="user-cog" class="w-5 h-5 mr-3 opacity-50"></i> จัดการโปรไฟล์
+                                </a>
 
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit"
-                                    class="flex w-full items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                                    <i data-lucide="log-out" class="w-4 h-4 mr-2"></i> ออกจากระบบ
-                                </button>
-                            </form>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="flex w-full items-center px-4 py-3 text-sm font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
+                                        <i data-lucide="power" class="w-5 h-5 mr-3 opacity-50"></i> ออกจากระบบ
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </header>
 
             <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth bg-[#fbfcfd]">
                 <div class="max-w-[95rem] mx-auto">
                     @if (isset($slot))
                         {{ $slot }}

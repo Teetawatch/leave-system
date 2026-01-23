@@ -2,20 +2,15 @@
     @section('title', 'รายงานการเปลี่ยนเวรยาม')
 
     <div class="min-h-screen bg-[#f8fafc] pb-20">
-        <!-- Cinematic Analytics Header -->
-        <div class="relative bg-slate-900 pt-16 pb-32 overflow-hidden">
+        <!-- Bright Cinematic Analytics Header -->
+        <div class="relative bg-white pt-16 pb-32 overflow-hidden border-b border-slate-100">
             <div class="absolute inset-0">
                 <div
-                    class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] -mr-48 -mt-48">
+                    class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] -mr-48 -mt-48">
                 </div>
                 <div
-                    class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[100px] -ml-24 -mb-24">
+                    class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] -ml-24 -mb-24">
                 </div>
-                <div
-                    class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]">
-                </div>
-                <!-- Dynamic Wave Effect -->
-                <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f8fafc] to-transparent"></div>
             </div>
 
             <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -26,12 +21,13 @@
                                 class="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
                                 <i data-lucide="shield-check" class="w-6 h-6"></i>
                             </span>
-                            <span class="text-indigo-400 font-bold tracking-[0.2em] uppercase text-sm">สถิติวิเคราะห์การเปลี่ยนเวร</span>
+                            <span
+                                class="text-indigo-600 font-bold tracking-widest uppercase text-sm">สถิติวิเคราะห์การเปลี่ยนเวร</span>
                         </div>
-                        <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
-                            รายงานวิเคราะห์ <br><span class="text-indigo-400">การเปลี่ยนเวรยาม</span>
+                        <h1 class="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
+                            รายงานวิเคราะห์ <br><span class="text-indigo-600">การเปลี่ยนเวรยาม</span>
                         </h1>
-                        <p class="text-slate-400 mt-6 max-w-2xl text-lg font-medium leading-relaxed">
+                        <p class="text-slate-500 mt-6 max-w-2xl text-lg font-medium leading-relaxed">
                             ระบบรวบรวมข้อมูลและตรวจสอบความโปร่งใสในการสับเปลี่ยนหน้าที่เวรยาม
                             เพื่อความปลอดภัยและประสิทธิภาพสูงสุดขององค์กร
                         </p>
@@ -39,9 +35,9 @@
 
                     <div class="flex flex-wrap items-center gap-4">
                         <button type="button" onclick="window.print()"
-                            class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md border border-white/10 transition-all font-bold uppercase tracking-widest text-xs flex items-center gap-3 group">
+                            class="px-8 py-4 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-2xl shadow-sm transition-all font-bold uppercase tracking-widest text-xs flex items-center gap-3 group">
                             <i data-lucide="printer"
-                                class="w-5 h-5 group-hover:scale-110 transition-transform text-indigo-400"></i>
+                                class="w-5 h-5 group-hover:scale-110 transition-transform text-indigo-500"></i>
                             พิมพ์รายงานสรุป
                         </button>
                     </div>
@@ -64,11 +60,10 @@
                             class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-900/20">
                             <i data-lucide="activity" class="w-7 h-7"></i>
                         </div>
-                        <span
-                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">จำนวนทั้งหมด</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">จำนวนทั้งหมด</span>
                     </div>
-                    <h3 class="text-4xl font-black text-slate-900 mb-2">{{ number_format($stats['total']) }}</h3>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">รายการทั้งหมด</p>
+                    <h3 class="text-4xl font-bold text-slate-900 mb-2">{{ number_format($stats['total']) }}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">รายการทั้งหมด</p>
                     <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
                         <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 100%">
                         </div>
@@ -87,10 +82,10 @@
                             class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
                             <i data-lucide="shield-check" class="w-7 h-7"></i>
                         </div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">อนุมัติแล้ว</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">อนุมัติแล้ว</span>
                     </div>
-                    <h3 class="text-4xl font-black text-slate-900 mb-2">{{ number_format($stats['approved']) }}</h3>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">อนุมัติสมบูรณ์</p>
+                    <h3 class="text-4xl font-bold text-slate-900 mb-2">{{ number_format($stats['approved']) }}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">อนุมัติสมบูรณ์</p>
                     <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
                         <div class="bg-emerald-500 h-full rounded-full transition-all duration-1000"
                             style="width: {{ $stats['total'] > 0 ? ($stats['approved'] / $stats['total']) * 100 : 0 }}%">
@@ -110,10 +105,10 @@
                             class="w-14 h-14 rounded-2xl bg-amber-400 text-white flex items-center justify-center shadow-lg shadow-amber-400/20">
                             <i data-lucide="timer" class="w-7 h-7"></i>
                         </div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">รอตรวจสอบ</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">รอตรวจสอบ</span>
                     </div>
-                    <h3 class="text-4xl font-black text-slate-900 mb-2">{{ number_format($stats['pending']) }}</h3>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">รอการตรวจสอบ</p>
+                    <h3 class="text-4xl font-bold text-slate-900 mb-2">{{ number_format($stats['pending']) }}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">รอการตรวจสอบ</p>
                     <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
                         <div class="bg-amber-400 h-full rounded-full transition-all duration-1000"
                             style="width: {{ $stats['total'] > 0 ? ($stats['pending'] / $stats['total']) * 100 : 0 }}%">
@@ -134,10 +129,10 @@
                             <i data-lucide="shield-off" class="w-7 h-7"></i>
                         </div>
                         <span
-                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ปฏิเสธ/ยกเลิก</span>
+                            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ปฏิเสธ/ยกเลิก</span>
                     </div>
-                    <h3 class="text-4xl font-black text-slate-900 mb-2">{{ number_format($stats['rejected']) }}</h3>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">ปฏิเสธ/ยกเลิก</p>
+                    <h3 class="text-4xl font-bold text-slate-900 mb-2">{{ number_format($stats['rejected']) }}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">ปฏิเสธ/ยกเลิก</p>
                     <div class="w-full bg-slate-50 rounded-full h-2 overflow-hidden ring-4 ring-slate-50/50">
                         <div class="bg-rose-500 h-full rounded-full transition-all duration-1000"
                             style="width: {{ $stats['total'] > 0 ? ($stats['rejected'] / $stats['total']) * 100 : 0 }}%">
@@ -156,7 +151,7 @@
                                 class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
                                 <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
                             </div>
-                            <h3 class="font-black text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรอง
+                            <h3 class="font-bold text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรอง
                             </h3>
                         </div>
 
@@ -164,7 +159,7 @@
                             <!-- Date Range Context -->
                             <div class="space-y-4">
                                 <label
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
+                                    class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
                                     <i data-lucide="calendar" class="w-3 h-3"></i>
                                     ช่วงเวลาปฏิบัติงาน
                                 </label>
@@ -191,7 +186,7 @@
                             <!-- Organizational Scope -->
                             <div class="space-y-4">
                                 <label
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
+                                    class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
                                     <i data-lucide="database" class="w-3 h-3"></i>
                                     ขอบเขตองค์กร
                                 </label>
@@ -213,7 +208,7 @@
                             <!-- Operational Status -->
                             <div class="space-y-4">
                                 <label
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 flex items-center gap-2">
+                                    class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
                                     <i data-lucide="shield" class="w-3 h-3"></i>
                                     สถานะการตรวจสอบ
                                 </label>
@@ -240,13 +235,13 @@
 
                             <div class="pt-6 space-y-3">
                                 <button type="submit"
-                                    class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:shadow-indigo-500/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group">
+                                    class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:shadow-indigo-500/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group">
                                     <i data-lucide="refresh-cw"
                                         class="w-4 h-4 group-hover:rotate-180 transition-transform duration-700"></i>
                                     ประมวลผลข้อมูล
                                 </button>
                                 <a href="{{ route('reports.guard-change') }}"
-                                    class="w-full py-4 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-50 text-center transition-all flex items-center justify-center gap-2">
+                                    class="w-full py-4 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-slate-50 text-center transition-all flex items-center justify-center gap-2">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     ล้างตัวกรอง
                                 </a>
@@ -267,45 +262,21 @@
                         <div class="overflow-x-auto">
                             <table class="w-full border-collapse">
                                 <thead>
-                                    <tr class="bg-slate-50/50">
+                                    <tr class="bg-slate-50 border-b border-slate-100">
                                         <th class="px-8 py-6 text-left">
-                                            <div class="flex flex-col gap-1">
-                                                <span
-                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ผู้ส่งมอบ
-                                                    - ผู้รับมอบ</span>
-                                                <span class="text-[8px] font-bold text-indigo-400 uppercase">สลับหน้าที่</span>
-                                            </div>
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">ผู้ส่งมอบ - ผู้รับมอบ</span>
                                         </th>
                                         <th class="px-8 py-6 text-left">
-                                            <div class="flex flex-col gap-1">
-                                                <span
-                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">รายละเอียดเวร</span>
-                                                <span class="text-[8px] font-bold text-indigo-400 uppercase">รายละเอียด</span>
-                                            </div>
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">รายละเอียดเวร</span>
                                         </th>
                                         <th class="px-8 py-6 text-center">
-                                            <div class="flex flex-col gap-1">
-                                                <span
-                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">สถานะปฏิบัติงาน</span>
-                                                <span
-                                                    class="text-[8px] font-bold text-indigo-400 uppercase">Status</span>
-                                            </div>
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">สถานะปฏิบัติงาน</span>
                                         </th>
                                         <th class="px-8 py-6 text-right">
-                                            <div class="flex flex-col gap-1">
-                                                <span
-                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">บันทึกข้อมูล</span>
-                                                    <span
-                                                    class="text-[8px] font-bold text-indigo-400 uppercase">เวลาบันทึก</span>
-                                            </div>
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">บันทึกข้อมูล</span>
                                         </th>
                                         <th class="px-8 py-6 text-center">
-                                            <div class="flex flex-col gap-1">
-                                                <span
-                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">เอกสาร</span>
-                                                    <span
-                                                    class="text-[8px] font-bold text-indigo-400 uppercase">ไฟล์แนบ</span>
-                                            </div>
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">เอกสาร</span>
                                         </th>
                                     </tr>
                                 </thead>
@@ -318,7 +289,7 @@
                                                     <div class="flex items-center gap-4">
                                                         <div class="relative">
                                                             <div
-                                                                class="w-12 h-12 rounded-[1.25rem] bg-slate-900 flex items-center justify-center text-sm font-black text-white shadow-xl shadow-slate-900/10 overflow-hidden ring-4 ring-white group-hover:scale-105 transition-transform duration-500">
+                                                                class="w-12 h-12 rounded-[1.25rem] bg-slate-900 flex items-center justify-center text-sm font-bold text-white shadow-xl shadow-slate-900/10 overflow-hidden ring-4 ring-white group-hover:scale-105 transition-transform duration-500">
                                                                 @if($req->user->avatar)
                                                                     <img src="{{ asset('storage/' . $req->user->avatar) }}"
                                                                         class="w-full h-full object-cover">
@@ -332,11 +303,8 @@
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <p class="text-sm font-black text-slate-900">
-                                                                {{ $req->user->name }}</p>
-                                                            <p
-                                                                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                                {{ $req->user->department }}</p>
+                                                            <p class="text-base font-bold text-slate-900 leading-tight">{{ $req->user->name }}</p>
+                                                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{{ $req->user->department }}</p>
                                                         </div>
                                                     </div>
 
@@ -346,7 +314,7 @@
                                                             class="h-8 w-[2px] bg-gradient-to-b from-indigo-200 to-transparent">
                                                         </div>
                                                         <div
-                                                            class="text-[8px] font-black text-indigo-300 uppercase tracking-[0.3em] flex items-center gap-2">
+                                                            class="text-[8px] font-bold text-indigo-300 uppercase tracking-[0.3em] flex items-center gap-2">
                                                             <span class="animate-pulse">กำลังสับเปลี่ยนหน้าที่</span>
                                                             <i data-lucide="arrow-down" class="w-3 h-3 animate-bounce"></i>
                                                         </div>
@@ -356,7 +324,7 @@
                                                     <div
                                                         class="flex items-center gap-4 pl-4 border-l-4 border-emerald-400/30 ml-6">
                                                         <div
-                                                            class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-black shadow-sm overflow-hidden border border-emerald-100 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500">
+                                                            class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold shadow-sm overflow-hidden border border-emerald-100 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500">
                                                             @if($req->replacementUser->avatar)
                                                                 <img src="{{ asset('storage/' . $req->replacementUser->avatar) }}"
                                                                     class="w-full h-full object-cover">
@@ -365,11 +333,8 @@
                                                             @endif
                                                         </div>
                                                         <div>
-                                                            <p class="text-xs font-black text-slate-700">
-                                                                {{ $req->replacementUser->name }}</p>
-                                                            <p
-                                                                class="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">
-                                                                ผู้รับมอบหน้าที่</p>
+                                                            <p class="text-sm font-bold text-slate-700 leading-tight">{{ $req->replacementUser->name }}</p>
+                                                            <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-0.5">ผู้รับมอบหน้าที่</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -386,9 +351,9 @@
                                                 <div class="space-y-4">
                                                     <div class="inline-flex flex-col">
                                                         <span
-                                                            class="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">ตำแหน่งที่ได้รับมอบ</span>
+                                                            class="text-[8px] font-bold text-slate-300 uppercase tracking-widest mb-1">ตำแหน่งที่ได้รับมอบ</span>
                                                         <span
-                                                            class="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[10px] font-black shadow-lg shadow-slate-900/10 border border-slate-700">
+                                                            class="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-slate-900/10 border border-slate-700">
                                                             {{ $dutyPositions[$req->duty_position] ?? $req->duty_position }}
                                                         </span>
                                                     </div>
@@ -398,7 +363,7 @@
                                                             <i data-lucide="calendar-check" class="w-4 h-4"></i>
                                                         </div>
                                                         <div class="flex flex-col">
-                                                            <p class="text-sm font-black text-slate-900">
+                                                            <p class="text-sm font-bold text-slate-900">
                                                                 {{ $req->duty_date->locale('th')->translatedFormat('d F Y') }}
                                                             </p>
                                                             <p
@@ -421,21 +386,16 @@
                                                     };
                                                 @endphp
                                                 <div class="flex flex-col items-center gap-2">
-                                                    <div
-                                                        class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-[1.25rem] {{ $statusConfig['bg'] }} border {{ $statusConfig['shadow'] }} shadow-lg transition-transform group-hover:scale-105">
+                                                    <div class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-[1.25rem] {{ $statusConfig['bg'] }} border {{ $statusConfig['shadow'] }} shadow-lg transition-transform group-hover:scale-105">
                                                         <i data-lucide="{{ $statusConfig['icon'] }}" class="w-4 h-4"></i>
-                                                        <span
-                                                            class="text-[10px] font-black uppercase tracking-[0.15em]">{{ $statusConfig['label'] }}</span>
+                                                        <span class="text-xs font-bold uppercase tracking-widest">{{ $statusConfig['label'] }}</span>
                                                     </div>
-                                                    <p
-                                                        class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                                                        {{ $statusConfig['label'] }}</p>
                                                 </div>
                                             </td>
 
                                             <td class="px-8 py-8 whitespace-nowrap text-right">
                                                 <div class="space-y-1.5">
-                                                    <p class="text-sm font-black text-slate-900">
+                                                    <p class="text-sm font-bold text-slate-900">
                                                         {{ $req->created_at->locale('th')->translatedFormat('d M Y') }}</p>
                                                     <div
                                                         class="flex items-center justify-end gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -470,7 +430,7 @@
                                                         </div>
                                                     </div>
                                                     <h4
-                                                        class="text-2xl font-black text-slate-900 mb-3 uppercase tracking-tight">
+                                                        class="text-2xl font-bold text-slate-900 mb-3 uppercase tracking-tight">
                                                         ไม่พบข้อมูล</h4>
                                                     <p
                                                         class="text-sm font-medium text-slate-400 max-w-sm mx-auto leading-relaxed">
@@ -479,7 +439,7 @@
                                                     </p>
                                                     <button
                                                         onclick="window.location.href='{{ route('reports.guard-change') }}'"
-                                                        class="mt-8 px-8 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-colors">
+                                                        class="mt-8 px-8 py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-colors">
                                                         แสดงข้อมูลทั้งหมด
                                                     </button>
                                                 </div>

@@ -4,50 +4,40 @@
 
 @section('content')
     <div class="min-h-screen bg-[#f8fafc] pb-20" x-data="{ activeTab: 'students' }">
-        <!-- Cinematic Attendance Header -->
-        <div class="relative bg-slate-900 pt-16 pb-32 overflow-hidden">
+        <!-- Bright Attendance Header -->
+        <div class="relative bg-white pt-16 pb-32 overflow-hidden border-b border-slate-100">
             <div class="absolute inset-0">
-                <div
-                    class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] -mr-48 -mt-48">
-                </div>
-                <div
-                    class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[100px] -ml-24 -mb-24">
-                </div>
-                <div
-                    class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]">
-                </div>
+                <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] -ml-24 -mb-24"></div>
             </div>
 
             <div class="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
                     <div class="flex items-center gap-8">
                         <div class="relative">
-                            <div class="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 animate-pulse"></div>
-                            <div
-                                class="relative w-24 h-24 bg-white/5 backdrop-blur-2xl rounded-[2rem] flex items-center justify-center border border-white/10 shadow-2xl group overflow-hidden">
-                                <i data-lucide="fingerprint"
-                                    class="w-12 h-12 text-white group-hover:scale-110 transition-transform duration-700"></i>
+                            <div class="absolute inset-0 bg-indigo-500 blur-3xl opacity-10 animate-pulse"></div>
+                            <div class="relative w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center border border-slate-100 shadow-xl group overflow-hidden">
+                                <i data-lucide="fingerprint" class="w-12 h-12 text-indigo-600 group-hover:scale-110 transition-transform duration-700"></i>
                                 <div class="absolute inset-x-0 bottom-0 h-1 bg-indigo-500 animate-scan"></div>
                             </div>
                         </div>
                         <div>
                             <div class="flex items-center gap-3 mb-3">
-                                <span
-                                    class="px-3 py-1 bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-indigo-500/20">ติดตามสถานะล่าสุด</span>
-                                <span class="text-slate-500 text-[10px] font-black uppercase tracking-widest">รหัสอ้างอิง:
-                                    {{ now()->format('Ymd') }}</span>
+                                <span class="px-3 py-1 bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest rounded-full shadow-lg shadow-indigo-500/20">ติดตามสถานะล่าสุด</span>
+                                <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">รหัสอ้างอิง: {{ now()->format('Ymd') }}</span>
                             </div>
-                            <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight">รายงานการลงเวลา</h1>
-                            <p class="text-indigo-100/40 mt-3 font-medium text-lg">
-                                การตรวจสอบและควบคุมการเข้าพื้นที่ผ่านระบบยืนยันอัตลักษณ์บุคคล (Biometric Data)</p>
+                            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">รายงานการลงเวลา</h1>
+                            <p class="text-slate-500 mt-3 font-medium text-lg leading-relaxed">
+                                การตรวจสอบและควบคุมการเข้าพื้นที่ผ่านระบบยืนยันอัตลักษณ์บุคคล (Biometric Data)
+                            </p>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-4">
                         <a href="{{ route('attendance-reports.pdf', array_merge(request()->query(), ['date' => $startDate])) }}"
                             target="_blank"
-                            class="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3 shadow-2xl shadow-white/10 hover:bg-slate-100 hover:-translate-y-1 transition-all group">
-                            <i data-lucide="printer" class="w-5 h-5 group-hover:scale-125 transition-transform"></i>
+                            class="px-8 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center gap-3 shadow-sm hover:bg-slate-50 hover:-translate-y-1 transition-all group">
+                            <i data-lucide="printer" class="w-5 h-5 group-hover:scale-125 transition-transform text-indigo-500"></i>
                             ส่งออกรายงาน
                         </a>
                     </div>
@@ -66,7 +56,7 @@
                 <form action="{{ route('attendance-reports.index') }}" method="GET"
                     class="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     <div class="space-y-3">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">หลักสูตร/สังกัด</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-2">หลักสูตร/สังกัด</label>
                         <div class="relative">
                             <select name="course_id"
                                 class="w-full pl-12 pr-4 py-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
@@ -82,7 +72,7 @@
                     </div>
 
                     <div class="space-y-3">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">วันที่เริ่มต้น</label>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">วันที่เริ่มต้น</label>
                         <div class="relative">
                             <input type="date" name="start_date" value="{{ $startDate }}"
                                 class="w-full pl-12 pr-4 py-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-8 focus:ring-indigo-500/5 transition-all">
@@ -92,7 +82,7 @@
                     </div>
 
                     <div class="space-y-3">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">วันที่สิ้นสุด</label>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">วันที่สิ้นสุด</label>
                         <div class="relative">
                             <input type="date" name="end_date" value="{{ $endDate }}"
                                 class="w-full pl-12 pr-4 py-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-8 focus:ring-indigo-500/5 transition-all">
@@ -103,7 +93,7 @@
 
                     <div class="flex items-end">
                         <button type="submit"
-                            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:bg-indigo-600 hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
+                            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:bg-indigo-600 hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
                             <i data-lucide="refresh-cw" class="w-5 h-5"></i>
                             ประมวลผลข้อมูล
                         </button>
@@ -115,27 +105,27 @@
             <div class="flex p-2 bg-slate-100/80 backdrop-blur-md rounded-[2.5rem] border-2 border-slate-200">
                 <button @click="activeTab = 'students'"
                     :class="activeTab === 'students' ? 'bg-white shadow-2xl text-indigo-600 scale-[1.01]' : 'text-slate-400 hover:text-slate-600'"
-                    class="flex-1 px-8 py-6 rounded-[2rem] font-black transition-all duration-500 flex items-center justify-center gap-4 group">
+                    class="flex-1 px-8 py-6 rounded-[2rem] font-bold transition-all duration-500 flex items-center justify-center gap-4 group">
                     <i data-lucide="graduation-cap" class="w-6 h-6"></i>
                     <div class="text-left">
-                        <p class="text-xs font-black uppercase tracking-widest leading-none mb-1 opacity-50">ข้อมูลนักเรียน</p>
+                        <p class="text-xs font-bold uppercase tracking-widest leading-none mb-1 opacity-50">ข้อมูลนักเรียน</p>
                         <p class="text-xl tracking-tight">รายชื่อนักเรียน</p>
                     </div>
                     <div
-                        class="ml-auto px-4 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-600 border border-indigo-100">
+                        class="ml-auto px-4 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600 border border-indigo-100">
                         {{ number_format($totalStudents) }}</div>
                 </button>
 
                 <button @click="activeTab = 'employees'"
                     :class="activeTab === 'employees' ? 'bg-white shadow-2xl text-emerald-600 scale-[1.01]' : 'text-slate-400 hover:text-slate-600'"
-                    class="flex-1 px-8 py-6 rounded-[2rem] font-black transition-all duration-500 flex items-center justify-center gap-4 group">
+                    class="flex-1 px-8 py-6 rounded-[2rem] font-bold transition-all duration-500 flex items-center justify-center gap-4 group">
                     <i data-lucide="briefcase" class="w-6 h-6"></i>
                     <div class="text-left">
-                        <p class="text-xs font-black uppercase tracking-widest leading-none mb-1 opacity-50">ข้อมูลบุคลากร</p>
+                        <p class="text-xs font-bold uppercase tracking-widest leading-none mb-1 opacity-50">ข้อมูลบุคลากร</p>
                         <p class="text-xl tracking-tight">รายชื่อบุคลากร</p>
                     </div>
                     <div
-                        class="ml-auto px-4 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        class="ml-auto px-4 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
                         {{ number_format($totalEmployees) }}</div>
                 </button>
             </div>
@@ -151,9 +141,9 @@
                                 <i data-lucide="user-check" class="w-8 h-8"></i>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">มาเรียน/ปกติ
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">มาเรียน/ปกติ
                                 </p>
-                                <h3 class="text-3xl font-black text-slate-900 mt-1">
+                                <h3 class="text-3xl font-bold text-slate-900 mt-1">
                                     {{ number_format($uniqueStudentsCount) }}</h3>
                             </div>
                         </div>
@@ -171,8 +161,8 @@
                                 <i data-lucide="user-minus" class="w-8 h-8"></i>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ขาด/ไม่มา</p>
-                                <h3 class="text-3xl font-black text-slate-900 mt-1">{{ number_format($absentCount) }}</h3>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ขาด/ไม่มา</p>
+                                <h3 class="text-3xl font-bold text-slate-900 mt-1">{{ number_format($absentCount) }}</h3>
                             </div>
                         </div>
                         <div class="h-2 bg-slate-50 rounded-full overflow-hidden">
@@ -188,8 +178,8 @@
                                 <i data-lucide="clock" class="w-8 h-8"></i>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">มาสาย</p>
-                                <h3 class="text-3xl font-black text-slate-900 mt-1">{{ number_format($lateCount) }}</h3>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">มาสาย</p>
+                                <h3 class="text-3xl font-bold text-slate-900 mt-1">{{ number_format($lateCount) }}</h3>
                             </div>
                         </div>
                         <div class="flex gap-1 mt-4">
@@ -212,9 +202,9 @@
                                     class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 backdrop-blur-md">
                                     <i data-lucide="database" class="w-7 h-7 text-indigo-300"></i>
                                 </div>
-                                <span class="text-[10px] font-black opacity-50 uppercase tracking-widest">จำนวนการสแกน</span>
+                                <span class="text-[10px] font-bold opacity-50 uppercase tracking-widest">จำนวนการสแกน</span>
                             </div>
-                            <h3 class="text-3xl font-black">{{ number_format($totalScansCount) }} <span
+                            <h3 class="text-3xl font-bold">{{ number_format($totalScansCount) }} <span
                                     class="text-xs font-normal opacity-50">ครั้ง</span></h3>
                         </div>
                     </div>
@@ -232,8 +222,8 @@
                                     <i data-lucide="alert-circle" class="w-8 h-8"></i>
                                 </div>
                                 <div class="text-left">
-                                    <h3 class="text-2xl font-black text-slate-900 tracking-tight">ตรวจพบนักเรียนมาสาย</h3>
-                                    <p class="text-xs font-black text-amber-500 uppercase tracking-widest mt-1">ตรวจพบทั้งหมด
+                                    <h3 class="text-2xl font-bold text-slate-900 tracking-tight">ตรวจพบนักเรียนมาสาย</h3>
+                                    <p class="text-xs font-bold text-amber-500 uppercase tracking-widest mt-1">ตรวจพบทั้งหมด
                                         {{ $lateStudents->unique('student_id')->count() }} รายการ</p>
                                 </div>
                             </div>
@@ -254,9 +244,9 @@
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
                                             @endif
                                         </div>
-                                        <h4 class="text-sm font-black text-slate-900 uppercase">{{ $log->student->first_name }}</h4>
+                                        <h4 class="text-sm font-bold text-slate-900 uppercase">{{ $log->student->first_name }}</h4>
                                         <p
-                                            class="text-[9px] font-black text-amber-500 bg-amber-50 px-3 py-1 rounded-full mt-2 border border-amber-100">
+                                            class="text-[9px] font-bold text-amber-500 bg-amber-50 px-3 py-1 rounded-full mt-2 border border-amber-100">
                                             สาย @ {{ $log->scan_time->format('H:i') }}</p>
                                     </div>
                                 @endforeach
@@ -273,8 +263,8 @@
                                 <i data-lucide="database" class="w-6 h-6"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-black text-slate-900 tracking-tight">บันทึกการเข้า-ออก</h3>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">วิเคราะห์ข้อมูล
+                                <h3 class="text-xl font-bold text-slate-900 tracking-tight">บันทึกการเข้า-ออก</h3>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">วิเคราะห์ข้อมูล
                                     ({{ number_format($logs->total()) }} รายการ)</p>
                             </div>
                         </div>
@@ -283,21 +273,22 @@
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
-                                <tr class="text-left border-b border-slate-50">
-                                    <th class="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        รายชื่อนักเรียน</th>
-                                    <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        สังกัด/หลักสูตร</th>
-                                    <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        เวลา</th>
-                                    <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        สถานะ</th>
-                                    <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        ประเภท</th>
+                                <tr class="bg-slate-50 border-b border-slate-100">
+                                    <th class="px-10 py-6 text-left">
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">รายชื่อนักเรียน</span>
+                                    </th>
+                                    <th class="px-10 py-6 text-center">
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">สังกัด/หลักสูตร</span>
+                                    </th>
+                                    <th class="px-10 py-6 text-center">
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">เวลาสแกน</span>
+                                    </th>
+                                    <th class="px-10 py-6 text-center">
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">สถานะ</span>
+                                    </th>
+                                    <th class="px-10 py-6 text-center">
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">รอบเวลา</span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
@@ -316,47 +307,47 @@
                                                     @endif
                                                 </div>
                                                 <div>
-                                                    <p class="text-sm font-black text-slate-900 uppercase">
+                                                    <p class="text-sm font-bold text-slate-900 uppercase">
                                                         {{ $log->student->first_name }} {{ $log->student->last_name }}</p>
-                                                    <p class="text-[9px] font-black text-indigo-500 mt-1">รหัส:
+                                                    <p class="text-xs font-bold text-indigo-500 mt-1">รหัส:
                                                         {{ $log->student->student_code }}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                             <span
-                                                class="inline-flex px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-slate-900/10">
+                                                class="inline-flex px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-bold uppercase tracking-widest shadow-xl shadow-slate-900/10">
                                                 {{ $log->student->course->name ?? 'ไม่ระบุหลักสูตร' }}
                                             </span>
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                             <div class="flex flex-col items-center">
                                                 <span
-                                                    class="text-base font-black text-slate-900 tabular-nums">{{ $log->scan_time->format('H:i:s') }}</span>
+                                                    class="text-base font-bold text-slate-900 tabular-nums">{{ $log->scan_time->format('H:i:s') }}</span>
                                                 <span
-                                                    class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">วันที่:
+                                                    class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">วันที่:
                                                     {{ $log->scan_time->format('d/m/Y') }}</span>
                                             </div>
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                             @if($log->is_late)
                                                 <span
-                                                    class="px-5 py-2 rounded-full text-[9px] font-black bg-rose-50 text-rose-600 border border-rose-100 shadow-sm uppercase tracking-widest">มาสาย</span>
+                                                    class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest">มาสาย</span>
                                             @else
                                                 <span
-                                                    class="px-5 py-2 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm uppercase tracking-widest">ปกติ</span>
+                                                    class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest">ปกติ</span>
                                             @endif
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                              @if($log->scan_type === 'in')
                                                 <span
-                                                    class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-black shadow-lg shadow-indigo-600/20 uppercase tracking-[0.2em]">
+                                                    class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-bold shadow-lg shadow-indigo-600/20 uppercase tracking-[0.2em]">
                                                     <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
                                                     ขาเข้า
                                                 </span>
                                             @else
                                                 <span
-                                                    class="inline-flex items-center gap-2 px-5 py-2 bg-slate-800 text-white rounded-xl text-[9px] font-black shadow-lg shadow-slate-800/20 uppercase tracking-[0.2em]">
+                                                    class="inline-flex items-center gap-2 px-5 py-2 bg-slate-800 text-white rounded-xl text-[9px] font-bold shadow-lg shadow-slate-800/20 uppercase tracking-[0.2em]">
                                                     ขาออก
                                                 </span>
                                             @endif
@@ -370,7 +361,7 @@
                                                     class="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner ring-8 ring-slate-50/20">
                                                     <i data-lucide="database-zap" class="w-12 h-12 text-slate-200"></i>
                                                 </div>
-                                                <h4 class="text-2xl font-black text-slate-900 mb-2">ไม่พบข้อมูล</h4>
+                                                <h4 class="text-2xl font-bold text-slate-900 mb-2">ไม่พบข้อมูล</h4>
                                                 <p class="text-sm font-medium text-slate-500">ไม่พบข้อมูลการลงเวลาในช่วงที่กำหนด</p>
                                             </div>
                                         </td>
@@ -398,40 +389,40 @@
                         class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group transition-all hover:-translate-y-1">
                         <i data-lucide="briefcase"
                             class="w-10 h-10 text-emerald-600 mb-6 bg-emerald-50 rounded-2xl p-2 group-hover:bg-emerald-600 group-hover:text-white transition-all"></i>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">บุคลากรทั้งหมด</p>
-                        <h3 class="text-3xl font-black text-slate-900 mt-2">{{ number_format($totalEmployees) }}</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">บุคลากรทั้งหมด</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($totalEmployees) }}</h3>
                     </div>
 
                     <div
                         class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group transition-all hover:-translate-y-1">
                         <i data-lucide="user-check"
                             class="w-10 h-10 text-emerald-600 mb-6 bg-emerald-50 rounded-2xl p-2 group-hover:bg-emerald-600 group-hover:text-white transition-all"></i>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">มาปฏิบัติหน้าที่</p>
-                        <h3 class="text-3xl font-black text-slate-900 mt-2">{{ number_format($uniqueEmployeesCount) }}</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">มาปฏิบัติหน้าที่</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($uniqueEmployeesCount) }}</h3>
                     </div>
 
                     <div
                         class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group transition-all hover:-translate-y-1">
                         <i data-lucide="user-minus"
                             class="w-10 h-10 text-rose-600 mb-6 bg-rose-50 rounded-2xl p-2 group-hover:bg-rose-600 group-hover:text-white transition-all"></i>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ขาดงาน</p>
-                        <h3 class="text-3xl font-black text-slate-900 mt-2">{{ number_format($absentEmployeeCount) }}</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ขาดงาน</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($absentEmployeeCount) }}</h3>
                     </div>
 
                     <div
                         class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group transition-all hover:-translate-y-1">
                         <i data-lucide="clock"
                             class="w-10 h-10 text-amber-600 mb-6 bg-amber-50 rounded-2xl p-2 group-hover:bg-amber-600 group-hover:text-white transition-all"></i>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">มาสาย</p>
-                        <h3 class="text-3xl font-black text-slate-900 mt-2">{{ number_format($lateEmployeeCount) }}</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">มาสาย</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($lateEmployeeCount) }}</h3>
                     </div>
 
                     <div
                         class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group transition-all hover:-translate-y-1">
                         <i data-lucide="globe"
                             class="w-10 h-10 text-blue-600 mb-6 bg-blue-50 rounded-2xl p-2 group-hover:bg-blue-600 group-hover:text-white transition-all"></i>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ไปราชการ</p>
-                        <h3 class="text-3xl font-black text-slate-900 mt-2">{{ number_format($officialDutyCount) }}</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ไปราชการ</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($officialDutyCount) }}</h3>
                     </div>
 
                     <div
@@ -440,8 +431,8 @@
                         </div>
                         <i data-lucide="fingerprint"
                             class="w-10 h-10 text-emerald-400 mb-6 bg-white/5 rounded-2xl p-2 transition-all relative z-10"></i>
-                        <p class="text-[10px] font-black opacity-40 uppercase tracking-widest relative z-10">สแกนทั้งหมด</p>
-                        <h3 class="text-3xl font-black relative z-10">{{ number_format($totalEmployeeScans) }}</h3>
+                        <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest relative z-10">สแกนทั้งหมด</p>
+                        <h3 class="text-3xl font-bold relative z-10">{{ number_format($totalEmployeeScans) }}</h3>
                     </div>
                 </div>
 
@@ -453,9 +444,9 @@
                                 <i data-lucide="shield-check" class="w-6 h-6"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-black text-slate-900 tracking-tight">บันทึกการเวลาบุคลากร
+                                <h3 class="text-xl font-bold text-slate-900 tracking-tight">บันทึกการเวลาบุคลากร
                                 </h3>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">รายการลงเวลาปัจจุบัน</p>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">รายการลงเวลาปัจจุบัน</p>
                             </div>
                         </div>
                     </div>
@@ -464,19 +455,19 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="text-left border-b border-slate-50">
-                                    <th class="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                    <th class="px-10 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                                         รายชื่อบุคลากร</th>
                                     <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        class="px-10 py-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                                         สังกัด/แผนก</th>
                                     <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        class="px-10 py-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                                         เวลาบันทึก</th>
                                     <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        class="px-10 py-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                                         สถานะ</th>
                                     <th
-                                        class="px-10 py-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        class="px-10 py-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                                         รูปแบบ</th>
                                 </tr>
                             </thead>
@@ -496,40 +487,40 @@
                                                     @endif
                                                 </div>
                                                 <div>
-                                                    <p class="text-sm font-black text-slate-900 uppercase">
+                                                    <p class="text-sm font-bold text-slate-900 uppercase">
                                                         {{ $log->employee->first_name }} {{ $log->employee->last_name }}</p>
-                                                    <p class="text-[9px] font-black text-emerald-600 mt-1">
+                                                    <p class="text-xs font-bold text-emerald-600 mt-1">
                                                         {{ $log->employee->position ?? 'ไม่ระบุตำแหน่ง' }}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                             <span
-                                                class="inline-flex px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-slate-900/10">
+                                                class="text-xs font-bold bg-slate-100 text-brand-700 rounded-xl px-4 py-1.5 uppercase tracking-widest shadow-sm">
                                                 {{ $log->employee->department ?? 'ส่วนกลาง' }}
                                             </span>
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                             <div class="flex flex-col items-center">
                                                 <span
-                                                    class="text-base font-black text-slate-900 tabular-nums">{{ $log->scan_time->format('H:i:s') }}</span>
+                                                    class="text-base font-bold text-slate-900 tabular-nums">{{ $log->scan_time->format('H:i:s') }}</span>
                                                 <span
-                                                    class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">วันที่:
+                                                    class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">วันที่:
                                                     {{ $log->scan_time->format('d/m/Y') }}</span>
                                             </div>
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                             @if($log->is_late)
                                                 <span
-                                                    class="px-5 py-2 rounded-full text-[9px] font-black bg-rose-50 text-rose-600 border border-rose-100 shadow-sm uppercase tracking-widest">มาสาย</span>
+                                                    class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest">มาสาย</span>
                                             @else
                                                 <span
-                                                    class="px-5 py-2 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm uppercase tracking-widest">ปกติ</span>
+                                                    class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest">ปกติ</span>
                                             @endif
                                         </td>
                                         <td class="px-10 py-6 text-center">
                                             <span
-                                                class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white rounded-xl text-[9px] font-black shadow-lg shadow-emerald-600/20 uppercase tracking-[0.2em]">
+                                                class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white rounded-xl text-[9px] font-bold shadow-lg shadow-emerald-600/20 uppercase tracking-[0.2em]">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
                                                 บันทึกเวลา
                                             </span>
@@ -543,7 +534,7 @@
                                                     class="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner ring-8 ring-slate-50/20">
                                                     <i data-lucide="database-zap" class="w-12 h-12 text-slate-200"></i>
                                                 </div>
-                                                <h4 class="text-2xl font-black text-slate-900 mb-2">ไม่พบข้อมูล</h4>
+                                                <h4 class="text-2xl font-bold text-slate-900 mb-2">ไม่พบข้อมูล</h4>
                                                 <p class="text-sm font-medium text-slate-500">ไม่พบข้อมูลการลงเวลาในช่วงที่กำหนด</p>
                                             </div>
                                         </td>
