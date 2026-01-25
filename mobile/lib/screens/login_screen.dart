@@ -18,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Dissmis keyboard
     FocusScope.of(context).unfocus();
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -40,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: AppTheme.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       );
@@ -53,133 +52,198 @@ class _LoginScreenState extends State<LoginScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Background Decor
+          // Background Gradient Decor
           Positioned(
-            top: -100,
-            right: -100,
+            top: -size.height * 0.2,
+            right: -size.width * 0.2,
             child: Container(
-              width: 300,
-              height: 300,
+              width: size.width * 0.8,
+              height: size.width * 0.8,
               decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
+                gradient: RadialGradient(
+                  colors: [
+                    AppTheme.primary.withOpacity(0.15),
+                    AppTheme.primary.withOpacity(0),
+                  ],
+                ),
                 shape: BoxShape.circle,
               ),
             ),
           ),
           Positioned(
-            bottom: -50,
-            left: -50,
+            bottom: -size.height * 0.1,
+            left: -size.width * 0.1,
             child: Container(
-              width: 200,
-              height: 200,
+              width: size.width * 0.6,
+              height: size.width * 0.6,
               decoration: BoxDecoration(
-                color: AppTheme.secondary.withOpacity(0.1),
+                gradient: RadialGradient(
+                  colors: [
+                    AppTheme.secondary.withOpacity(0.1),
+                    AppTheme.secondary.withOpacity(0),
+                  ],
+                ),
                 shape: BoxShape.circle,
               ),
             ),
           ),
 
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo / Icon
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primary.withOpacity(0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 60),
+
+                        // Logo Area
+                        Center(
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primary.withOpacity(0.2),
+                                  blurRadius: 40,
+                                  offset: const Offset(0, 15),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.calendar_month_rounded,
+                              size: 50,
+                              color: AppTheme.primary,
+                            ),
+                          ),
                         ),
+
+                        const SizedBox(height: 48),
+
+                        Text(
+                          'ยินดีต้อนรับกลับมา',
+                          style: Theme.of(context).textTheme.displayLarge
+                              ?.copyWith(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'เข้าสู่ระบบเพื่อจัดการการลางานของคุณ',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+
+                        const SizedBox(height: 60),
+
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'อีเมลพนักงาน',
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                decoration: const InputDecoration(
+                                  hintText: 'name@company.com',
+                                  prefixIcon: Icon(
+                                    Icons.alternate_email_rounded,
+                                    size: 20,
+                                  ),
+                                ),
+                                validator: (val) =>
+                                    val!.isEmpty ? 'กรุณากรอกอีเมล' : null,
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                'รหัสผ่าน',
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                textInputAction: TextInputAction.done,
+                                onFieldSubmitted: (_) => _submit(),
+                                decoration: const InputDecoration(
+                                  hintText: '••••••••',
+                                  prefixIcon: Icon(
+                                    Icons.lock_outline_rounded,
+                                    size: 20,
+                                  ),
+                                ),
+                                validator: (val) =>
+                                    val!.isEmpty ? 'กรุณากรอกรหัสผ่าน' : null,
+                              ),
+                              const SizedBox(height: 48),
+
+                              ElevatedButton(
+                                onPressed: isLoading ? null : _submit,
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                ),
+                                child: isLoading
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'เข้าสู่ระบบ',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const Spacer(),
+                        const SizedBox(height: 24),
+                        Text(
+                          '© 2024 Leave Management System',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 12,
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.verified_user_rounded,
-                      size: 64,
-                      color: AppTheme.primary,
-                    ),
                   ),
-                  const SizedBox(height: 24),
-
-                  Text(
-                    'เข้าสู่ระบบ',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'ระบบลางานออนไลน์สำหรับพนักงาน',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 48),
-
-                  // Form Card
-                  Card(
-                    elevation: 4,
-                    shadowColor: Colors.black12,
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: 'อีเมล',
-                                prefixIcon: Icon(Icons.email_outlined),
-                              ),
-                              validator: (val) =>
-                                  val!.isEmpty ? 'กรุณากรอกอีเมล' : null,
-                            ),
-                            const SizedBox(height: 20),
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'รหัสผ่าน',
-                                prefixIcon: Icon(Icons.lock_outline),
-                              ),
-                              validator: (val) =>
-                                  val!.isEmpty ? 'กรุณากรอกรหัสผ่าน' : null,
-                            ),
-                            const SizedBox(height: 32),
-
-                            ElevatedButton(
-                              onPressed: isLoading ? null : _submit,
-                              child: isLoading
-                                  ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text('เข้าสู่ระบบ'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'v1.0.0',
-                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

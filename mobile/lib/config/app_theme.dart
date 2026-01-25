@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Modern Color Palette
-  static const Color primary = Color(0xFF4F46E5); // Indigo 600
+  // Modern Color Palette - Premium & Professional
+  static const Color primary = Color(0xFF6366F1); // Indigo 500
   static const Color primaryDark = Color(0xFF4338CA); // Indigo 700
-  static const Color secondary = Color(0xFF0EA5E9); // Sky 500
+  static const Color primaryLight = Color(0xFFEEF2FF); // Indigo 50
+
+  static const Color secondary = Color(0xFF06B6D4); // Cyan 500
   static const Color accent = Color(0xFFF59E0B); // Amber 500
-  static const Color background = Color(0xFFF3F4F6); // Gray 100
-  static const Color surface = Colors.white;
+
+  static const Color success = Color(0xFF10B981); // Emerald 500
+  static const Color warning = Color(0xFFFBBF24); // Amber 400
   static const Color error = Color(0xFFEF4444); // Red 500
-  static const Color textMain = Color(0xFF1F2937); // Gray 800
-  static const Color textSub = Color(0xFF6B7280); // Gray 500
+  static const Color info = Color(0xFF3B82F6); // Blue 500
+
+  static const Color background = Color(0xFFF8FAFC); // Slate 50
+  static const Color surface = Colors.white;
+  static const Color textMain = Color(0xFF0F172A); // Slate 900
+  static const Color textSub = Color(0xFF64748B); // Slate 500
+  static const Color border = Color(0xFFE2E8F0); // Slate 200
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -26,17 +34,23 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: background,
 
-      // Typography
+      // Typography - Using Sarabun for professional Thai support
       fontFamily: GoogleFonts.sarabun().fontFamily,
       textTheme: TextTheme(
         displayLarge: GoogleFonts.sarabun(
           fontSize: 32,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
+          color: textMain,
+          letterSpacing: -0.5,
+        ),
+        displayMedium: GoogleFonts.sarabun(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
           color: textMain,
         ),
         headlineSmall: GoogleFonts.sarabun(
           fontSize: 24,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
           color: textMain,
         ),
         titleLarge: GoogleFonts.sarabun(
@@ -44,70 +58,106 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: textMain,
         ),
-        bodyLarge: GoogleFonts.sarabun(fontSize: 16, color: textMain),
-        bodyMedium: GoogleFonts.sarabun(fontSize: 14, color: textSub),
+        titleMedium: GoogleFonts.sarabun(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: textMain,
+        ),
+        bodyLarge: GoogleFonts.sarabun(
+          fontSize: 16,
+          color: textMain,
+          height: 1.5,
+        ),
+        bodyMedium: GoogleFonts.sarabun(
+          fontSize: 14,
+          color: textSub,
+          height: 1.5,
+        ),
+        labelLarge: GoogleFonts.sarabun(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: textMain,
+        ),
       ),
 
       cardTheme: CardThemeData(
         color: surface,
-        elevation:
-            0, // Flat with border or soft shadow via Container decoration preferred
+        elevation: 0,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: border, width: 1),
+        ),
         clipBehavior: Clip.antiAlias,
       ),
 
-      // Input Decoration
+      // Input Decoration - Premium Look
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.grey[50], // Very light gray
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
-          vertical: 16,
+          vertical: 18,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: border, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: border, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: primary, width: 2),
         ),
-        labelStyle: TextStyle(color: textSub),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: error, width: 1),
+        ),
+        labelStyle: const TextStyle(
+          color: textSub,
+          fontWeight: FontWeight.w500,
+        ),
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+        prefixIconColor: textSub,
+        suffixIconColor: textSub,
       ),
 
-      // Button Theme
+      // Button Themes
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
-          foregroundColor: Colors.white,
-          elevation: 2,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.sarabun(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        style:
+            ElevatedButton.styleFrom(
+              backgroundColor: primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              textStyle: GoogleFonts.sarabun(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ).copyWith(
+              overlayColor: MaterialStateProperty.all(
+                Colors.white.withOpacity(0.1),
+              ),
+            ),
       ),
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primary,
-          side: const BorderSide(color: primary),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          side: const BorderSide(color: primary, width: 1.5),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           textStyle: GoogleFonts.sarabun(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -118,12 +168,21 @@ class AppTheme {
         foregroundColor: textMain,
         elevation: 0,
         centerTitle: true,
+        surfaceTintColor: Colors.transparent,
         titleTextStyle: GoogleFonts.sarabun(
           fontSize: 18,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
           color: textMain,
         ),
-        iconTheme: const IconThemeData(color: textMain),
+        iconTheme: const IconThemeData(color: textMain, size: 24),
+      ),
+
+      // Floating Action Button
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
+import 'providers/leave_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'config/app_theme.dart';
@@ -29,7 +30,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => LeaveProvider()),
+      ],
       child: MaterialApp(
         title: AppConfig.appName,
         debugShowCheckedModeBanner: false,

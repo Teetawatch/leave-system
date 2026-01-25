@@ -42,4 +42,11 @@ class LeaveRequest {
       createdAt: DateTime.parse(json['created_at']),
     );
   }
+
+  String get formattedStartDate =>
+      "${startDate.day}/${startDate.month}/${startDate.year + 543}";
+  String get formattedEndDate =>
+      "${endDate.day}/${endDate.month}/${endDate.year + 543}";
+  String get formattedCreatedAt =>
+      "${createdAt.day}/${createdAt.month}/${createdAt.year + 543}";
 }
