@@ -3,6 +3,7 @@ import '../models/leave_balance_model.dart';
 import '../models/leave_request_model.dart';
 import '../models/leave_type_model.dart';
 import '../services/api_service.dart';
+import 'package:dio/dio.dart'; // Import Request for proper type check
 
 class LeaveProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -90,21 +91,35 @@ class LeaveProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> submitRequest(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> submitRequest(Map<String, dynamic> data) async {
     try {
       final response = await _apiService.submitLeaveRequest(data);
       if (response.data['success']) {
         await fetchMyRequests();
         await fetchLeaveBalances();
-        return true;
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'สำเร็จ',
+        };
       }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'เกิดข้อผิดพลาด',
+      };
     } catch (e) {
       debugPrint('Error submitting request: $e');
+      if (e is DioException && e.response?.data != null) {
+        return {
+          'success': false,
+          'message':
+              e.response!.data['message'] ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+        };
+      }
+      return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
     }
-    return false;
   }
 
-  Future<bool> approveRequest(
+  Future<Map<String, dynamic>> approveRequest(
     int id, {
     String? comment,
     String? signature,
@@ -119,24 +134,52 @@ class LeaveProvider with ChangeNotifier {
       );
       if (response.data['success']) {
         await fetchPendingApprovals();
-        return true;
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'อนุมัติเรียบร้อยแล้ว',
+        };
       }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'ไม่สามารถอนุมัติได้',
+      };
     } catch (e) {
       debugPrint('Error approving request: $e');
+      if (e is DioException && e.response?.data != null) {
+        return {
+          'success': false,
+          'message':
+              e.response!.data['message'] ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+        };
+      }
+      return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
     }
-    return false;
   }
 
-  Future<bool> rejectRequest(int id, {String? comment}) async {
+  Future<Map<String, dynamic>> rejectRequest(int id, {String? comment}) async {
     try {
       final response = await _apiService.rejectRequest(id, comment: comment);
       if (response.data['success']) {
         await fetchPendingApprovals();
-        return true;
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'ปฏิเสธเรียบร้อยแล้ว',
+        };
       }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'ไม่สามารถปฏิเสธได้',
+      };
     } catch (e) {
       debugPrint('Error rejecting request: $e');
+      if (e is DioException && e.response?.data != null) {
+        return {
+          'success': false,
+          'message':
+              e.response!.data['message'] ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+        };
+      }
+      return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
     }
-    return false;
   }
 }

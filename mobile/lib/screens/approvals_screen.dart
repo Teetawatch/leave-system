@@ -40,12 +40,21 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     );
 
     if (result != null) {
+      if (!mounted) return;
+
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(child: CircularProgressIndicator()),
+      );
+
       final provider = Provider.of<LeaveProvider>(context, listen: false);
       final comment = result['comment'] as String?;
       final signature = result['signature'] as String?;
       final useSavedSignature = result['useSavedSignature'] as bool? ?? false;
 
-      final success = isApprove
+      final Map<String, dynamic> response = isApprove
           ? await provider.approveRequest(
               id,
               comment: comment,
@@ -54,23 +63,27 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
             )
           : await provider.rejectRequest(id, comment: comment);
 
-      if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isApprove ? 'อนุมัติเรียบร้อยแล้ว' : 'ปฏิเสธเรียบร้อยแล้ว',
-              ),
-              backgroundColor: isApprove ? AppTheme.success : AppTheme.error,
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(24),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          );
-        }
-      }
+      if (!mounted) return;
+
+      // Hide loading
+      Navigator.pop(context);
+
+      final bool isSuccess = response['success'] == true;
+      final String message =
+          response['message'] ??
+          (isSuccess ? 'ทำรายการสำเร็จ' : 'เกิดข้อผิดพลาด');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isSuccess ? AppTheme.success : AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      );
     }
   }
 

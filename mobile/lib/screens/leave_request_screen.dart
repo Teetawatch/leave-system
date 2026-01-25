@@ -90,15 +90,20 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       'contact_address': _addressController.text,
     };
 
-    final success = await provider.submitRequest(data);
+    final Map<String, dynamic> response = await provider.submitRequest(data);
 
     if (mounted) {
       setState(() => _isLoading = false);
-      if (success) {
-        _showSnackBar('ส่งใบลาเรียบร้อยแล้ว', AppTheme.success);
+      final bool isSuccess = response['success'] == true;
+      final String message =
+          response['message'] ??
+          (isSuccess ? 'ส่งใบลาเรียบร้อยแล้ว' : 'เกิดข้อผิดพลาด');
+
+      if (isSuccess) {
+        _showSnackBar(message, AppTheme.success);
         Navigator.pop(context, true);
       } else {
-        _showSnackBar('เกิดข้อผิดพลาด กรุณาลองใหม่', AppTheme.error);
+        _showSnackBar(message, AppTheme.error);
       }
     }
   }
