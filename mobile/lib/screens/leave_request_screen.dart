@@ -39,6 +39,18 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           : (_endDate ?? (_startDate ?? DateTime.now())),
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppTheme.primary,
+              onPrimary: Colors.white,
+              onSurface: AppTheme.textMain,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) {
@@ -97,7 +109,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         content: Text(message),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -111,44 +124,102 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       appBar: AppBar(
         title: const Text('ยื่นใบขอลา'),
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildStepTitle('1. เลือกประเภทการลา'),
+              // Header description
+              Text(
+                'ระบุรายละเอียดการลา',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 28,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนส่งคำขอ',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSub),
+              ),
+              const SizedBox(height: 32),
+
+              // Step 1: Leave Type
+              _buildSectionHeader('ประเภทการลา', Icons.category_rounded),
               const SizedBox(height: 12),
               _buildTypeSelector(leaveProvider.leaveTypes),
 
-              const SizedBox(height: 32),
-              _buildStepTitle('2. ช่วงเวลาที่ต้องการลา'),
+              const SizedBox(height: 24),
+
+              // Step 2: Date Selector
+              _buildSectionHeader(
+                'ช่วงเวลาที่ต้องการลา',
+                Icons.date_range_rounded,
+              ),
               const SizedBox(height: 12),
               _buildDateSection(),
 
-              const SizedBox(height: 32),
-              _buildStepTitle('3. รายละเอียดเพิ่มเติม'),
+              const SizedBox(height: 24),
+
+              // Step 3: Details
+              _buildSectionHeader(
+                'รายละเอียดเพิ่มเติม',
+                Icons.edit_note_rounded,
+              ),
               const SizedBox(height: 12),
               _buildFormFields(),
 
-              const SizedBox(height: 48),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+              const SizedBox(height: 40),
+
+              // Submission Button
+              SizedBox(
+                height: 64,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    elevation: 8,
+                    shadowColor: AppTheme.primary.withOpacity(0.4),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'ส่งใบขอลา',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.send_rounded,
+                              size: 20,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ],
                         ),
-                      )
-                    : const Text('ส่งคำขอลา', style: TextStyle(fontSize: 18)),
+                ),
               ),
               const SizedBox(height: 40),
             ],
@@ -158,13 +229,26 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     );
   }
 
-  Widget _buildStepTitle(String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        color: AppTheme.primary,
-        fontWeight: FontWeight.bold,
-      ),
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: AppTheme.primary),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textMain,
+          ),
+        ),
+      ],
     );
   }
 
@@ -172,21 +256,36 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<LeaveType>(
           decoration: const InputDecoration(
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
-            labelText: 'ประเภทการลา',
+            filled: false,
+            contentPadding: EdgeInsets.zero,
           ),
+          hint: const Text('เลือกประเภทการลา'),
           value: _selectedType,
           items: types.map((type) {
-            return DropdownMenuItem(value: type, child: Text(type.name));
+            return DropdownMenuItem(
+              value: type,
+              child: Text(
+                type.name,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            );
           }).toList(),
           onChanged: (val) => setState(() => _selectedType = val),
           validator: (val) => val == null ? 'กรุณาเลือกประเภทการลา' : null,
@@ -203,14 +302,16 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
             label: 'เริ่มวันที่',
             date: _startDate,
             onTap: () => _selectDate(true),
+            accentColor: AppTheme.primary,
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: _buildDateCard(
-            label: 'ถึงวันที่',
+            label: 'สิ้นสุดวันที่',
             date: _endDate,
             onTap: () => _selectDate(false),
+            accentColor: AppTheme.secondary,
           ),
         ),
       ],
@@ -221,37 +322,62 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     required String label,
     DateTime? date,
     required VoidCallback onTap,
+    required Color accentColor,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.border),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(height: 8),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textSub,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(
-                  Icons.calendar_month_rounded,
-                  size: 18,
-                  color: AppTheme.primary,
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.calendar_month_rounded,
+                    size: 16,
+                    color: accentColor,
+                  ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  date != null
-                      ? DateFormat('dd/MM/yy').format(date)
-                      : 'ระบุวันที่',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: date != null ? AppTheme.textMain : Colors.grey[400],
+                Expanded(
+                  child: Text(
+                    date != null
+                        ? DateFormat('dd/MM/yy').format(date)
+                        : 'ระบุวันที่',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      color: date != null
+                          ? AppTheme.textMain
+                          : AppTheme.textSub.withOpacity(0.4),
+                    ),
                   ),
                 ),
               ],
@@ -265,23 +391,57 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   Widget _buildFormFields() {
     return Column(
       children: [
-        TextFormField(
-          controller: _reasonController,
-          decoration: const InputDecoration(
-            labelText: 'เหตุผลการลา',
-            prefixIcon: Icon(Icons.description_outlined),
-            hintText: 'ระบุเหตุผลเพื่อประกอบการพิจารณา',
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          maxLines: 3,
-          validator: (val) => val!.isEmpty ? 'กรุณาระบุเหตุผล' : null,
+          child: TextFormField(
+            controller: _reasonController,
+            decoration: const InputDecoration(
+              labelText: 'เหตุผลการลา',
+              hintText: 'ระบุเหตุผลเพื่อประกอบการพิจารณา',
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: EdgeInsets.all(20),
+            ),
+            maxLines: 3,
+            validator: (val) => val!.isEmpty ? 'กรุณาระบุเหตุผล' : null,
+          ),
         ),
         const SizedBox(height: 16),
-        TextFormField(
-          controller: _addressController,
-          decoration: const InputDecoration(
-            labelText: 'สถานที่ติดต่อ / เบอร์โทร',
-            prefixIcon: Icon(Icons.location_on_outlined),
-            hintText: 'เพื่อติดต่อกรณีฉุกเฉิน',
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: _addressController,
+            decoration: const InputDecoration(
+              labelText: 'ระบุที่อยู่ / เบอร์โทรติดต่อ',
+              hintText: 'สำหรับติดต่อกรณีฉุกเฉิน',
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: EdgeInsets.all(20),
+            ),
           ),
         ),
       ],

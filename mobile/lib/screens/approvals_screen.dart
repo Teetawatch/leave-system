@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import '../models/leave_request_model.dart';
 import '../providers/leave_provider.dart';
+import '../providers/auth_provider.dart';
+import '../widgets/signature_dialog.dart';
+import 'leave_report_screen.dart';
+import 'guard_report_screen.dart';
 
 class ApprovalsScreen extends StatefulWidget {
   const ApprovalsScreen({super.key});
@@ -24,47 +28,31 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
   }
 
   Future<void> _handleApproval(int id, bool isApprove) async {
-    final commentController = TextEditingController();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.user;
 
-    final confirm = await showDialog<bool>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isApprove ? 'ยืนยันการอนุมัติ' : 'ระบุเหตุผลการปฏิเสธ'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: commentController,
-              decoration: InputDecoration(
-                hintText: isApprove
-                    ? 'ความคิดเห็นเพิ่มเติม (ถ้ามี)'
-                    : 'ระบุเหตุผลที่ปฏิเสธ',
-              ),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('ยกเลิก'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isApprove ? AppTheme.success : AppTheme.error,
-            ),
-            child: const Text('ยืนยัน'),
-          ),
-        ],
+      builder: (ctx) => SignatureDialog(
+        isApprove: isApprove,
+        savedSignatureUrl: user?.signatureUrl,
       ),
     );
 
-    if (confirm == true) {
+    if (result != null) {
       final provider = Provider.of<LeaveProvider>(context, listen: false);
+      final comment = result['comment'] as String?;
+      final signature = result['signature'] as String?;
+      final useSavedSignature = result['useSavedSignature'] as bool? ?? false;
+
       final success = isApprove
-          ? await provider.approveRequest(id, comment: commentController.text)
-          : await provider.rejectRequest(id, comment: commentController.text);
+          ? await provider.approveRequest(
+              id,
+              comment: comment,
+              signature: signature,
+              useSavedSignature: useSavedSignature,
+            )
+          : await provider.rejectRequest(id, comment: comment);
 
       if (mounted) {
         if (success) {
@@ -75,6 +63,10 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
               ),
               backgroundColor: isApprove ? AppTheme.success : AppTheme.error,
               behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           );
         }
@@ -91,9 +83,11 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
       appBar: AppBar(
         title: const Text('รายการรออนุมัติ'),
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
       body: RefreshIndicator(
         onRefresh: () => leaveProvider.fetchPendingApprovals(),
+        color: AppTheme.primary,
         child: _buildContent(leaveProvider),
       ),
     );
@@ -104,61 +98,206 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.pendingApprovals.isEmpty) {
-      return Center(
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildReportSection()),
+        if (provider.pendingApprovals.isEmpty)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: AppTheme.border.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.fact_check_outlined,
+                      size: 64,
+                      color: AppTheme.textSub.withOpacity(0.2),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'ไม่มีรายการรออนุมัติ',
+                    style: TextStyle(
+                      color: AppTheme.textSub.withOpacity(0.5),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else ...[
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                'รอการพิจารณา (${provider.pendingApprovals.length})',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final request = provider.pendingApprovals[index];
+              return _buildApprovalCard(request);
+            }, childCount: provider.pendingApprovals.length),
+          ),
+        ],
+        const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
+      ],
+    );
+  }
+
+  Widget _buildReportSection() {
+    final user = Provider.of<AuthProvider>(context).user;
+    final bool isAdmin =
+        user?.role == 'admin' ||
+        user?.role == 'director' ||
+        user?.role == 'deputy_director' ||
+        user?.role == 'department_head';
+
+    if (!isAdmin) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'รายงานระบบ',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildReportButton(
+                  'สรุปการลา',
+                  Icons.summarize_rounded,
+                  AppTheme.primary,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LeaveReportScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildReportButton(
+                  'เปลี่ยนเวร',
+                  Icons.security_rounded,
+                  AppTheme.secondary,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const GuardReportScreen(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: AppTheme.border),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportButton(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.15)),
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.fact_check_outlined, size: 100, color: Colors.grey[300]),
-            const SizedBox(height: 20),
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
             Text(
-              'ไม่มีรายการที่รอการอนุมัติ',
+              label,
               style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 18,
+                color: color,
                 fontWeight: FontWeight.bold,
+                fontSize: 14,
               ),
             ),
           ],
         ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      itemCount: provider.pendingApprovals.length,
-      itemBuilder: (context, index) {
-        final request = provider.pendingApprovals[index];
-        return _buildApprovalCard(request);
-      },
+      ),
     );
   }
 
   Widget _buildApprovalCard(LeaveRequest request) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // User Info Header
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppTheme.primaryLight,
-                  backgroundImage: request.user?.avatarUrl != null
-                      ? NetworkImage(request.user!.avatarUrl!)
-                      : null,
-                  child: request.user?.avatarUrl == null
-                      ? const Icon(Icons.person, color: AppTheme.primary)
-                      : null,
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppTheme.primary.withOpacity(0.2),
+                      width: 2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: AppTheme.primary.withOpacity(0.1),
+                    backgroundImage: request.user?.avatarUrl != null
+                        ? NetworkImage(request.user!.avatarUrl!)
+                        : null,
+                    child: request.user?.avatarUrl == null
+                        ? const Icon(
+                            Icons.person,
+                            color: AppTheme.primary,
+                            size: 28,
+                          )
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -168,13 +307,18 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                       Text(
                         request.user?.name ?? 'ไม่ระบุชื่อ',
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                          color: AppTheme.textMain,
                         ),
                       ),
                       Text(
                         request.user?.position ?? 'ไม่ระบุตำแหน่ง',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: const TextStyle(
+                          color: AppTheme.textSub,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -182,19 +326,16 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 4,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryLight,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(
-                    request.leaveType.name,
-                    style: const TextStyle(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
+                  child: Icon(
+                    _getLeaveTypeIcon(request.leaveType.slug),
+                    color: AppTheme.primary,
+                    size: 18,
                   ),
                 ),
               ],
@@ -205,44 +346,72 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
 
           // Request Details
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDetailItem(
+                    _buildCompactInfo(
                       Icons.calendar_today_rounded,
                       '${request.formattedStartDate} - ${request.formattedEndDate}',
                     ),
-                    _buildDetailItem(
+                    const Spacer(),
+                    _buildCompactInfo(
                       Icons.timer_outlined,
                       '${request.totalDays} วัน',
                     ),
                   ],
                 ),
-                if (request.reason.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    'เหตุผล:',
-                    style: Theme.of(context).textTheme.labelLarge,
+                const SizedBox(height: 16),
+                Text(
+                  'ประเภท: ${request.leaveType.name}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: AppTheme.textMain,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    request.reason,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                if (request.reason.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.background,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'เหตุผลการลา:',
+                          style: TextStyle(
+                            color: AppTheme.textSub,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          request.reason,
+                          style: const TextStyle(
+                            color: AppTheme.textMain,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ],
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.border),
-
           // Action Buttons
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             child: Row(
               children: [
                 Expanded(
@@ -250,10 +419,16 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                     onPressed: () => _handleApproval(request.id, false),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.error,
-                      side: const BorderSide(color: AppTheme.error),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: AppTheme.error, width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                     ),
-                    child: const Text('ปฏิเสธ'),
+                    child: const Text(
+                      'ปฏิเสธ',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -262,9 +437,17 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                     onPressed: () => _handleApproval(request.id, true),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.success,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      elevation: 4,
+                      shadowColor: AppTheme.success.withOpacity(0.3),
                     ),
-                    child: const Text('อนุมัติ'),
+                    child: const Text(
+                      'อนุมัติ',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
                   ),
                 ),
               ],
@@ -275,13 +458,33 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     );
   }
 
-  Widget _buildDetailItem(IconData icon, String text) {
+  Widget _buildCompactInfo(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTheme.textSub),
-        const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Icon(icon, size: 14, color: AppTheme.textSub),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            color: AppTheme.textMain,
+          ),
+        ),
       ],
     );
+  }
+
+  IconData _getLeaveTypeIcon(String slug) {
+    switch (slug) {
+      case 'vacation':
+        return Icons.beach_access_rounded;
+      case 'sick':
+        return Icons.medication_rounded;
+      case 'personal':
+        return Icons.business_center_rounded;
+      default:
+        return Icons.event_note_rounded;
+    }
   }
 }

@@ -31,15 +31,19 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Row(
             children: const [
-              Icon(Icons.error_outline, color: Colors.white),
-              SizedBox(width: 8),
-              Text('อีเมลหรือรหัสผ่านไม่ถูกต้อง'),
+              Icon(Icons.error_outline_rounded, color: Colors.white),
+              SizedBox(width: 12),
+              Text(
+                'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ],
           ),
           backgroundColor: AppTheme.error,
           behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
       );
@@ -49,23 +53,22 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = Provider.of<AuthProvider>(context).isLoading;
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.background,
       body: Stack(
         children: [
-          // Background Gradient Decor
+          // Dynamic Abstract Background
           Positioned(
-            top: -size.height * 0.2,
-            right: -size.width * 0.2,
+            top: -100,
+            right: -100,
             child: Container(
-              width: size.width * 0.8,
-              height: size.width * 0.8,
+              width: 400,
+              height: 400,
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.primary.withOpacity(0.15),
+                    AppTheme.primary.withOpacity(0.12),
                     AppTheme.primary.withOpacity(0),
                   ],
                 ),
@@ -74,11 +77,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           Positioned(
-            bottom: -size.height * 0.1,
-            left: -size.width * 0.1,
+            bottom: -50,
+            left: -50,
             child: Container(
-              width: size.width * 0.6,
-              height: size.width * 0.6,
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
@@ -97,148 +100,174 @@ class _LoginScreenState extends State<LoginScreen> {
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    padding: const EdgeInsets.all(32),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: 60),
+                        const SizedBox(height: 40),
 
-                        // Logo Area
+                        // Animated Logo Branding
                         Center(
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primary.withOpacity(0.2),
-                                  blurRadius: 40,
-                                  offset: const Offset(0, 15),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 110,
+                                height: 110,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(35),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.primary.withOpacity(0.15),
+                                      blurRadius: 30,
+                                      offset: const Offset(0, 15),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.calendar_month_rounded,
-                              size: 50,
-                              color: AppTheme.primary,
-                            ),
+                                child: const Icon(
+                                  Icons.calendar_month_rounded,
+                                  size: 56,
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              Text(
+                                'ระบบบริหารจัดการงานธุรการด้านกำลังพล',
+                                style: Theme.of(context).textTheme.displaySmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w900,
+                                      color: AppTheme.textMain,
+                                      fontSize: 24,
+                                      letterSpacing: -0.5,
+                                    ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ',
+                                style: TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
 
-                        const SizedBox(height: 48),
+                        const SizedBox(height: 64),
 
-                        Text(
-                          'ยินดีต้อนรับกลับมา',
-                          style: Theme.of(context).textTheme.displayLarge
-                              ?.copyWith(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'เข้าสู่ระบบเพื่อจัดการการลางานของคุณ',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-
-                        const SizedBox(height: 60),
-
+                        // Modern Form
                         Form(
                           key: _formKey,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'อีเมลพนักงาน',
-                                style: Theme.of(context).textTheme.labelLarge,
+                                'เข้าสู่ระบบบัญชีพนักงาน',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.textMain,
+                                    ),
                               ),
-                              const SizedBox(height: 10),
-                              TextFormField(
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  hintText: 'name@company.com',
-                                  prefixIcon: Icon(
-                                    Icons.alternate_email_rounded,
-                                    size: 20,
-                                  ),
-                                ),
-                                validator: (val) =>
-                                    val!.isEmpty ? 'กรุณากรอกอีเมล' : null,
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                'รหัสผ่าน',
-                                style: Theme.of(context).textTheme.labelLarge,
-                              ),
-                              const SizedBox(height: 10),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: true,
-                                textInputAction: TextInputAction.done,
-                                onFieldSubmitted: (_) => _submit(),
-                                decoration: const InputDecoration(
-                                  hintText: '••••••••',
-                                  prefixIcon: Icon(
-                                    Icons.lock_outline_rounded,
-                                    size: 20,
-                                  ),
-                                ),
-                                validator: (val) =>
-                                    val!.isEmpty ? 'กรุณากรอกรหัสผ่าน' : null,
-                              ),
-                              const SizedBox(height: 48),
+                              const SizedBox(height: 20),
 
-                              ElevatedButton(
-                                onPressed: isLoading ? null : _submit,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 18,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18),
+                              // Email Field
+                              _buildInputField(
+                                controller: _emailController,
+                                label: 'อีเมลพนักงาน',
+                                hint: 'example@company.com',
+                                icon: Icons.alternate_email_rounded,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              // Password Field
+                              _buildInputField(
+                                controller: _passwordController,
+                                label: 'รหัสผ่าน',
+                                hint: '••••••••',
+                                icon: Icons.lock_outline_rounded,
+                                isPassword: true,
+                              ),
+
+                              const SizedBox(height: 12),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {},
+                                  child: Text(
+                                    'ลืมรหัสผ่าน?',
+                                    style: TextStyle(
+                                      color: AppTheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
-                                child: isLoading
-                                    ? const SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.5,
+                              ),
+
+                              const SizedBox(height: 32),
+
+                              // Login Button
+                              SizedBox(
+                                height: 64,
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: isLoading ? null : _submit,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    elevation: 8,
+                                    shadowColor: AppTheme.primary.withOpacity(
+                                      0.3,
+                                    ),
+                                  ),
+                                  child: isLoading
+                                      ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2.5,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'เข้าสู่ระบบ',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.5,
+                                          ),
                                         ),
-                                      )
-                                    : const Text(
-                                        'เข้าสู่ระบบ',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                ),
                               ),
                             ],
                           ),
                         ),
 
                         const Spacer(),
-                        const SizedBox(height: 24),
-                        Text(
-                          '© 2024 Leave Management System',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 12,
-                            letterSpacing: 0.5,
+                        const SizedBox(height: 32),
+
+                        // Footer
+                        Center(
+                          child: Text(
+                            '© 2024 Leave Management System v1.0',
+                            style: TextStyle(
+                              color: AppTheme.textSub.withOpacity(0.4),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
@@ -248,6 +277,65 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    TextInputType? keyboardType,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textSub,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.01),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            obscureText: isPassword,
+            keyboardType: keyboardType,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: AppTheme.textSub.withOpacity(0.3)),
+              prefixIcon: Icon(icon, color: AppTheme.primary, size: 20),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(
+                  color: AppTheme.primary,
+                  width: 1.5,
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(18),
+            ),
+            validator: (val) => val!.isEmpty ? 'กรุณากรอกข้อมูลส่วนนี้' : null,
+          ),
+        ),
+      ],
     );
   }
 }

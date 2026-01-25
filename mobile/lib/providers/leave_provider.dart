@@ -108,12 +108,14 @@ class LeaveProvider with ChangeNotifier {
     int id, {
     String? comment,
     String? signature,
+    bool useSavedSignature = false,
   }) async {
     try {
       final response = await _apiService.approveRequest(
         id,
         comment: comment,
         signature: signature,
+        useSavedSignature: useSavedSignature,
       );
       if (response.data['success']) {
         await fetchPendingApprovals();

@@ -98,10 +98,15 @@ class ApiService {
     int id, {
     String? comment,
     String? signature,
+    bool useSavedSignature = false,
   }) async {
     return await _dio.post(
       '/approvals/$id/approve',
-      data: {'comment': comment, 'signature': signature},
+      data: {
+        'comment': comment,
+        'signature': signature,
+        'use_saved_signature': useSavedSignature,
+      },
     );
   }
 
@@ -116,4 +121,3 @@ class ApiService {
   // Expose dio for other calls
   Dio get client => _dio;
 }
-

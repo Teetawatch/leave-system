@@ -24,6 +24,7 @@ class UserResource extends JsonResource
             'position' => $this->position,
             'rank' => $this->rank,
             'avatar_url' => $this->avatar ? asset('storage/' . $this->avatar) : null,
+            'signature_url' => $this->signature ? asset('storage/' . $this->signature) : null,
             'supervisor' => $this->whenLoaded('supervisor', function () {
                 return [
                     'id' => $this->supervisor->id,

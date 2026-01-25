@@ -15,10 +15,10 @@ class LeaveBalanceController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         // Get current fiscal year
         $now = now();
-        $year = $now->month >= 10 ? $now->year + 543 + 1 : $now->year + 543;
+        $year = $now->year;
 
         $balances = LeaveBalance::with('leaveType')
             ->where('user_id', $user->id)

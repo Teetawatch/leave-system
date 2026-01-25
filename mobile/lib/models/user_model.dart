@@ -7,6 +7,7 @@ class User {
   final String department;
   final String? position;
   final String? avatarUrl;
+  final String? signatureUrl;
 
   User({
     required this.id,
@@ -17,9 +18,21 @@ class User {
     required this.department,
     this.position,
     this.avatarUrl,
+    this.signatureUrl,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    String? avatar = json['avatar_url'];
+    String? signature = json['signature_url'];
+
+    // Fix for Android Emulator to access localhost
+    if (avatar != null && avatar.contains('localhost')) {
+      avatar = avatar.replaceFirst('localhost', '10.0.2.2');
+    }
+    if (signature != null && signature.contains('localhost')) {
+      signature = signature.replaceFirst('localhost', '10.0.2.2');
+    }
+
     return User(
       id: json['id'],
       name: json['name'],
@@ -28,7 +41,8 @@ class User {
       roleLabel: json['role_label'] ?? json['role'],
       department: json['department'],
       position: json['position'],
-      avatarUrl: json['avatar_url'],
+      avatarUrl: avatar,
+      signatureUrl: signature,
     );
   }
 
@@ -42,6 +56,7 @@ class User {
       'department': department,
       'position': position,
       'avatar_url': avatarUrl,
+      'signature_url': signatureUrl,
     };
   }
 }

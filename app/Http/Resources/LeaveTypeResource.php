@@ -19,7 +19,10 @@ class LeaveTypeResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'max_days' => $this->max_days,
+            'max_days_per_year' => $this->max_days_per_year,
+            'requires_advance_notice' => (bool) $this->requires_advance_notice,
+            'advance_notice_days' => $this->advance_notice_days,
+            'allows_retroactive' => (bool) $this->allows_retroactive,
         ];
     }
 }

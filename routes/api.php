@@ -30,7 +30,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // =============================================================================
 
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // -------------------------------------------------------------------------
     // Authentication
     // -------------------------------------------------------------------------
@@ -58,9 +58,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/leave-requests/{id}/cancel', [LeaveRequestController::class, 'cancel']);
 
     // -------------------------------------------------------------------------
-    // Approvals (For Supervisors/Managers)
+    // Reports (For Admins/Commanders)
     // -------------------------------------------------------------------------
-    Route::get('/approvals', [ApprovalController::class, 'index']);
-    Route::post('/approvals/{id}/approve', [ApprovalController::class, 'approve']);
-    Route::post('/approvals/{id}/reject', [ApprovalController::class, 'reject']);
+    Route::get('/reports/leave-summary', [\App\Http\Controllers\Api\ReportController::class, 'leaveSummary']);
+    Route::get('/reports/guard-change', [\App\Http\Controllers\Api\ReportController::class, 'guardChangeSummary']);
 });

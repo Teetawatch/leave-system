@@ -4,7 +4,7 @@ import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
 import 'providers/leave_provider.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_navigation_screen.dart';
 import 'config/app_theme.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -64,7 +64,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return Consumer<AuthProvider>(
       builder: (ctx, auth, _) {
         if (auth.isAuthenticated) {
-          return const HomeScreen();
+          return const MainNavigationScreen();
         } else {
           return const LoginScreen();
         }
