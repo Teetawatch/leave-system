@@ -48,7 +48,7 @@ class AuthProvider with ChangeNotifier {
       }
     } catch (e) {
       // Token invalid or network error
-      await logout();  
+      await logout();
     }
   }
 
@@ -64,6 +64,16 @@ class AuthProvider with ChangeNotifier {
         await _storage.write(key: 'token', value: token);
 
         _user = User.fromJson(response.data['data']['user']);
+
+        // Update FCM Token immediately after login
+        try {
+          final fcmToken = await NotificationService().getToken();
+          if (fcmToken != null) {
+            await _apiService.updateFcmToken(fcmToken);
+          }
+        } catch (e) {
+          print('Error updating FCM token after login: $e');
+        }
 
         _isLoading = false;
         notifyListeners();

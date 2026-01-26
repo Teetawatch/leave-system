@@ -1,4 +1,4 @@
-package com.leavesystem.leave_app
+package com.teetawatch.leave_system
 
 import io.flutter.embedding.android.FlutterActivity
 

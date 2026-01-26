@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\GuardChangeRequest;
 use App\Models\User;
+use App\Notifications\NewGuardChangeNotification;
+use App\Notifications\GuardChangeStatusUpdated;
+use App\Services\FCMService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -69,6 +72,26 @@ class GuardChangeRequestController extends Controller
             'status' => 'pending',
         ]);
 
+        // Notify replacement user
+        $replacementUser = User::find($validated['replacement_user_id']);
+        if ($replacementUser) {
+            $replacementUser->notify(new NewGuardChangeNotification($guardChangeRequest, Auth::user()));
+
+            // Push notification
+            if ($replacementUser->fcm_token) {
+                $fcmService = new FCMService();
+                $fcmService->sendNotification(
+                    $replacementUser->fcm_token,
+                    'มีคำขอเปลี่ยนเวรใหม่ 🔔',
+                    Auth::user()->rank . ' ' . Auth::user()->name . " ขอเปลี่ยนเวรกับคุณวันที่ " . $guardChangeRequest->duty_date->format('d/m/Y'),
+                    [
+                        'type' => 'new_guard_change',
+                        'request_id' => $guardChangeRequest->id,
+                    ]
+                );
+            }
+        }
+
         return redirect()->route('guard-change.show', $guardChangeRequest)
             ->with('status', 'ส่งคำขอเปลี่ยนยามเรียบร้อยแล้ว');
     }
@@ -79,7 +102,7 @@ class GuardChangeRequestController extends Controller
     public function show(GuardChangeRequest $guardChange)
     {
         $guardChange->load(['user', 'replacementUser']);
-        
+
         return view('guard_change.show', compact('guardChange'));
     }
 
@@ -98,7 +121,7 @@ class GuardChangeRequestController extends Controller
 
         // Get deputy director for approval section
         $deputyDirector = \App\Models\User::where('role', 'deputy_director')->first();
-        
+
         // Get director for final approval section
         $director = \App\Models\User::where('role', 'director')->first();
 
@@ -162,14 +185,14 @@ class GuardChangeRequestController extends Controller
             $imageData = $request->input('signature');
             $imageData = preg_replace('#^data:image/\w+;base64,#i', '', $imageData);
             $imageData = base64_decode($imageData);
-            
+
             $fileName = 'signatures/guard_sig_' . time() . '_' . $guardChange->id . '_' . $user->id . '.png';
             \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageData);
             $signaturePath = $fileName;
         } elseif ($request->input('use_saved_signature') == '1' && $user->signature) {
             $extension = pathinfo($user->signature, PATHINFO_EXTENSION);
             $fileName = 'signatures/guard_sig_' . time() . '_' . $guardChange->id . '_' . $user->id . '.' . $extension;
-            
+
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($user->signature)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->copy($user->signature, $fileName);
                 $signaturePath = $fileName;
@@ -183,6 +206,35 @@ class GuardChangeRequestController extends Controller
             'approval_comment' => $request->input('comment'),
             'approved_at' => now(),
         ]);
+
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'approved', $user));
+
+        // Push to requester
+        if ($requester->fcm_token) {
+            $fcmService = new FCMService();
+            $fcmService->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรได้รับการตอบรับ ✅',
+                "{$user->rank} {$user->name} ตอบรับคำขอเปลี่ยนเวรของคุณแล้ว",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
+
+        // Notify Deputy Director (next level)
+        $deputyDirectors = User::where('role', 'deputy_director')->get();
+        foreach ($deputyDirectors as $deputy) {
+            $deputy->notify(new NewGuardChangeNotification($guardChange, $requester));
+            if ($deputy->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $deputy->fcm_token,
+                    'มีคำขอเปลี่ยนเวรใหม่ (รออนุมัติ) 🔔',
+                    "มีคำขอเปลี่ยนเวรของ {$requester->rank} {$requester->name} รอการอนุมัติจากคุณ",
+                    ['type' => 'new_guard_change_approval', 'request_id' => $guardChange->id]
+                );
+            }
+        }
 
         return redirect()->route('guard-change.approvals')
             ->with('success', 'อนุมัติคำขอเปลี่ยนยามเรียบร้อยแล้ว');
@@ -212,6 +264,19 @@ class GuardChangeRequestController extends Controller
             'approval_comment' => $request->input('comment'),
             'approved_at' => now(),
         ]);
+
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'rejected', $user));
+
+        if ($requester->fcm_token) {
+            (new FCMService())->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรถูกปฏิเสธ ❌',
+                "{$user->rank} {$user->name} ปฏิเสธคำขอเปลี่ยนเวรของคุณ",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
 
         return redirect()->route('guard-change.approvals')
             ->with('success', 'ปฏิเสธคำขอเปลี่ยนยามเรียบร้อยแล้ว');
@@ -251,14 +316,14 @@ class GuardChangeRequestController extends Controller
             $imageData = $request->input('signature');
             $imageData = preg_replace('#^data:image/\w+;base64,#i', '', $imageData);
             $imageData = base64_decode($imageData);
-            
+
             $fileName = 'signatures/guard_director_sig_' . time() . '_' . $guardChange->id . '_' . $user->id . '.png';
             \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageData);
             $signaturePath = $fileName;
         } elseif ($request->input('use_saved_signature') == '1' && $user->signature) {
             $extension = pathinfo($user->signature, PATHINFO_EXTENSION);
             $fileName = 'signatures/guard_director_sig_' . time() . '_' . $guardChange->id . '_' . $user->id . '.' . $extension;
-            
+
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($user->signature)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->copy($user->signature, $fileName);
                 $signaturePath = $fileName;
@@ -272,6 +337,33 @@ class GuardChangeRequestController extends Controller
             'director_comment' => $request->input('comment'),
             'director_approved_at' => now(),
         ]);
+
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'director_approved', $user));
+
+        if ($requester->fcm_token) {
+            (new FCMService())->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรผ่านการอนุมัติเบื้องต้น ℹ️',
+                "รอง ผอ. {$user->name} ได้อนุมัติคำขอเปลี่ยนเวรของคุณแล้ว (รอ ผอ. อนุมัติ)",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
+
+        // Notify Director (final level)
+        $directors = User::where('role', 'director')->get();
+        foreach ($directors as $director) {
+            $director->notify(new NewGuardChangeNotification($guardChange, $requester));
+            if ($director->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $director->fcm_token,
+                    'มีคำขอเปลี่ยนเวรใหม่ (รออนุมัติสุดท้าย) 🔔',
+                    "มีคำขอเปลี่ยนเวรของ {$requester->rank} {$requester->name} รอการอนุมัติจากคุณ",
+                    ['type' => 'new_guard_change_approval', 'request_id' => $guardChange->id]
+                );
+            }
+        }
 
         return redirect()->route('guard-change.director-approvals')
             ->with('success', 'อนุมัติคำขอเปลี่ยนยามเรียบร้อยแล้ว (รอ ผอ. อนุมัติ)');
@@ -309,14 +401,14 @@ class GuardChangeRequestController extends Controller
             $imageData = $request->input('signature');
             $imageData = preg_replace('#^data:image/\w+;base64,#i', '', $imageData);
             $imageData = base64_decode($imageData);
-            
+
             $fileName = 'signatures/guard_final_sig_' . time() . '_' . $guardChange->id . '_' . $user->id . '.png';
             \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageData);
             $signaturePath = $fileName;
         } elseif ($request->input('use_saved_signature') == '1' && $user->signature) {
             $extension = pathinfo($user->signature, PATHINFO_EXTENSION);
             $fileName = 'signatures/guard_final_sig_' . time() . '_' . $guardChange->id . '_' . $user->id . '.' . $extension;
-            
+
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($user->signature)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->copy($user->signature, $fileName);
                 $signaturePath = $fileName;
@@ -330,6 +422,19 @@ class GuardChangeRequestController extends Controller
             'final_comment' => $request->input('comment'),
             'final_approved_at' => now(),
         ]);
+
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'fully_approved', $user));
+
+        if ($requester->fcm_token) {
+            (new FCMService())->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรอนุมัติเสร็จสมบูรณ์ 🎉',
+                "ผอ. {$user->name} ได้อนุมัติคำขอเปลี่ยนเวรของคุณเรียบร้อยแล้ว",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
 
         return redirect()->route('guard-change.final-approvals')
             ->with('success', 'อนุมัติคำขอเปลี่ยนยามเรียบร้อยแล้ว (เสร็จสมบูรณ์)');

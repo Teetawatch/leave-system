@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\GuardChangeRequest;
 use App\Models\User;
+use App\Notifications\NewGuardChangeNotification;
+use App\Notifications\GuardChangeStatusUpdated;
+use App\Services\FCMService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -48,6 +51,21 @@ class GuardChangeRequestController extends Controller
             'remarks' => $validated['remarks'] ?? null,
             'status' => 'pending',
         ]);
+
+        // Notify replacement user
+        $replacementUser = User::find($validated['replacement_user_id']);
+        if ($replacementUser) {
+            $replacementUser->notify(new NewGuardChangeNotification($guardChangeRequest, Auth::user()));
+
+            if ($replacementUser->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $replacementUser->fcm_token,
+                    'มีคำขอเปลี่ยนเวรใหม่ 🔔',
+                    Auth::user()->rank . ' ' . Auth::user()->name . " ขอเปลี่ยนเวรกับคุณวันที่ " . $guardChangeRequest->duty_date->format('d/m/Y'),
+                    ['type' => 'new_guard_change', 'request_id' => $guardChangeRequest->id]
+                );
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -144,6 +162,33 @@ class GuardChangeRequestController extends Controller
             'approved_at' => now(),
         ]);
 
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'approved', $user));
+
+        if ($requester->fcm_token) {
+            (new FCMService())->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรได้รับการตอบรับ ✅',
+                "{$user->rank} {$user->name} ตอบรับคำขอเปลี่ยนเวรของคุณแล้ว",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
+
+        // Notify Deputy Director (next level)
+        $deputyDirectors = User::where('role', 'deputy_director')->get();
+        foreach ($deputyDirectors as $deputy) {
+            $deputy->notify(new NewGuardChangeNotification($guardChange, $requester));
+            if ($deputy->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $deputy->fcm_token,
+                    'มีคำขอเปลี่ยนเวรใหม่ (รออนุมัติ) 🔔',
+                    "มีคำขอเปลี่ยนเวรของ {$requester->rank} {$requester->name} รอการอนุมัติจากคุณ",
+                    ['type' => 'new_guard_change_approval', 'request_id' => $guardChange->id]
+                );
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'อนุมัติคำขอเปลี่ยนยามเรียบร้อยแล้ว'
@@ -172,6 +217,19 @@ class GuardChangeRequestController extends Controller
             'approval_comment' => $request->input('comment'),
             'approved_at' => now(),
         ]);
+
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'rejected', $user));
+
+        if ($requester->fcm_token) {
+            (new FCMService())->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรถูกปฏิเสธ ❌',
+                "{$user->rank} {$user->name} ปฏิเสธคำขอเปลี่ยนเวรของคุณ",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
 
         return response()->json([
             'success' => true,

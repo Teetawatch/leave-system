@@ -10,6 +10,7 @@ use App\Models\LeaveBalance;
 use App\Models\User;
 use App\Notifications\LeaveStatusUpdated;
 use App\Notifications\NewLeaveRequestNotification;
+use App\Services\FCMService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -133,6 +134,16 @@ class ApprovalController extends Controller
                 $leaveRequest->save();
                 $this->logApproval($leaveRequest, $user, 'supervisor', 'approved', $request->comment, $signaturePath, $request->ip());
                 $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
+
+                if ($requester->fcm_token) {
+                    (new FCMService())->sendNotification(
+                        $requester->fcm_token,
+                        'การลาชั่วกาลได้รับอนุมัติ ✅',
+                        "ใบลาชั่วกาลของคุณได้รับการอนุมัติแล้ว",
+                        ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                    );
+                }
+
                 return $this->successResponse('อนุมัติลาชั่วกาลเรียบร้อยแล้ว', $leaveRequest);
             }
 
@@ -144,8 +155,18 @@ class ApprovalController extends Controller
                 $leaveRequest->save();
                 $this->logApproval($leaveRequest, $user, 'supervisor', 'approved', $request->comment, $signaturePath, $request->ip());
                 $manager = User::find($requester->manager_id);
-                if ($manager)
+                if ($manager) {
                     $manager->notify(new NewLeaveRequestNotification($leaveRequest, $requester));
+
+                    if ($manager->fcm_token) {
+                        (new FCMService())->sendNotification(
+                            $manager->fcm_token,
+                            'มีใบลาใหม่ (รออนุมัติ) 🔔',
+                            "ใบลาของ {$requester->name} รอการอนุมัติจากคุณ",
+                            ['type' => 'new_leave_request', 'request_id' => $leaveRequest->id]
+                        );
+                    }
+                }
                 return $this->successResponse('อนุญาตขั้นที่ 1 เรียบร้อยแล้ว รอผู้บังคับบัญชาอนุมัติขั้นสุดท้าย', $leaveRequest);
             }
 
@@ -167,6 +188,16 @@ class ApprovalController extends Controller
             $this->logApproval($leaveRequest, $user, 'manager', 'approved', $request->comment, $signaturePath, $request->ip());
             $this->deductBalance($leaveRequest);
             $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
+
+            if ($requester->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $requester->fcm_token,
+                    'ใบลาของคุณได้รับการอนุมัติ 🎉',
+                    "ใบลา{$leaveRequest->leaveType->name} ของคุณได้รับการอนุมัติแล้ว",
+                    ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                );
+            }
+
             return $this->successResponse('อนุมัติการลาขั้นสุดท้ายเรียบร้อยแล้ว', $leaveRequest);
         }
 
@@ -182,6 +213,16 @@ class ApprovalController extends Controller
                 $this->logApproval($leaveRequest, $user, 'director', 'approved', $request->comment, $signaturePath, $request->ip());
                 $this->deductBalance($leaveRequest);
                 $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
+
+                if ($requester->fcm_token) {
+                    (new FCMService())->sendNotification(
+                        $requester->fcm_token,
+                        'ใบลาของคุณได้รับการอนุมัติ 🎉',
+                        "ใบลา{$leaveRequest->leaveType->name} ของคุณได้รับการอนุมัติเรียบร้อยแล้ว",
+                        ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                    );
+                }
+
                 return $this->successResponse('อนุมัติการลา (ขั้นตอนสุดท้าย) เรียบร้อยแล้ว', $leaveRequest);
             }
 
@@ -204,6 +245,16 @@ class ApprovalController extends Controller
             $this->logApproval($leaveRequest, $user, 'director', $actionType, $request->comment, $signaturePath, $request->ip());
             $this->deductBalance($leaveRequest);
             $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
+
+            if ($requester->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $requester->fcm_token,
+                    'ใบลาของคุณได้รับการอนุมัติ 🎉',
+                    "ใบลา{$leaveRequest->leaveType->name} ของคุณได้รับการอนุมัติเรียบร้อยแล้ว",
+                    ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                );
+            }
+
             return $this->successResponse('ดำเนินการขั้นสุดท้ายเรียบร้อยแล้ว', $leaveRequest);
         }
 
@@ -239,6 +290,15 @@ class ApprovalController extends Controller
 
         // Notify User
         $leaveRequest->user->notify(new LeaveStatusUpdated($leaveRequest, 'rejected', $user));
+
+        if ($leaveRequest->user->fcm_token) {
+            (new FCMService())->sendNotification(
+                $leaveRequest->user->fcm_token,
+                'ใบลาของคุณถูกปฏิเสธ ❌',
+                "ใบลา{$leaveRequest->leaveType->name} ของคุณถูกปฏิเสธ",
+                ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+            );
+        }
 
         return response()->json([
             'success' => true,
@@ -289,6 +349,15 @@ class ApprovalController extends Controller
         $users = User::where('role', $role)->get();
         foreach ($users as $u) {
             $u->notify(new NewLeaveRequestNotification($leaveRequest, $requester));
+
+            if ($u->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $u->fcm_token,
+                    'มีใบลาใหม่ (รออนุมัติ) 🔔',
+                    "ใบลาของ {$requester->name} รอการดำเนินการจากคุณ",
+                    ['type' => 'new_leave_request', 'request_id' => $leaveRequest->id]
+                );
+            }
         }
     }
 

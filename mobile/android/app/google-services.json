@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "653886016284",
-    "project_id": "nassapp-ab65e",
-    "storage_bucket": "nassapp-ab65e.firebasestorage.app"
+    "project_number": "624897595070",
+    "project_id": "leave-system-ee013",
+    "storage_bucket": "leave-system-ee013.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:653886016284:android:cb5dcc4e741a199f1408d9",
+        "mobilesdk_app_id": "1:624897595070:android:a0e73c6effeba8145530ef",
         "android_client_info": {
-          "package_name": "com.leavesystem.leave_app"
+          "package_name": "com.teetawatch.leave_system"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAGOp5olKLjLDJ7beFe7xXn8snPimG8738"
+          "current_key": "AIzaSyChTr4pK4mdJUTovby9k2O14nB4gH_yesQ"
         }
       ],
       "services": {

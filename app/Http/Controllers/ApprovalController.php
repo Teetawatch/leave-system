@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\LeaveStatusUpdated;
 use App\Notifications\NewLeaveRequestNotification;
+use App\Services\FCMService;
 
 class ApprovalController extends Controller
 {
@@ -134,6 +135,16 @@ class ApprovalController extends Controller
                 // Notify User
                 $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
 
+                // Send Push Notification
+                if ($requester->fcm_token) {
+                    (new FCMService())->sendNotification(
+                        $requester->fcm_token,
+                        'การลาชั่วกาลได้รับอนุมัติ ✅',
+                        "ใบลาชั่วกาลของคุณได้รับการอนุมัติแล้ว",
+                        ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                    );
+                }
+
                 return redirect()->back()->with('success', 'อนุมัติลาชั่วกาลเรียบร้อยแล้ว');
             }
 
@@ -160,6 +171,16 @@ class ApprovalController extends Controller
                 $manager = User::find($requester->manager_id);
                 if ($manager) {
                     $manager->notify(new NewLeaveRequestNotification($leaveRequest, $requester));
+
+                    // Push to Manager
+                    if ($manager->fcm_token) {
+                        (new FCMService())->sendNotification(
+                            $manager->fcm_token,
+                            'มีใบลาใหม่ (รออนุมัติ) 🔔',
+                            "ใบลาของ {$requester->rank} {$requester->name} รอการอนุมัติจากคุณ",
+                            ['type' => 'new_leave_request', 'request_id' => $leaveRequest->id]
+                        );
+                    }
                 }
 
                 return redirect()->back()->with('success', 'อนุญาตขั้นที่ 1 เรียบร้อยแล้ว รอผู้บังคับบัญชาอนุมัติขั้นสุดท้าย');
@@ -183,6 +204,16 @@ class ApprovalController extends Controller
             $deputyDirectors = User::where('role', 'deputy_director')->get();
             foreach ($deputyDirectors as $deputy) {
                 $deputy->notify(new NewLeaveRequestNotification($leaveRequest, $requester));
+
+                // Push to Deputy
+                if ($deputy->fcm_token) {
+                    (new FCMService())->sendNotification(
+                        $deputy->fcm_token,
+                        'มีใบลาใหม่ (รอรับทราบ) 🔔',
+                        "ใบลาของ {$requester->rank} {$requester->name} รอการรับทราบจากคุณ",
+                        ['type' => 'new_leave_request', 'request_id' => $leaveRequest->id]
+                    );
+                }
             }
 
             return redirect()->back()->with('success', 'อนุญาตและลงลายมือชื่อเรียบร้อยแล้ว รอ รอง ผอ. รับทราบ');
@@ -215,6 +246,16 @@ class ApprovalController extends Controller
             // Notify User
             $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
 
+            // Push to Requester
+            if ($requester->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $requester->fcm_token,
+                    'ใบลาของคุณได้รับการอนุมัติ 🎉',
+                    "ใบลา{$leaveRequest->leaveType->name} ของคุณได้รับการอนุมัติเรียบร้อยแล้ว",
+                    ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                );
+            }
+
             return redirect()->back()->with('success', 'อนุมัติการลาขั้นสุดท้ายเรียบร้อยแล้ว');
         }
 
@@ -246,6 +287,16 @@ class ApprovalController extends Controller
                 // Notify User
                 $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
 
+                // Push to Requester
+                if ($requester->fcm_token) {
+                    (new FCMService())->sendNotification(
+                        $requester->fcm_token,
+                        'ใบลาของคุณได้รับการอนุมัติ 🎉',
+                        "ใบลา{$leaveRequest->leaveType->name} ของคุณได้รับการอนุมัติเรียบร้อยแล้ว",
+                        ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                    );
+                }
+
                 return redirect()->back()->with('success', 'อนุมัติการลา (ขั้นตอนสุดท้าย) เรียบร้อยแล้ว');
             }
 
@@ -268,6 +319,16 @@ class ApprovalController extends Controller
             $directors = User::where('role', 'director')->get();
             foreach ($directors as $director) {
                 $director->notify(new NewLeaveRequestNotification($leaveRequest, $requester));
+
+                // Push to Director
+                if ($director->fcm_token) {
+                    (new FCMService())->sendNotification(
+                        $director->fcm_token,
+                        'มีใบลาใหม่ (รออนุมัติสุดท้าย) 🔔',
+                        "ใบลาของ {$requester->rank} {$requester->name} รอการอนุมัติสุดท้ายจากคุณ",
+                        ['type' => 'new_leave_request', 'request_id' => $leaveRequest->id]
+                    );
+                }
             }
 
             return redirect()->back()->with('success', 'รับทราบคำขอเรียบร้อยแล้ว รอ ผอ. ดำเนินการขั้นสุดท้าย');
@@ -303,6 +364,16 @@ class ApprovalController extends Controller
 
             // Notify User
             $requester->notify(new LeaveStatusUpdated($leaveRequest, 'approved', $user));
+
+            // Push to Requester
+            if ($requester->fcm_token) {
+                (new FCMService())->sendNotification(
+                    $requester->fcm_token,
+                    'ใบลาของคุณได้รับการอนุมัติ 🎉',
+                    "ใบลา{$leaveRequest->leaveType->name} ของคุณได้รับการอนุมัติเรียบร้อยแล้ว",
+                    ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+                );
+            }
 
             $actionLabel = $isVacation ? 'อนุญาต' : 'รับทราบ';
             return redirect()->back()->with('success', "{$actionLabel}การลาขั้นสุดท้ายเรียบร้อยแล้ว");
@@ -345,6 +416,16 @@ class ApprovalController extends Controller
 
         // Notify User
         $leaveRequest->user->notify(new LeaveStatusUpdated($leaveRequest, 'rejected', $user));
+
+        // Push to Requester
+        if ($leaveRequest->user->fcm_token) {
+            (new FCMService())->sendNotification(
+                $leaveRequest->user->fcm_token,
+                'ใบลาของคุณถูกปฏิเสธ ❌',
+                "ใบลา{$leaveRequest->leaveType->name} ของคุณถูกปฏิเสธ",
+                ['type' => 'leave_status', 'request_id' => $leaveRequest->id]
+            );
+        }
 
         return redirect()->route('approvals.index')->with('success', 'ปฏิเสธคำขอเรียบร้อยแล้ว');
     }
