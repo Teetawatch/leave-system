@@ -304,8 +304,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           if (index >= leaveProvider.myRequests.length ||
-                              index > 4)
+                              index > 4) {
                             return null;
+                          }
                           final request = leaveProvider.myRequests[index];
                           return _buildRequestCard(request);
                         },

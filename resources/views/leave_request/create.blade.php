@@ -70,8 +70,8 @@
                     <i data-lucide="send" class="w-4 h-4"></i>
                     E-Leave System
                 </div>
-                <h1 class="text-5xl md:text-6xl font-bold text-slate-800 tracking-tight">แบบฟอร์มยื่นคำขอลา</h1>
-                <p class="text-slate-500 font-semibold text-xl max-w-2xl">กรุณาเลือกประเภทและระบุรายละเอียดการลา
+                <h1 class="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight">แบบฟอร์มยื่นคำขอลา</h1>
+                <p class="text-slate-500 font-semibold text-lg max-w-2xl">กรุณาเลือกประเภทและระบุรายละเอียดการลา
                     ระบบจะดำเนินการส่งเรื่องไปยังผู้อนุมัติตามลำดับสายงานอัตโนมัติ</p>
 
                 <!-- Modern Stepper UI -->
@@ -114,8 +114,8 @@
                                 <i data-lucide="layers" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <h3 class="text-2xl font-black text-slate-800 tracking-tight">1. เลือกประเภทการลา</h3>
-                                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">1. เลือกประเภทการลา</h3>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
                                     ระบุวัตถุประสงค์หลักของการลาครั้งนี้</p>
                             </div>
                         </div>
@@ -129,7 +129,7 @@
                                         class="h-full p-6 rounded-[2.5rem] border-2 border-slate-50 bg-white/50 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active group-hover:border-brand-200">
                                         <div
                                             class="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center text-3xl mb-5 shadow-inner transition-transform group-hover:scale-110 group-active:scale-95
-                                                                {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
+                                                                    {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
                                             @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-8 h-8"></i>
@@ -160,9 +160,9 @@
                                     <i data-lucide="map-pin" class="w-7 h-7"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-3xl font-bold text-slate-800 tracking-tight">
+                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">
                                         ที่อยู่ที่สามารถติดต่อได้</h3>
-                                    <p class="text-base font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">
                                         กรณีฉุกเฉินหรือต้องการแจ้งผลการตรวจ</p>
                                 </div>
                             </div>
@@ -173,14 +173,14 @@
                                         class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">บ้านเลขที่
                                         / ถนน / ซอย</label>
                                     <input type="text" name="addr_house"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-lg"
+                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
                                         placeholder="123/45 ถนนพลาธิการ...">
                                 </div>
                                 <div class="space-y-2">
                                     <label
                                         class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">จังหวัด</label>
                                     <input type="text" name="addr_province" list="provinces"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-lg"
+                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
                                         placeholder="พิมพ์ชื่อจังหวัด...">
                                 </div>
                             </div>
@@ -194,9 +194,9 @@
                                     <i data-lucide="calendar-days" class="w-7 h-7"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-3xl font-bold text-slate-800 tracking-tight">2. กำหนดช่วงเวลาการลา
+                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">2. กำหนดช่วงเวลาการลา
                                     </h3>
-                                    <p class="text-base font-semibold text-slate-400 uppercase tracking-widest mt-1"
+                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1"
                                         x-text="isTemporary ? 'ระบุวันและช่วงเวลาที่ต้องการลา' : 'เลือกวันเริ่มต้นถึงวันสิ้นสุดการปฏิบัติราชการ'">
                                     </p>
                                 </div>
@@ -213,7 +213,7 @@
                                             <i data-lucide="calendar" class="w-5 h-5"></i>
                                         </div>
                                         <input type="date" name="start_date" x-model="startDate" required
-                                            class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-800 text-xl transition-all shadow-sm">
+                                            class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-800 text-lg transition-all shadow-sm">
                                     </div>
                                 </div>
 
@@ -234,7 +234,7 @@
                                             <i data-lucide="calendar-check-2" class="w-5 h-5"></i>
                                         </div>
                                         <input type="date" name="end_date" x-model="endDate" required
-                                            class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 font-bold text-slate-800 text-xl transition-all shadow-sm">
+                                            class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 font-bold text-slate-800 text-lg transition-all shadow-sm">
                                     </div>
                                 </div>
 
@@ -266,9 +266,9 @@
                                     <i data-lucide="file-text" class="w-7 h-7"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-3xl font-bold text-slate-800 tracking-tight">3. รายละเอียดเพิ่มเติม
+                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">3. รายละเอียดเพิ่มเติม
                                     </h3>
-                                    <p class="text-base font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">
                                         ระบุเหตุผลความจำเป็นและความประสงค์</p>
                                 </div>
                             </div>
@@ -279,7 +279,7 @@
                                         class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">เหตุผลหรือความจำเป็นในการลา
                                         <span class="text-rose-500">*</span></label>
                                     <textarea name="reason" rows="4" required
-                                        class="w-full px-8 py-6 bg-white/50 border border-slate-100 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-800 text-xl transition-all resize-none shadow-inner"
+                                        class="w-full px-8 py-6 bg-white/50 border border-slate-100 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-800 text-lg transition-all resize-none shadow-inner"
                                         placeholder="ระบุเหตุผล เช่น ติดธุระส่วนตัวไม่สามารถมาปฏิบัติราชการได้..."></textarea>
                                 </div>
 
@@ -300,10 +300,10 @@
                                                 <i data-lucide="upload-cloud" class="w-10 h-10"></i>
                                             </div>
                                             <div x-show="!fileName" class="animate-pulse">
-                                                <p class="text-2xl font-bold text-slate-800">ลากไฟล์มาวางที่นี่ หรือ
+                                                <p class="text-xl font-bold text-slate-800">ลากไฟล์มาวางที่นี่ หรือ
                                                     คลิกเพื่อเลือก</p>
                                                 <p
-                                                    class="text-sm font-semibold text-slate-400 mt-2 uppercase tracking-widest leading-relaxed">
+                                                    class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest leading-relaxed">
                                                     รองรับไฟล์ PDF, JPG, PNG ขนาดไม่เกิน 5MB</p>
                                             </div>
                                             <div x-show="fileName" x-cloak
@@ -325,9 +325,9 @@
                         <!-- Action Button -->
                         <div class="pt-10 flex flex-col md:flex-row items-center gap-6">
                             <button type="submit"
-                                class="w-full md:w-auto flex-1 py-6 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-3xl rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.4)] hover:shadow-[0_25px_60px_-12px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-4 group">
+                                class="w-full md:w-auto flex-1 py-6 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-2xl rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.4)] hover:shadow-[0_25px_60px_-12px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-4 group">
                                 <i data-lucide="shield-check"
-                                    class="w-8 h-8 group-hover:rotate-12 transition-transform"></i>
+                                    class="w-7 h-7 group-hover:rotate-12 transition-transform"></i>
                                 <span>ยืนยันและส่งใบลา</span>
                             </button>
                             <a href="{{ route('dashboard') }}"
@@ -380,7 +380,7 @@
                                         <div>
                                             <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">
                                                 ประเภทการลา</p>
-                                            <p class="text-lg font-bold text-slate-800 leading-none mt-1"
+                                            <p class="text-base font-bold text-slate-800 leading-none mt-1"
                                                 x-text="getLeaveTypeName() || 'รอเลือกประเภท...'"></p>
                                         </div>
                                     </div>
@@ -406,7 +406,7 @@
                                             <span
                                                 class="text-xs font-bold text-slate-400 uppercase tracking-widest">ยอดรวมการลาครั้งนี้</span>
                                             <span
-                                                class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-600"
+                                                class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-600"
                                                 x-text="(duration > 0 ? duration : 0) + ' วัน'"></span>
                                         </div>
                                         <div class="w-14 h-14 rounded-full border-4 border-indigo-50 border-t-indigo-500 animate-spin"

@@ -30,13 +30,13 @@
                         </span>
                         ระบบพร้อมปฏิบัติการ
                     </div>
-                    <h1 class="text-6xl md:text-8xl font-bold text-white tracking-tight leading-tight">
+                    <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight leading-tight">
                         สวัสดีครับ, <br class="sm:hidden">
                         <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/50">
                             {{ Auth::user()->rank }}{{ Auth::user()->name }}
                         </span>
                     </h1>
-                    <p class="text-slate-400 text-2xl md:text-3xl font-semibold max-w-2xl leading-relaxed">
+                    <p class="text-slate-400 text-lg md:text-xl font-semibold max-w-2xl leading-relaxed">
                         ยินดีต้อนรับสู่ระบบบริหารจัดการการลาและเวรยาม <span
                             class="text-brand-400 font-bold">โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ</span>
                         พร้อมสนับสนุนการทำงานของคุณในวันนี้
@@ -54,7 +54,7 @@
                             class="relative w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md group-hover:rotate-12 transition-transform">
                             <i data-lucide="plus" class="w-6 h-6"></i>
                         </div>
-                        <span class="relative text-2xl">ยื่นใบลาใหม่</span>
+                        <span class="relative text-xl">ยื่นใบลาใหม่</span>
                     </a>
 
                     <a href="{{ route('guard-change.create') }}"
@@ -63,7 +63,7 @@
                             class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                             <i data-lucide="shield-half" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-2xl">ขอเปลี่ยนยาม</span>
+                        <span class="text-xl">ขอเปลี่ยนยาม</span>
                     </a>
                 </div>
             </div>
@@ -154,13 +154,13 @@
 
                     <div class="relative">
                         <div class="flex items-baseline gap-2">
-                            <span class="text-6xl font-bold text-slate-800 tracking-tighter">
+                            <span class="text-5xl font-bold text-slate-800 tracking-tighter">
                                 {{ $vacationBalance ? ($vacationBalance->remaining_days + 0) : 0 }}
                             </span>
-                            <span class="text-2xl font-bold text-slate-300 uppercase italic">/
+                            <span class="text-xl font-bold text-slate-300 uppercase italic">/
                                 {{ $vacationBalance ? ($vacationBalance->total_days + 0) : 0 }} วัน</span>
                         </div>
-                        <p class="text-base font-bold text-slate-400 uppercase tracking-widest mt-2 mb-6">
+                        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 mb-6">
                             สิทธิ์คงเหลือในปีปัจจุบัน</p>
 
                         @php
@@ -195,16 +195,16 @@
                     <div class="relative">
                         <div class="flex items-baseline gap-2">
                             <span
-                                class="text-6xl font-bold text-slate-800 tracking-tighter">{{ $sickUsageCount }}</span>
+                                class="text-5xl font-bold text-slate-800 tracking-tighter">{{ $sickUsageCount }}</span>
                             <span class="text-xl font-bold text-slate-300 uppercase italic">ครั้ง</span>
                         </div>
-                        <p class="text-base font-bold text-slate-400 uppercase tracking-widest mt-2 mb-6">
+                        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 mb-6">
                             รวมการรักษาตัวในปีนี้</p>
                         <div class="flex items-center gap-3">
                             <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                                 <div class="h-full bg-rose-500 w-full opacity-20"></div>
                             </div>
-                            <span class="text-sm font-bold text-rose-600 px-2 py-0.5 bg-rose-50 rounded-lg">รวม
+                            <span class="text-xs font-bold text-rose-600 px-2 py-0.5 bg-rose-50 rounded-lg">รวม
                                 {{ $sickUsageDays + 0 }} วัน</span>
                         </div>
                     </div>
@@ -230,16 +230,16 @@
                     <div class="relative">
                         <div class="flex items-baseline gap-2">
                             <span
-                                class="text-6xl font-bold text-slate-800 tracking-tighter">{{ $personalUsageCount }}</span>
+                                class="text-5xl font-bold text-slate-800 tracking-tighter">{{ $personalUsageCount }}</span>
                             <span class="text-xl font-bold text-slate-300 uppercase italic">ครั้ง</span>
                         </div>
-                        <p class="text-base font-bold text-slate-400 uppercase tracking-widest mt-2 mb-6">
+                        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 mb-6">
                             ดำเนินการธุระจำเป็น</p>
                         <div class="flex items-center gap-3">
                             <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                                 <div class="h-full bg-amber-500 w-full opacity-20"></div>
                             </div>
-                            <span class="text-sm font-bold text-amber-600 px-2 py-0.5 bg-amber-50 rounded-lg">รวม
+                            <span class="text-xs font-bold text-amber-600 px-2 py-0.5 bg-amber-50 rounded-lg">รวม
                                 {{ $personalUsageDays + 0 }} วัน</span>
                         </div>
                     </div>
@@ -265,11 +265,10 @@
                     <div class="relative">
                         <div class="flex items-baseline gap-2">
                             <span
-                                class="text-6xl font-bold text-white tracking-tighter">{{ $todayLeaves->count() }}</span>
+                                class="text-5xl font-bold text-white tracking-tighter">{{ $todayLeaves->count() }}</span>
                             <span class="text-xl font-bold text-white/30 uppercase italic">ท่าน</span>
                         </div>
-                        <p
-                            class="text-base font-bold text-white/40 uppercase tracking-widest mt-2 mb-6 leading-relaxed">
+                        <p class="text-sm font-bold text-white/40 uppercase tracking-widest mt-2 mb-6 leading-relaxed">
                             ข้อมูลการปฏิบัติงานล่าสุดในหน่วยงาน</p>
 
                         @if($todayLeaves->isNotEmpty())
@@ -282,14 +281,14 @@
                                 @endforeach
                                 @if($todayLeaves->count() > 4)
                                     <div
-                                        class="w-9 h-9 rounded-xl bg-brand-600 ring-4 ring-slate-900 flex items-center justify-center text-sm font-bold text-white">
+                                        class="w-9 h-9 rounded-xl bg-brand-600 ring-4 ring-slate-900 flex items-center justify-center text-xs font-bold text-white">
                                         +{{ $todayLeaves->count() - 4 }}
                                     </div>
                                 @endif
                             </div>
                         @else
                             <div
-                                class="flex items-center gap-2 text-base font-bold text-emerald-400 bg-emerald-400/10 px-4 py-2 rounded-xl w-fit">
+                                class="flex items-center gap-2 text-sm font-bold text-emerald-400 bg-emerald-400/10 px-4 py-2 rounded-xl w-fit">
                                 <span class="relative flex h-2 w-2">
                                     <span
                                         class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -321,7 +320,7 @@
                                 <div>
                                     <h3 class="font-bold text-slate-800 text-2xl tracking-tight">Timeline รายการล่าสุด
                                     </h3>
-                                    <p class="text-base font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">
                                         ประวัติการยื่นใบลาและการอนุมัติของคุณ</p>
                                 </div>
                             </div>
@@ -372,19 +371,19 @@
 
                                             <div class="flex-1 min-w-0">
                                                 <div
-                                                    class="flex items-center gap-3 mb-1.5 font-bold text-slate-800 text-2xl tracking-tight">
+                                                    class="flex items-center gap-3 mb-1.5 font-bold text-slate-800 text-xl tracking-tight">
                                                     {{ $req->leaveType->name }}
                                                     <span
-                                                        class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-sm tracking-[0.2em] font-bold uppercase">{{ $req->total_days + 0 }}
+                                                        class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-500 text-xs tracking-[0.2em] font-bold uppercase">{{ $req->total_days + 0 }}
                                                         วัน</span>
                                                 </div>
                                                 <div
-                                                    class="flex flex-wrap items-center gap-4 text-base font-semibold text-slate-400">
+                                                    class="flex flex-wrap items-center gap-4 text-sm font-semibold text-slate-400">
                                                     <span class="flex items-center gap-1.5"><i data-lucide="calendar"
-                                                            class="w-4 h-4"></i> @thaidate($req->start_date) -
+                                                            class="w-3.5 h-3.5"></i> @thaidate($req->start_date) -
                                                         @thaidate($req->end_date)</span>
                                                     <span class="flex items-center gap-1.5 opacity-60"><i data-lucide="clock"
-                                                            class="w-4 h-4"></i>
+                                                            class="w-3.5 h-3.5"></i>
                                                         {{ $req->created_at->diffForHumans() }}</span>
                                                 </div>
                                             </div>
@@ -405,7 +404,7 @@
                                                     };
                                                 @endphp
                                                 <span
-                                                    class="inline-flex items-center px-4 py-2 rounded-full text-base font-bold uppercase tracking-wider border {{ $statusStyle }} shadow-sm">
+                                                    class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider border {{ $statusStyle }} shadow-sm">
                                                     {{ $statusLabel }}
                                                 </span>
                                             </div>
@@ -427,7 +426,7 @@
                             class="p-8 bg-gradient-to-br from-indigo-600 via-brand-600 to-brand-500 text-white relative">
                             <div class="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                             <div class="relative z-10 flex items-center justify-between mb-2">
-                                <h3 class="font-bold text-3xl flex items-center gap-3">
+                                <h3 class="font-bold text-2xl flex items-center gap-3">
                                     <i data-lucide="calendar" class="w-7 h-7"></i>
                                     ปฏิทินการลา
                                 </h3>
@@ -452,7 +451,7 @@
                                     class="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-400 flex items-center justify-center border border-white/5 animate-bounce">
                                     <i data-lucide="sparkles" class="w-6 h-6"></i>
                                 </div>
-                                <h3 class="font-bold text-3xl tracking-tight">เกร็ดความรู้คู่ระเบียบ</h3>
+                                <h3 class="font-bold text-2xl tracking-tight">เกร็ดความรู้คู่ระเบียบ</h3>
                             </div>
 
                             <div class="space-y-6">
@@ -462,10 +461,10 @@
                                         <div
                                             class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)]">
                                         </div>
-                                        <p class="font-bold text-lg uppercase tracking-widest text-slate-300">ลาป่วย
+                                        <p class="font-bold text-base uppercase tracking-widest text-slate-300">ลาป่วย
                                         </p>
                                     </div>
-                                    <p class="text-base text-slate-500 font-semibold leading-relaxed px-6">
+                                    <p class="text-sm text-slate-500 font-semibold leading-relaxed px-6">
                                         ยื่นได้ทันทีที่มีอาการ กรณีลาเกิน 3 วัน ต้องมีใบรับรองแพทย์</p>
                                 </div>
 
@@ -475,10 +474,10 @@
                                         <div
                                             class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.8)]">
                                         </div>
-                                        <p class="font-bold text-lg uppercase tracking-widest text-slate-300">
+                                        <p class="font-bold text-base uppercase tracking-widest text-slate-300">
                                             ลากิจส่วนตัว</p>
                                     </div>
-                                    <p class="text-base text-slate-500 font-semibold leading-relaxed px-6">
+                                    <p class="text-sm text-slate-500 font-semibold leading-relaxed px-6">
                                         ควรยื่นล่วงหน้าอย่างน้อย 1 วันทำการ เพื่อประโยชน์ในการบริหารจัดการบุคลากร</p>
                                 </div>
 
@@ -488,11 +487,11 @@
                                         <div
                                             class="w-2.5 h-2.5 rounded-full bg-brand-500 shadow-[0_0_15px_rgba(37,99,235,0.8)]">
                                         </div>
-                                        <p class="font-bold text-lg uppercase tracking-widest text-slate-300">
+                                        <p class="font-bold text-base uppercase tracking-widest text-slate-300">
                                             ลาพักผ่อน
                                         </p>
                                     </div>
-                                    <p class="text-base text-slate-500 font-semibold leading-relaxed px-6">
+                                    <p class="text-sm text-slate-500 font-semibold leading-relaxed px-6">
                                         สะสมได้สูงสุดไม่เกิน 20-30 วัน (ตามอายุราชการ) แนะนำยื่นล่วงหน้า 3 วัน</p>
                                 </div>
                             </div>

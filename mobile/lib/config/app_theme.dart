@@ -34,46 +34,46 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: background,
 
-      // Typography - Using Sarabun for professional Thai support
-      fontFamily: GoogleFonts.sarabun().fontFamily,
+      // Typography - Using Kanit for modern Thai support
+      fontFamily: GoogleFonts.kanit().fontFamily,
       textTheme: TextTheme(
-        displayLarge: GoogleFonts.sarabun(
+        displayLarge: GoogleFonts.kanit(
           fontSize: 32,
           fontWeight: FontWeight.w800,
           color: textMain,
           letterSpacing: -0.5,
         ),
-        displayMedium: GoogleFonts.sarabun(
+        displayMedium: GoogleFonts.kanit(
           fontSize: 28,
           fontWeight: FontWeight.w700,
           color: textMain,
         ),
-        headlineSmall: GoogleFonts.sarabun(
+        headlineSmall: GoogleFonts.kanit(
           fontSize: 24,
           fontWeight: FontWeight.w700,
           color: textMain,
         ),
-        titleLarge: GoogleFonts.sarabun(
+        titleLarge: GoogleFonts.kanit(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: textMain,
         ),
-        titleMedium: GoogleFonts.sarabun(
+        titleMedium: GoogleFonts.kanit(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: textMain,
         ),
-        bodyLarge: GoogleFonts.sarabun(
+        bodyLarge: GoogleFonts.kanit(
           fontSize: 16,
           color: textMain,
           height: 1.5,
         ),
-        bodyMedium: GoogleFonts.sarabun(
+        bodyMedium: GoogleFonts.kanit(
           fontSize: 14,
           color: textSub,
           height: 1.5,
         ),
-        labelLarge: GoogleFonts.sarabun(
+        labelLarge: GoogleFonts.kanit(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: textMain,
@@ -135,13 +135,13 @@ class AppTheme {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              textStyle: GoogleFonts.sarabun(
+              textStyle: GoogleFonts.kanit(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
               ),
             ).copyWith(
-              overlayColor: MaterialStateProperty.all(
+              overlayColor: WidgetStateProperty.all(
                 Colors.white.withOpacity(0.1),
               ),
             ),
@@ -155,7 +155,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.sarabun(
+          textStyle: GoogleFonts.kanit(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -169,7 +169,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.sarabun(
+        titleTextStyle: GoogleFonts.kanit(
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: textMain,

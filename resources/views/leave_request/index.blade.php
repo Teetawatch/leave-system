@@ -11,12 +11,12 @@
                     <i data-lucide="archive" class="w-3.5 h-3.5"></i>
                     Transaction History
                 </div>
-                <h2 class="text-6xl md:text-7xl font-bold text-slate-900 tracking-tight relative z-10 flex flex-col md:flex-row md:items-center gap-4">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight relative z-10 flex flex-col md:flex-row md:items-center gap-4">
                     ประวัติคำขอลา
                     <span class="text-slate-300 hidden md:inline">/</span>
                     <span class="text-brand-600">ทั้งหมด</span>
                 </h2>
-                <p class="text-slate-400 mt-4 text-2xl font-semibold max-w-xl">ติดตามสถานะแบบ Real-time และเรียกดูเอกสารใบลาที่ได้รับอนุมัติแล้วของคุณได้ที่นี่</p>
+                <p class="text-slate-400 mt-4 text-lg font-semibold max-w-xl">ติดตามสถานะแบบ Real-time และเรียกดูเอกสารใบลาที่ได้รับอนุมัติแล้วของคุณได้ที่นี่</p>
             </div>
             
             <a href="{{ route('leave-request.create') }}" 
@@ -57,8 +57,8 @@
                     <div class="w-40 h-40 bg-slate-50 rounded-[3rem] flex items-center justify-center mx-auto mb-10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-inner">
                         <i data-lucide="ghost" class="w-20 h-20 text-slate-200"></i>
                     </div>
-                    <h3 class="text-5xl font-bold text-slate-800 mb-4 tracking-tight">ไม่มีประวัติการลาในขณะนี้</h3>
-                    <p class="text-slate-400 font-semibold mb-12 max-w-sm mx-auto text-2xl uppercase tracking-widest leading-relaxed">คงความเป็นมืออาชีพด้วยการปฏิบัติงานอย่างต่อเนื่อง</p>
+                    <h3 class="text-3xl font-bold text-slate-800 mb-4 tracking-tight">ไม่มีประวัติการลาในขณะนี้</h3>
+                    <p class="text-slate-400 font-semibold mb-12 max-w-sm mx-auto text-lg uppercase tracking-widest leading-relaxed">คงความเป็นมืออาชีพด้วยการปฏิบัติงานอย่างต่อเนื่อง</p>
                     <a href="{{ route('leave-request.create') }}" class="inline-flex items-center gap-3 px-10 py-5 bg-brand-50 text-brand-600 hover:bg-brand-100 font-bold rounded-[2rem] transition-all shadow-sm">
                         เริ่มส่งใบลาครั้งแรกของคุณ <i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </a>
@@ -85,7 +85,7 @@
                             <!-- Premium Designer Date Ticket -->
                             <div class="flex-shrink-0 flex flex-row xl:flex-col items-center justify-center w-full xl:w-40 bg-slate-900 rounded-[2.5rem] p-6 shadow-xl shadow-slate-900/20 group-hover:bg-brand-600 transition-colors duration-500 group-hover:scale-105">
                                 <span class="text-xs text-white/50 font-bold uppercase tracking-[0.2em] mb-0 xl:mb-2 mr-4 xl:mr-0">{{ \Carbon\Carbon::parse($req->start_date)->locale('th')->isoFormat('MMMM') }}</span>
-                                <span class="text-6xl xl:text-7xl font-bold text-white tracking-tighter my-0 xl:my-1">{{ \Carbon\Carbon::parse($req->start_date)->day }}</span>
+                                <span class="text-5xl xl:text-6xl font-bold text-white tracking-tighter my-0 xl:my-1">{{ \Carbon\Carbon::parse($req->start_date)->day }}</span>
                                 <span class="text-sm text-white/40 font-bold ml-4 xl:ml-0 uppercase tracking-widest border-t border-white/10 pt-2 mt-1">{{ \Carbon\Carbon::parse($req->start_date)->year + 543 }}</span>
                             </div>
 
@@ -117,7 +117,7 @@
 
                                 <div class="mb-8 group/reason">
                                     <label class="block text-xs font-bold text-slate-300 mb-3 uppercase tracking-widest leading-none">เหตุผลภารกิจและความจำเป็น</label>
-                                    <p class="text-slate-800 text-3xl font-bold leading-tight tracking-tight group-hover/reason:text-brand-600 transition-colors">
+                                    <p class="text-slate-800 text-2xl font-bold leading-tight tracking-tight group-hover/reason:text-brand-600 transition-colors">
                                         {{ $req->reason }}
                                     </p>
                                 </div>
@@ -229,8 +229,8 @@
                                 <i data-lucide="file-text" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <h3 class="text-3xl font-bold text-slate-800 tracking-tight">แบบฟอร์มใบลาตามระเบียบพัสดุ/ธุรการ</h3>
-                                <p class="text-base font-semibold text-slate-400 uppercase tracking-widest mt-1">Official Document Viewer</p>
+                                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">แบบฟอร์มใบลาตามระเบียบพัสดุ/ธุรการ</h3>
+                                <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">Official Document Viewer</p>
                             </div>
                         </div>
                         <button @click="showPdf = false" class="w-12 h-12 bg-slate-100 hover:bg-slate-200 rounded-2xl text-slate-500 transition-all hover:rotate-90 active:scale-90 flex items-center justify-center">

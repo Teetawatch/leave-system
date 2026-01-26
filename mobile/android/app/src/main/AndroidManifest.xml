@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="leave_app"
+        android:label="ระบบบริหารจัดการงานธุรการด้านกำลังพล โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

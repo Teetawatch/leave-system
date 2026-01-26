@@ -46,7 +46,7 @@ class ApiService {
       data: {
         'email': email,
         'password': password,
-        'device_name': 'flutter_app',
+        'device_name': 'LeaveSystemMobile',
       },
     );
   }

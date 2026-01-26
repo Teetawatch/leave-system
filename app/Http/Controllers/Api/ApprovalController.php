@@ -44,24 +44,31 @@ class ApprovalController extends Controller
         if ($user->role === 'admin') {
             // Admin sees ALL pending requests
             $query->whereIn('status', [
+                'pending',
                 'pending_supervisor',
+                'pending_head',
                 'pending_manager',
                 'pending_deputy_director',
                 'pending_director'
             ]);
         } elseif ($user->role === 'director') {
             // Director sees pending_director (for approval) and pending_deputy_director (for monitoring/override)
-            // But main responsibility is pending_director
             $query->whereIn('status', ['pending_director', 'pending_deputy_director']);
         } elseif ($user->role === 'deputy_director') {
             // Deputy Director see pending_deputy_director
             $query->where('status', 'pending_deputy_director');
+        } elseif ($user->role === 'department_head') {
+            // Department Head sees all in their department that are at early stages
+            $query->whereIn('status', ['pending_supervisor', 'pending_head', 'pending_manager'])
+                ->whereHas('user', function ($q) use ($user) {
+                    $q->where('department', $user->department);
+                });
         } else {
-            // Normal Approvers (Supervisors/Managers/Department Heads)
+            // Normal Approvers (Supervisors/Managers)
             $query->where(function ($q) use ($user) {
                 // Case 1: Pending Supervisor (Step 1)
                 $q->where(function ($subQ) use ($user) {
-                    $subQ->where('status', 'pending_supervisor')
+                    $subQ->whereIn('status', ['pending_supervisor', 'pending_head'])
                         ->whereHas('user', function ($userQ) use ($user) {
                             $userQ->where('supervisor_id', $user->id);
                         });
@@ -77,11 +84,11 @@ class ApprovalController extends Controller
             });
         }
 
-        $requests = $query->orderBy('created_at', 'desc')->paginate(15);
+        $requests = $query->orderBy('created_at', 'desc')->paginate(50);
 
         return response()->json([
             'success' => true,
-            'data' => LeaveRequestResource::collection($requests),
+            'data' => LeaveRequestResource::collection($requests->items()),
             'meta' => [
                 'current_page' => $requests->currentPage(),
                 'last_page' => $requests->lastPage(),

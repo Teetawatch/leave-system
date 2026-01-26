@@ -198,7 +198,7 @@ class _LeaveReportScreenState extends State<LeaveReportScreen> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         const SizedBox(height: 16),
-        ...requests.map((req) => _buildRequestItem(req)).toList(),
+        ...requests.map((req) => _buildRequestItem(req)),
       ],
     );
   }

@@ -21,10 +21,10 @@
                     <span class="w-1 h-1 rounded-full bg-emerald-500/40"></span>
                     <span class="text-emerald-400">Request New Change</span>
                 </nav>
-                <h1 class="text-5xl md:text-6xl font-bold text-white tracking-tight mb-4">
+                <h1 class="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
                     แบบฟอร์มขออนุญาตเปลี่ยนยาม
                 </h1>
-                <p class="text-indigo-100/60 max-w-2xl mx-auto text-xl font-semibold">
+                <p class="text-indigo-100/60 max-w-2xl mx-auto text-lg font-semibold">
                     กรุณากรอกข้อมูลการเปลี่ยนเวรยามให้ครบถ้วน เพื่อดำเนินการส่งขออนุมัติไปยังผู้บังคับบัญชาตามลำดับ
                 </p>
             </div>
@@ -49,7 +49,7 @@
                             </div>
 
                             <div class="relative z-10">
-                                <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                     <div
                                         class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
                                         <i data-lucide="user-plus" class="w-6 h-6"></i>
@@ -73,7 +73,7 @@
                                             @keydown.arrow-up.prevent="highlightPrev()"
                                             @keydown.enter.prevent="selectHighlighted()"
                                             placeholder="ค้นหาชื่อ หรือตำแหน่ง..."
-                                            class="block w-full rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all py-5 pl-14 pr-12 text-xl font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold"
+                                            class="block w-full rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all py-5 pl-14 pr-12 text-lg font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold"
                                             autocomplete="off">
 
                                         <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -89,7 +89,7 @@
                                         <div
                                             class="mt-4 flex flex-col sm:flex-row items-center gap-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
                                             <div
-                                                class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg shadow-indigo-200">
+                                                class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-200">
                                                 <span x-text="selectedUser?.name.substring(0, 1)"></span>
                                             </div>
                                             <div class="flex-1 text-center sm:text-left">
@@ -119,7 +119,7 @@
                                                     <span x-text="user.name.substring(0, 1)"></span>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="font-bold text-slate-800 text-lg" x-text="user.rank + user.name">
+                                                    <p class="font-bold text-slate-800 text-base" x-text="user.rank + user.name">
                                                     </p>
                                                     <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-0.5"
                                                         x-text="user.position || 'บุคลากร'"></p>
@@ -138,7 +138,7 @@
                                             class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                             <i data-lucide="user-x" class="w-8 h-8 text-slate-300"></i>
                                         </div>
-                                        <p class="text-slate-500 font-bold text-lg">ไม่พบข้อมูลรายชื่อที่ค้นหา</p>
+                                        <p class="text-slate-500 font-bold text-base">ไม่พบข้อมูลรายชื่อที่ค้นหา</p>
                                         <p class="text-slate-400 text-base mt-1">กรุณาลองพิมพ์ชื่อหรือตำแหน่งใหม่อีกครั้ง
                                         </p>
                                     </div>
@@ -162,7 +162,7 @@
                             </div>
 
                             <div class="relative z-10">
-                                <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
+                                <h3 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                     <div
                                         class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
                                         <i data-lucide="award" class="w-6 h-6"></i>
@@ -221,7 +221,7 @@
                                 </div>
 
                                 <div class="relative z-10 h-full flex flex-col">
-                                    <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
+                                    <h3 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
                                             <i data-lucide="calendar" class="w-6 h-6"></i>
@@ -236,7 +236,7 @@
                                                 class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">SELECT
                                                 DATE</label>
                                             <input type="date" name="duty_date" x-model="dutyDate"
-                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-blue-500 p-6 rounded-3xl text-2xl font-bold text-slate-800 transition-all cursor-pointer"
+                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-blue-500 p-6 rounded-3xl text-xl font-bold text-slate-800 transition-all cursor-pointer"
                                                 required>
                                         </div>
                                     </div>
@@ -259,7 +259,7 @@
                                 </div>
 
                                 <div class="relative z-10 h-full flex flex-col">
-                                    <h3 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-4">
+                                    <h3 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-4">
                                         <div
                                             class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm">
                                             <i data-lucide="message-square" class="w-6 h-6"></i>
@@ -274,7 +274,7 @@
                                                 class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">REASON
                                                 (OPTIONAL)</label>
                                             <textarea name="remarks" rows="2" x-model="remarks"
-                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-purple-500 p-6 rounded-3xl text-xl font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold transition-all resize-none"
+                                                class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-purple-500 p-6 rounded-3xl text-lg font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold transition-all resize-none"
                                                 placeholder="ระบุเหตุผล เช่น ไปราชการ กทม..."></textarea>
                                         </div>
                                     </div>
@@ -285,9 +285,9 @@
                         <!-- Action Submit -->
                         <div class="mt-12 flex flex-col items-center">
                             <button type="submit"
-                                class="w-full sm:w-auto min-w-[300px] flex items-center justify-center gap-4 px-10 py-6 bg-slate-900 hover:bg-indigo-600 text-white font-bold text-2xl rounded-full shadow-2xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300 hover:-translate-y-2 group">
+                                class="w-full sm:w-auto min-w-[300px] flex items-center justify-center gap-4 px-10 py-6 bg-slate-900 hover:bg-indigo-600 text-white font-bold text-xl rounded-full shadow-2xl shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300 hover:-translate-y-2 group">
                                 <i data-lucide="send"
-                                    class="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                                    class="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
                                 ยืนยันและส่งคำขอเปลี่ยนยาม
                             </button>
                             <p class="text-slate-400 font-bold text-sm mt-6 flex items-center gap-2">
@@ -335,7 +335,7 @@
                                             <p
                                                 class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">
                                                 Position Duty</p>
-                                            <p class="text-2xl font-bold text-white leading-tight"
+                                            <p class="text-xl font-bold text-white leading-tight"
                                                 x-text="getDutyPositionName() || 'โปรดเลือกตำแหน่ง...'"></p>
                                         </div>
                                         <div
@@ -354,7 +354,7 @@
                                                 <p
                                                     class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest">
                                                     Target Date</p>
-                                                <p class="text-base font-bold text-white mt-0.5"
+                                                <p class="text-sm font-bold text-white mt-0.5"
                                                     x-text="formatDate(dutyDate) || 'ยังไม่กำหนด'"></p>
                                             </div>
                                         </div>
@@ -368,7 +368,7 @@
                                                 <p
                                                     class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest">
                                                     Replacement</p>
-                                                <p class="text-base font-bold text-white mt-0.5"
+                                                <p class="text-sm font-bold text-white mt-0.5"
                                                     x-text="searchQuery || 'รอระบุรายชื่อ...'"></p>
                                             </div>
                                         </div>
@@ -383,7 +383,7 @@
                                             <i data-lucide="message-square" class="w-3 h-3"></i>
                                             Remarks
                                         </p>
-                                        <p class="text-base text-white/60 font-semibold italic break-words"
+                                        <p class="text-sm text-white/60 font-semibold italic break-words"
                                             x-text="remarks || '- ไม่ระบุหมายเหตุ -'"></p>
                                     </div>
                                 </div>

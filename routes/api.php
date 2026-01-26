@@ -58,6 +58,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/leave-requests/{id}/cancel', [LeaveRequestController::class, 'cancel']);
 
     // -------------------------------------------------------------------------
+    // Approvals
+    // -------------------------------------------------------------------------
+    Route::get('/approvals', [ApprovalController::class, 'index']);
+    Route::post('/approvals/{id}/approve', [ApprovalController::class, 'approve']);
+    Route::post('/approvals/{id}/reject', [ApprovalController::class, 'reject']);
+
+    // -------------------------------------------------------------------------
     // Reports (For Admins/Commanders)
     // -------------------------------------------------------------------------
     Route::get('/reports/leave-summary', [\App\Http\Controllers\Api\ReportController::class, 'leaveSummary']);
