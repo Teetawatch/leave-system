@@ -73,26 +73,44 @@ class LeaveRequestController extends Controller
 
         // 1. Check specific Leave Type rules
         // Advance Notice
-        if ($leaveType->requires_advance_notice && $leaveType->slug !== 'personal') {
-            $daysInAdvance = now()->diffInDays($startDate, false);
-            // $daysInAdvance is negative if startDate is in past
-            if ($daysInAdvance < $leaveType->advance_notice_days) {
-                return back()->withErrors(['start_date' => "ประเภทการลานี้ ({$leaveType->name}) ต้องยื่นล่วงหน้าอย่างน้อย {$leaveType->advance_notice_days} วัน"]);
+        // 1. Check specific Leave Type rules
+        // Advance Notice
+        // 1. Check specific Leave Type rules
+        // Advance Notice
+        $nowBkk = Carbon::now('Asia/Bangkok');
+        $today = $nowBkk->copy()->startOfDay();
+        // Parse input strictly
+        $start = Carbon::parse($request->start_date)->setTimezone('Asia/Bangkok')->startOfDay();
+
+        if ($leaveType->slug === 'personal') {
+            // ลากิจ: ต้องลาล่วงหน้า 1 วัน (อย่างน้อยเริ่มวันพรุ่งนี้)
+            // ตัวอย่าง: ยื่นวันที่ 1, ลาได้เร็วสุดวันที่ 2
+            $minDate = $today->copy()->addDays(1);
+            if ($start->lessThan($minDate)) {
+                return back()->withErrors(['start_date' => "ลากิจต้องยื่นล่วงหน้าอย่างน้อย 1 วัน (ยื่นวันนี้ ลาได้ตั้งแต่วันที่ {$minDate->format('d/m/Y')} เป็นต้นไป)"]);
+            }
+        } elseif ($leaveType->slug === 'vacation') {
+            // ลาพักผ่อน: ต้องลาล่วงหน้า 3 วัน
+            // ตัวอย่าง: ยื่นวันที่ 1, ลาได้เร็วสุดวันที่ 4
+            $minDate = $today->copy()->addDays(3);
+            if ($start->lessThan($minDate)) {
+                return back()->withErrors(['start_date' => "ลาพักผ่อนต้องยื่นล่วงหน้าอย่างน้อย 3 วัน (ยื่นวันนี้ ลาได้ตั้งแต่วันที่ {$minDate->format('d/m/Y')} เป็นต้นไป)"]);
+            }
+        } elseif ($leaveType->requires_advance_notice) {
+            $minDate = $today->copy()->addDays($leaveType->advance_notice_days);
+            if ($start->lessThan($minDate)) {
+                return back()->withErrors(['start_date' => "ประเภทการลานี้ ({$leaveType->name}) ต้องยื่นล่วงหน้าอย่างน้อย {$leaveType->advance_notice_days} วัน (ยื่นวันนี้ ลาได้ตั้งแต่วันที่ {$minDate->format('d/m/Y')} เป็นต้นไป)"]);
             }
         }
 
-        // Retroactive Check (if NOT required advance notice, e.g. Sick Leave)
-        if (!$leaveType->allows_retroactive) {
-            if ($startDate->isPast() && !$startDate->isToday()) {
+        // Retroactive Check
+        if (!in_array($leaveType->slug, ['personal', 'vacation']) && !$leaveType->allows_retroactive) {
+            if ($start->isPast() && !$start->isSameDay($today)) {
                 return back()->withErrors(['start_date' => "ประเภทการลานี้ ({$leaveType->name}) ไม่สามารถยื่นย้อนหลังได้"]);
             }
-        } else {
-            // Allowed retroactive but maybe limit to 7 days?
-            // "ป่วย — ยื่นย้อนหลังได้ (เช่น ยื่นภายใน N วัน...)"
-            // Let's implement strict Check: created_at vs start_date
-            // If I am submitting TODAY (now), and start_date was 7 days ago.
-            // limit to configurable N=7
-            $daysPast = $startDate->diffInDays(now(), false);
+        } elseif (!in_array($leaveType->slug, ['personal', 'vacation'])) {
+            // Retroactive limit
+            $daysPast = $start->diffInDays($today, false);
             if ($daysPast > 7) {
                 return back()->withErrors(['start_date' => "ไม่สามารถยื่นย้อนหลังเกิน 7 วันได้"]);
             }
@@ -107,10 +125,10 @@ class LeaveRequestController extends Controller
                 'temporary_leave_period.in' => 'ช่วงเวลาไม่ถูกต้อง',
             ]);
 
-            // Must be today only
-            $today = Carbon::today();
+            // Must be today only (Thai Time)
+            $today = Carbon::now('Asia/Bangkok')->startOfDay();
             if (!$startDate->isSameDay($today) || !$endDate->isSameDay($today)) {
-                return back()->withErrors(['start_date' => 'ลาชั่วกาลสามารถลาได้เฉพาะวันนี้เท่านั้น']);
+                return back()->withErrors(['start_date' => 'ลาชั่วกาลสามารถลาได้เฉพาะวันที่ทำรายการเท่านั้น (อ้างอิงเวลาประเทศไทยปัจจุบัน)']);
             }
 
             // Must be single day
@@ -214,7 +232,7 @@ class LeaveRequestController extends Controller
             if ($supervisor) {
                 // Send Database Notification
                 $supervisor->notify(new NewLeaveRequestNotification($leaveRequest, $user));
-                
+
                 // Send Push Notification via FCM
                 if ($supervisor->fcm_token) {
                     $fcmService = new \App\Services\FCMService();
@@ -231,7 +249,7 @@ class LeaveRequestController extends Controller
             }
         }
 
-        return redirect()->route('dashboard')->with('status', 'ส่งคำขอเรียบร้อยแล้ว รอการอนุมัติ');
+        return redirect()->route('leave-request.index')->with('status', 'ส่งคำขอเรียบร้อยแล้ว รอการอนุมัติ');
     }
 
     public function show(LeaveRequest $leaveRequest)

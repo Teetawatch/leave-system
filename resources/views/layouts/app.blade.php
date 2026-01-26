@@ -165,9 +165,11 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="font-bold text-slate-800 text-sm truncate">
-                                        {{ Auth::user()->rank }}{{ Auth::user()->name }}</p>
+                                        {{ Auth::user()->rank }}{{ Auth::user()->name }}
+                                    </p>
                                     <p class="text-xs text-slate-500 truncate uppercase tracking-wider">
-                                        {{ Auth::user()->department ?? 'Staff' }}</p>
+                                        {{ Auth::user()->department ?? 'Staff' }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -232,9 +234,9 @@
 
                 <div class="relative">
                     <h1 class="text-lg font-bold text-slate-800 tracking-tight leading-tight mb-1">
-                        ระบบบริหารจัดการ<br>งานกำลังพล</h1>
+                        ระบบบริหารจัดการงานกำลังพล</h1>
                     <p class="text-[10px] text-brand-600 uppercase tracking-[0.2em] font-bold opacity-70">
-                        โรงเรียนพลาธิการ พธ.ทร.</p>
+                        NAVAL SUPPLY SCHOOL</p>
                 </div>
             </div>
 
@@ -533,9 +535,6 @@
                             @endif
                         </ol>
                     </nav>
-                    <h1 class="text-3xl font-bold text-slate-800 mt-1 tracking-tight">
-                        @yield('title', 'แผงควบคุมหลัก')
-                    </h1>
                 </div>
 
                 <div class="flex items-center gap-6">
@@ -865,6 +864,52 @@
                 }
             }
         }
+    </script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Success Message
+            @if(session('status') || session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: "{{ session('status') ?? session('success') }}",
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#4f46e5',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            @endif
+
+            // Error Message
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: "{{ session('error') }}",
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#ef4444',
+                });
+            @endif
+
+                // Validation Errors
+                @if($errors->any())
+                    let errorHtml = '<ul class="text-left text-sm space-y-1">';
+                    @foreach($errors->all() as $error)
+                        errorHtml += '<li>• {{ $error }}</li>';
+                    @endforeach
+                    errorHtml += '</ul>';
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'กรุณาตรวจสอบข้อมูล',
+                        html: errorHtml,
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#ef4444',
+                    });
+                @endif
+        });
     </script>
 </body>
 

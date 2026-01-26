@@ -4,7 +4,6 @@
     @push('styles')
         <style>
             .premium-bg {
-                background: radial-gradient(circle at top right, #f8fafc, #eff6ff);
                 min-height: 100vh;
             }
 
@@ -129,7 +128,7 @@
                                         class="h-full p-6 rounded-[2.5rem] border-2 border-slate-50 bg-white/50 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active group-hover:border-brand-200">
                                         <div
                                             class="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center text-3xl mb-5 shadow-inner transition-transform group-hover:scale-110 group-active:scale-95
-                                                                    {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
+                                                                                        {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
                                             @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-8 h-8"></i>
@@ -180,6 +179,40 @@
                                     <label
                                         class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">จังหวัด</label>
                                     <input type="text" name="addr_province" list="provinces"
+                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
+                                        placeholder="พิมพ์ชื่อจังหวัด...">
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Address for Personal Leave -->
+                        <section x-show="isPersonal" class="glass-panel rounded-[3rem] p-8 md:p-12 mb-10">
+                            <div class="flex items-center gap-5 mb-10">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg rotate-2">
+                                    <i data-lucide="map-pin" class="w-7 h-7"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">
+                                        สถานที่ติดต่อระหว่างลา</h3>
+                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                        ระบุสถานที่ที่สามารถติดต่อได้กรณีเร่งด่วน</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">สถานที่
+                                        / บ้านเลขที่</label>
+                                    <input type="text" name="personal_location"
+                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
+                                        placeholder="เช่น บ้านพักต่างจังหวัด...">
+                                </div>
+                                <div class="space-y-2">
+                                    <label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">จังหวัด</label>
+                                    <input type="text" name="personal_province" list="provinces"
                                         class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
                                         placeholder="พิมพ์ชื่อจังหวัด...">
                                 </div>
@@ -244,15 +277,21 @@
                                         <input type="radio" name="temporary_leave_period" value="morning"
                                             class="sr-only peer" x-model="temporaryPeriod">
                                         <div
-                                            class="py-4 text-center rounded-[1.75rem] font-bold text-base peer-checked:bg-white peer-checked:text-brand-600 peer-checked:shadow-lg transition-all text-slate-400">
-                                            ช่วงเช้า</div>
+                                            class="py-3 text-center rounded-[1.75rem] font-bold text-base peer-checked:bg-white peer-checked:text-brand-600 peer-checked:shadow-lg transition-all text-slate-400">
+                                            ช่วงเช้า
+                                            <span class="block text-[10px] mt-0.5 opacity-80 font-medium">(ก่อน 07:30
+                                                น.)</span>
+                                        </div>
                                     </label>
                                     <label class="flex-1 cursor-pointer">
                                         <input type="radio" name="temporary_leave_period" value="afternoon"
                                             class="sr-only peer" x-model="temporaryPeriod">
                                         <div
-                                            class="py-4 text-center rounded-[1.75rem] font-bold text-base peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-lg transition-all text-slate-400">
-                                            ช่วงบ่าย</div>
+                                            class="py-3 text-center rounded-[1.75rem] font-bold text-base peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-lg transition-all text-slate-400">
+                                            ช่วงบ่าย
+                                            <span class="block text-[10px] mt-0.5 opacity-80 font-medium">(ก่อน 11:00
+                                                น.)</span>
+                                        </div>
                                     </label>
                                 </div>
                             </div>
@@ -351,7 +390,7 @@
 
                         <div class="relative z-10 space-y-8">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-2xl font-bold text-white tracking-tight uppercase">Dashboard Preview
+                                <h4 class="text-2xl font-bold text-black tracking-tight uppercase">สรุปการลา
                                 </h4>
                                 <div
                                     class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-brand-400 border border-white/10">
@@ -364,12 +403,7 @@
                                 <div
                                     class="absolute inset-0 bg-gradient-to-br from-brand-50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                                 </div>
-                                <div
-                                    class="absolute -left-3 top-1/2 -mt-3 w-6 h-6 bg-slate-900 rounded-full shadow-inner">
-                                </div>
-                                <div
-                                    class="absolute -right-3 top-1/2 -mt-3 w-6 h-6 bg-slate-900 rounded-full shadow-inner">
-                                </div>
+
 
                                 <div class="space-y-6 relative z-10">
                                     <div class="flex items-center gap-4 border-b border-slate-50 pb-4">
@@ -423,7 +457,7 @@
                                         <i data-lucide="info" class="w-5 h-5"></i>
                                     </div>
                                     <div class="space-y-1">
-                                        <p class="text-base font-bold text-slate-200">ข้อควรระวัง</p>
+                                        <p class="text-base font-bold text-black">ข้อควรระวัง</p>
                                         <p class="text-sm font-semibold text-slate-500 leading-relaxed">
                                             กรุณาตรวจสอบข้อมูลและวันลาคงเหลือของท่านก่อนกดยืนยัน
                                             เพื่อป้องกันการไม่อนุมัติจากสายงาน</p>
