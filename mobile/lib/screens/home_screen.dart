@@ -141,27 +141,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   SliverToBoxAdapter(
                     child: _buildQuickStatsSection(leaveProvider),
                   ),
-
-                  // Dashboard Section
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                      child: _buildSectionHeader(
-                        '📊',
-                        'แดชบอร์ดกำลังพล',
-                        'ภาพรวมสิทธิ์การลาของคุณ',
-                      ),
-                    ),
-                  ),
-
-                  // Balance Cards
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverToBoxAdapter(
-                      child: _buildBalanceCards(leaveProvider),
-                    ),
-                  ),
-
                   // Quick Actions Grid
                   SliverToBoxAdapter(
                     child: Padding(
