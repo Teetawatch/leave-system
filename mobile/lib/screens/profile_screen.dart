@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import '../widgets/animated_background.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -36,7 +37,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
-    final size = MediaQuery.of(context).size;
     final ImagePicker _picker = ImagePicker();
 
     Future<void> _pickSignature() async {
@@ -54,9 +54,13 @@ class _ProfileScreenState extends State<ProfileScreen>
 
           if (success && mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('อัปโหลดลายเซ็นสำเร็จ'),
+              SnackBar(
+                content: const Text('อัปโหลดลายเซ็นสำเร็จ'),
                 backgroundColor: AppTheme.success,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             );
           }
@@ -67,6 +71,52 @@ class _ProfileScreenState extends State<ProfileScreen>
             SnackBar(
               content: Text('เกิดข้อผิดพลาด: $e'),
               backgroundColor: AppTheme.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    Future<void> _pickAvatar() async {
+      try {
+        final XFile? image = await _picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 80,
+          maxWidth: 1000,
+        );
+
+        if (image != null) {
+          final success = await authProvider.updateProfile(
+            avatarPath: image.path,
+          );
+
+          if (success && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('อัปโหลดรูปโปรไฟล์สำเร็จ'),
+                backgroundColor: AppTheme.success,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('เกิดข้อผิดพลาด: $e'),
+              backgroundColor: AppTheme.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           );
         }
@@ -74,33 +124,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background Design
-          Container(
-            height: size.height,
-            width: size.width,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFF8FAFC), Colors.white, Color(0xFFE0F2FE)],
-              ),
-            ),
-          ),
-          _buildFloatingCircle(
-            top: -100,
-            right: -50,
-            size: 300,
-            color: AppTheme.primary.withOpacity(0.08),
-          ),
-          _buildFloatingCircle(
-            bottom: -80,
-            left: -50,
-            size: 250,
-            color: AppTheme.secondary.withOpacity(0.05),
-          ),
+          const Positioned.fill(child: AnimatedBackground()),
 
           SafeArea(
             child: FadeTransition(
@@ -114,7 +141,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                       padding: const EdgeInsets.fromLTRB(28, 40, 28, 40),
                       child: Column(
                         children: [
-                          _buildAvatar(user),
+                          _buildAvatar(
+                            user,
+                            authProvider.isLoading ? null : _pickAvatar,
+                          ),
                           const SizedBox(height: 24),
                           Text(
                             user?.name ?? 'ไม่พบข้อมูลชื่อ',
@@ -122,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             style: const TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w900,
-                              color: AppTheme.textMain,
+                              color: Color(0xFF1E293B),
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -133,13 +163,24 @@ class _ProfileScreenState extends State<ProfileScreen>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.primary.withOpacity(0.1),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                              ),
                               borderRadius: BorderRadius.circular(100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF6366F1,
+                                  ).withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Text(
                               user?.position ?? 'ไม่ระบุตำแหน่ง',
                               style: const TextStyle(
-                                color: AppTheme.primary,
+                                color: Colors.white,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 13,
                               ),
@@ -162,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
-                              color: AppTheme.textMain,
+                              color: Color(0xFF1E293B),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -195,7 +236,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
-                              color: AppTheme.textMain,
+                              color: Color(0xFF1E293B),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -208,12 +249,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     width: double.infinity,
                                     height: 150,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primary.withOpacity(0.03),
+                                      color: const Color(0xFFF8FAFC),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: AppTheme.border.withOpacity(0.5),
-                                        // dashArray is not available in standard BoxDecoration,
-                                        // but I'll use a simple border for now or skip dash
+                                        color: const Color(0xFFE2E8F0),
                                       ),
                                     ),
                                     child: user?.signatureUrl != null
@@ -233,7 +272,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     child: Text(
                                                       'ไม่สามารถโหลดรูปภาพได้',
                                                       style: TextStyle(
-                                                        color: AppTheme.textSub,
+                                                        color: Color(
+                                                          0xFF94A3B8,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
@@ -247,13 +288,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Icon(
                                                   Icons.history_edu_rounded,
                                                   size: 48,
-                                                  color: AppTheme.textSub,
+                                                  color: Color(0xFFCBD5E1),
                                                 ),
                                                 SizedBox(height: 8),
                                                 Text(
                                                   'ยังไม่มีลายเซ็นต์',
                                                   style: TextStyle(
-                                                    color: AppTheme.textSub,
+                                                    color: Color(0xFF94A3B8),
                                                     fontSize: 14,
                                                   ),
                                                 ),
@@ -277,7 +318,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 color: Colors.white,
                                               ),
                                             )
-                                          : const Icon(Icons.upload_rounded),
+                                          : const Icon(
+                                              Icons.cloud_upload_rounded,
+                                            ),
                                       label: Text(
                                         authProvider.isLoading
                                             ? 'กำลังอัปโหลด...'
@@ -288,7 +331,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppTheme.primary,
+                                        backgroundColor: const Color(
+                                          0xFF0F172A,
+                                        ),
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 16,
@@ -323,21 +368,26 @@ class _ProfileScreenState extends State<ProfileScreen>
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
-                              color: AppTheme.textMain,
+                              color: Color(0xFF1E293B),
                             ),
                           ),
                           const SizedBox(height: 16),
                           _buildProfileInfoCard([
                             _buildActionItem(
-                              Icons.lock_person_rounded,
+                              Icons.lock_outline_rounded,
                               'เปลี่ยนรหัสผ่าน',
-                              () {},
+                              () {
+                                HapticFeedback.lightImpact();
+                              },
                             ),
                             _buildDivider(),
                             _buildActionItem(
                               Icons.logout_rounded,
                               'ออกจากระบบ',
-                              () => authProvider.logout(),
+                              () {
+                                HapticFeedback.mediumImpact();
+                                authProvider.logout();
+                              },
                               isDestructive: true,
                             ),
                           ]),
@@ -354,76 +404,102 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildFloatingCircle({
-    required double size,
-    required Color color,
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-  }) {
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      ),
-    );
-  }
-
-  Widget _buildAvatar(dynamic user) {
-    return Container(
-      width: 130,
-      height: 130,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
-          ),
-        ],
-        border: Border.all(color: Colors.white, width: 4),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(65),
-        child: user?.avatarUrl != null
-            ? Image.network(
-                user!.avatarUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.person_rounded,
-                  size: 70,
-                  color: AppTheme.textSub,
-                ),
-              )
-            : const Icon(
-                Icons.person_rounded,
-                size: 70,
-                color: AppTheme.textSub,
+  Widget _buildAvatar(dynamic user, VoidCallback? onEdit) {
+    return Stack(
+      children: [
+        Container(
+          width: 140,
+          height: 140,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6366F1).withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-      ),
+            ],
+          ),
+          child: Container(
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+            ),
+            padding: const EdgeInsets.all(4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(70),
+              child: user?.avatarUrl != null
+                  ? Image.network(
+                      user!.avatarUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.person_rounded,
+                        size: 70,
+                        color: Color(0xFFCBD5E1),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.person_rounded,
+                      size: 70,
+                      color: Color(0xFFCBD5E1),
+                    ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onEdit,
+              customBorder: const CircleBorder(),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: Color(0xFF6366F1),
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildProfileInfoCard(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.8),
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: const Color(0xFF6366F1).withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
+        border: Border.all(color: Colors.white),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
@@ -461,7 +537,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 Text(
                   label,
                   style: const TextStyle(
-                    color: AppTheme.textSub,
+                    color: Color(0xFF64748B),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -470,7 +546,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 Text(
                   value,
                   style: const TextStyle(
-                    color: AppTheme.textMain,
+                    color: Color(0xFF1E293B),
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
@@ -489,7 +565,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     VoidCallback onTap, {
     bool isDestructive = false,
   }) {
-    final color = isDestructive ? AppTheme.error : AppTheme.textMain;
+    final color = isDestructive
+        ? const Color(0xFFEF4444)
+        : const Color(0xFF1E293B);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -498,14 +576,21 @@ class _ProfileScreenState extends State<ProfileScreen>
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
           child: Row(
             children: [
-              Icon(icon, color: color, size: 24),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
               const SizedBox(width: 20),
               Text(
                 label,
                 style: TextStyle(
                   color: color,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const Spacer(),
@@ -520,7 +605,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget _buildDivider() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Divider(height: 1, color: AppTheme.border.withOpacity(0.5)),
+      child: Divider(
+        height: 1,
+        color: const Color(0xFFE2E8F0).withOpacity(0.8),
+      ),
     );
   }
 }

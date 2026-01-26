@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
@@ -6,6 +7,7 @@ import '../models/guard_change_model.dart';
 import '../providers/guard_change_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/signature_dialog.dart';
+import '../widgets/animated_background.dart';
 
 class GuardChangeApprovalsScreen extends StatefulWidget {
   const GuardChangeApprovalsScreen({super.key});
@@ -40,51 +42,49 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GuardChangeProvider>(context);
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           'คำขอถึงฉัน',
-          style: TextStyle(fontWeight: FontWeight.w900),
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1E293B),
+            letterSpacing: -0.5,
+          ),
         ),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
-        foregroundColor: AppTheme.textMain,
         elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+        ),
       ),
       body: Stack(
         children: [
-          // Background Design
-          Container(
-            height: size.height,
-            width: size.width,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFF8FAFC), Colors.white, Color(0xFFF1F5F9)],
-              ),
-            ),
-          ),
-          _buildFloatingCircle(
-            top: -40,
-            right: -40,
-            size: 220,
-            color: Colors.indigo.withOpacity(0.06),
-          ),
-          _buildFloatingCircle(
-            bottom: -50,
-            left: -50,
-            size: 280,
-            color: Colors.blue.withOpacity(0.05),
-          ),
-
+          const Positioned.fill(child: AnimatedBackground()),
           SafeArea(
             child: RefreshIndicator(
-              onRefresh: () => provider.fetchApprovals(),
+              onRefresh: () async {
+                HapticFeedback.mediumImpact();
+                await provider.fetchApprovals();
+              },
               color: AppTheme.primary,
+              backgroundColor: Colors.white,
               child: FadeTransition(
                 opacity: _animationController,
                 child: _buildContent(provider),
@@ -92,27 +92,6 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingCircle({
-    required double size,
-    required Color color,
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-  }) {
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
       ),
     );
   }
@@ -128,33 +107,41 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppTheme.border.withOpacity(0.2),
+                color: Colors.white,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.indigo.withOpacity(0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-              child: Icon(
-                Icons.assignment_turned_in_rounded,
-                size: 64,
-                color: AppTheme.textSub.withOpacity(0.2),
+              child: const Icon(
+                Icons.mark_email_read_rounded,
+                size: 48,
+                color: Color(0xFF6366F1),
               ),
             ),
             const SizedBox(height: 24),
             const Text(
               'ไม่มีคำขอรอยืนยัน',
               style: TextStyle(
-                color: AppTheme.textSub,
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1E293B),
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'เมื่อมีเพื่อนร่วมงานขอเปลี่ยนเวรกับคุณ\nคำขอจะปรากฏที่นี่',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.textSub.withOpacity(0.5),
                 fontSize: 14,
+                color: Color(0xFF64748B),
+                height: 1.5,
               ),
             ),
           ],
@@ -168,8 +155,23 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
       itemCount: provider.approvals.length,
       itemBuilder: (context, index) {
         final request = provider.approvals[index];
-        return _buildApprovalCard(request);
+        return _buildAnimatedListItem(index, _buildApprovalCard(request));
       },
+    );
+  }
+
+  Widget _buildAnimatedListItem(int index, Widget child) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 400 + (index * 100)),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - value)),
+          child: Opacity(opacity: value, child: child),
+        );
+      },
+      child: child,
     );
   }
 
@@ -181,9 +183,9 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 25,
-            offset: const Offset(0, 12),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
           ),
         ],
       ),
@@ -198,18 +200,34 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: AppTheme.primary.withOpacity(0.1),
-                      child: Text(
-                        (request.user?.name != null &&
-                                request.user!.name.isNotEmpty)
-                            ? request.user!.name[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
+                    Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6366F1).withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 26,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          (request.user?.name != null &&
+                                  request.user!.name.isNotEmpty)
+                              ? request.user!.name[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            color: Color(0xFF6366F1),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
                     ),
@@ -222,15 +240,16 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                             request.user?.name ?? 'ไม่ระบุชื่อ',
                             style: const TextStyle(
                               fontWeight: FontWeight.w900,
-                              fontSize: 17,
-                              color: AppTheme.textMain,
+                              fontSize: 18,
+                              color: Color(0xFF1E293B),
+                              letterSpacing: -0.5,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'ต้องการให้ท่านปฏิบัติเวรแทน',
                             style: TextStyle(
-                              color: AppTheme.textSub,
-                              fontSize: 12,
+                              color: const Color(0xFF64748B).withOpacity(0.8),
+                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -241,11 +260,11 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                 ),
                 const SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Color(0xFFF8FAFC),
+                    color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppTheme.border.withOpacity(0.3)),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
                   ),
                   child: Column(
                     children: [
@@ -254,9 +273,12 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                         request.dutyPositionThai,
                         Icons.security_rounded,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Divider(height: 1),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(
+                          height: 1,
+                          color: Colors.grey.withOpacity(0.1),
+                        ),
                       ),
                       _buildDetailRow(
                         'วันที่ปฏิบัติ',
@@ -268,13 +290,37 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                 ),
                 if (request.remarks != null && request.remarks!.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Text(
-                    'หมายเหตุ: ${request.remarks}',
-                    style: TextStyle(
-                      color: AppTheme.textSub.withOpacity(0.8),
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFFEDD5)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.format_quote_rounded,
+                          color: Color(0xFFF97316),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${request.remarks}',
+                            style: const TextStyle(
+                              color: Color(0xFF9A3412),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -283,18 +329,25 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () => _showRejectDialog(request.id),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          _showRejectDialog(request.id);
+                        },
                         style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.error,
+                          foregroundColor: const Color(0xFFEF4444),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: const Color(0xFFEF4444).withOpacity(0.1),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                         child: const Text(
                           'ปฏิเสธ',
                           style: TextStyle(
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w800,
                             fontSize: 15,
                           ),
                         ),
@@ -306,18 +359,21 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
                           gradient: const LinearGradient(
-                            colors: [Colors.green, Colors.teal],
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.green.withOpacity(0.2),
+                              color: const Color(0xFF10B981).withOpacity(0.3),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: () => _showApproveDialog(request.id),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            _showApproveDialog(request.id);
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             foregroundColor: Colors.white,
@@ -330,7 +386,7 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                           child: const Text(
                             'ยืนยันรับเวร',
                             style: TextStyle(
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
                           ),
@@ -350,12 +406,12 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
   Widget _buildDetailRow(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTheme.textSub),
+        Icon(icon, size: 18, color: const Color(0xFF94A3B8)),
         const SizedBox(width: 12),
         Text(
           label,
           style: const TextStyle(
-            color: AppTheme.textSub,
+            color: Color(0xFF64748B),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -364,7 +420,7 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
         Text(
           value,
           style: const TextStyle(
-            color: AppTheme.textMain,
+            color: Color(0xFF1E293B),
             fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
@@ -394,18 +450,9 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
           useSavedSignature: result['useSavedSignature'] ?? false,
         );
         if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'ยืนยันการรับเปลี่ยนเวรเรียบร้อยแล้ว',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              backgroundColor: AppTheme.success,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
+          _showSnackBar(
+            'ยืนยันการรับเปลี่ยนเวรเรียบร้อยแล้ว',
+            AppTheme.success,
           );
         }
       }
@@ -419,18 +466,32 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
       builder: (context) => AlertDialog(
         title: const Text(
           'ระบุเหตุผลที่ปฏิเสธ',
-          style: TextStyle(fontWeight: FontWeight.w900),
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: 'ระบุเหตุผล...'),
+          decoration: InputDecoration(
+            hintText: 'เหตุผล...',
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+          ),
           maxLines: 3,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ยกเลิก'),
+            child: const Text(
+              'ยกเลิก',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF64748B),
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -445,13 +506,7 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
               );
               if (success && mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('ปฏิเสธคำขอเรียบร้อยแล้ว'),
-                    backgroundColor: AppTheme.error,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                _showSnackBar('ปฏิเสธคำขอเรียบร้อยแล้ว', AppTheme.error);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -460,10 +515,44 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
-            child: const Text('ยืนยันการปฏิเสธ'),
+            child: const Text(
+              'ยืนยันการปฏิเสธ',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              color == AppTheme.success
+                  ? Icons.check_circle_rounded
+                  : Icons.error_rounded,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              message,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontFamily: 'NotoSansThai',
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
       ),
     );
   }

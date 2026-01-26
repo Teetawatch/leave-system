@@ -178,7 +178,7 @@ class ApiService {
 
   Future<Response> getLatestNews() async {
     return await Dio().get(
-      'https://nass.ac.th/wp-json/wp/v2/posts?per_page=5&_embed',
+      'https://nass.ac.th/wp-json/wp/v2/posts?per_page=5&_embed&categories=5',
     );
   }
 

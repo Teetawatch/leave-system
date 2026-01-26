@@ -227,12 +227,11 @@ class _LoginScreenState extends State<LoginScreen>
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(38),
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons
-                          .security_rounded, // Changed to a more professional icon
-                      size: 64,
-                      color: AppTheme.primary,
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/logonavy.png',
+                      height: 80,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -243,6 +242,7 @@ class _LoginScreenState extends State<LoginScreen>
         const SizedBox(height: 32),
         const Text(
           'ระบบบริหารจัดการงานธุรการด้านกำลังพล',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w900,

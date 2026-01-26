@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
@@ -7,6 +8,7 @@ import '../models/guard_change_model.dart';
 import '../providers/leave_provider.dart';
 import '../providers/guard_change_provider.dart';
 import '../services/pdf_service.dart';
+import '../widgets/animated_background.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -50,160 +52,123 @@ class _ActivityScreenState extends State<ActivityScreen>
   Widget build(BuildContext context) {
     final leaveProvider = Provider.of<LeaveProvider>(context);
     final guardProvider = Provider.of<GuardChangeProvider>(context);
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           'รายการกิจกรรม',
-          style: TextStyle(fontWeight: FontWeight.w900),
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1E293B),
+            letterSpacing: -0.5,
+          ),
         ),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
-        foregroundColor: AppTheme.textMain,
         elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 28),
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.white.withOpacity(0.5),
+              shape: BoxShape.circle,
             ),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              labelColor: AppTheme.primary,
-              unselectedLabelColor: AppTheme.textSub,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 13,
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              tabs: const [
-                Tab(text: 'ประวัติการลา'),
-                Tab(text: 'ประวัติเปลี่ยนเวร'),
-              ],
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: Color(0xFF1E293B),
             ),
           ),
         ),
       ),
       body: Stack(
         children: [
-          Container(
-            height: size.height,
-            width: size.width,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFF8FAFC), Colors.white, Color(0xFFF0F7FF)],
-              ),
-            ),
-          ),
-          _buildFloatingCircle(
-            top: -40,
-            right: -40,
-            size: 220,
-            color: AppTheme.primary.withOpacity(0.06),
-          ),
-          _buildFloatingCircle(
-            bottom: -50,
-            left: -50,
-            size: 280,
-            color: AppTheme.secondary.withOpacity(0.05),
-          ),
+          // Background
+          const Positioned.fill(child: AnimatedBackground()),
 
+          // Content
           SafeArea(
-            child: FadeTransition(
-              opacity: _animationController,
-              child: TabBarView(
-                controller: _tabController,
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  _buildLeaveHistory(leaveProvider),
-                  _buildGuardHistory(guardProvider),
-                ],
-              ),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                // Custom Tab Bar
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.white),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: const Color(0xFF64748B),
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      fontFamily: 'NotoSansThai',
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      fontFamily: 'NotoSansThai',
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    tabs: const [
+                      Tab(text: 'ประวัติการลา'),
+                      Tab(text: 'ประวัติเปลี่ยนเวร'),
+                    ],
+                  ),
+                ),
+
+                // Tab Views
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      _buildLeaveHistory(leaveProvider),
+                      _buildGuardHistory(guardProvider),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildFloatingCircle({
-    required double size,
-    required Color color,
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-  }) {
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(IconData icon, String title, String subtitle) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppTheme.border.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 64,
-              color: AppTheme.textSub.withOpacity(0.2),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppTheme.textSub,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(
-              color: AppTheme.textSub.withOpacity(0.5),
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Leave History Implementation ---
 
   Widget _buildLeaveHistory(LeaveProvider provider) {
     if (provider.isLoading && provider.myRequests.isEmpty) {
@@ -212,63 +177,172 @@ class _ActivityScreenState extends State<ActivityScreen>
 
     if (provider.myRequests.isEmpty) {
       return _buildEmptyState(
-        Icons.history_toggle_off_rounded,
+        Icons.event_busy_rounded,
         'ยังไม่มีประวัติการลา',
-        'รายการที่คุณยื่นลาจะปรากฏที่นี่',
+        'เริ่มสร้างรายการลาแรกของคุณได้เลย',
       );
     }
 
     return RefreshIndicator(
-      onRefresh: () async => provider.fetchMyRequests(),
+      onRefresh: () async {
+        HapticFeedback.mediumImpact();
+        await provider.fetchMyRequests();
+      },
+      displacement: 20,
+      color: AppTheme.primary,
+      backgroundColor: Colors.white,
       child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(top: 20, bottom: 120),
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
         itemCount: provider.myRequests.length,
-        itemBuilder: (context, index) =>
-            _buildLeaveCard(provider.myRequests[index]),
+        itemBuilder: (context, index) {
+          final request = provider.myRequests[index];
+          return _buildAnimatedListItem(index, _buildLeaveCard(request));
+        },
+      ),
+    );
+  }
+
+  Widget _buildGuardHistory(GuardChangeProvider provider) {
+    if (provider.isLoading && provider.myRequests.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (provider.myRequests.isEmpty) {
+      return _buildEmptyState(
+        Icons.security_rounded,
+        'ยังไม่มีประวัติเปลี่ยนเวร',
+        'รายการขอเปลี่ยนเวรจะแสดงที่นี่',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        HapticFeedback.mediumImpact();
+        await provider.fetchMyRequests();
+      },
+      displacement: 20,
+      color: AppTheme.primary,
+      backgroundColor: Colors.white,
+      child: ListView.builder(
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
+        itemCount: provider.myRequests.length,
+        itemBuilder: (context, index) {
+          final request = provider.myRequests[index];
+          return _buildAnimatedListItem(index, _buildGuardCard(request));
+        },
+      ),
+    );
+  }
+
+  Widget _buildAnimatedListItem(int index, Widget child) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 400 + (index * 100)),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - value)),
+          child: Opacity(opacity: value, child: child),
+        );
+      },
+      child: child,
+    );
+  }
+
+  Widget _buildEmptyState(IconData icon, String title, String subtitle) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.indigo.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Icon(icon, size: 48, color: const Color(0xFF6366F1)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLeaveCard(LeaveRequest request) {
     final statusColor = _getLeaveStatusColor(request.status);
-    final statusIcon = _getLeaveStatusIcon(request.status);
+    final statusGradient = _getLeaveStatusGradient(request.status);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: const Color(0xFF6366F1).withOpacity(0.08),
             blurRadius: 20,
-            offset: const Offset(0, 10),
+            offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(color: Colors.white),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(24),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 56,
-                      height: 56,
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
+                        gradient: LinearGradient(
+                          colors: _getLeaveTypeGradient(request.leaveType.slug),
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _getLeaveTypeGradient(
+                              request.leaveType.slug,
+                            )[0].withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Icon(
                         _getLeaveTypeIcon(request.leaveType.slug),
-                        color: statusColor,
-                        size: 26,
+                        color: Colors.white,
+                        size: 24,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -279,116 +353,154 @@ class _ActivityScreenState extends State<ActivityScreen>
                           Text(
                             request.leaveType.name,
                             style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 17,
-                              color: AppTheme.textMain,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                              color: Color(0xFF1E293B),
                             ),
                           ),
+                          const SizedBox(height: 2),
                           Text(
-                            'ยื่นเมื่อ ${request.formattedCreatedAt}',
+                            request.formattedCreatedAt,
                             style: const TextStyle(
-                              color: AppTheme.textSub,
+                              color: Color(0xFF94A3B8),
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    _buildStatusChip(
-                      _getLeaveStatusText(request.status),
-                      statusColor,
-                      statusIcon,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: statusColor.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _getLeaveStatusText(request.status),
+                            style: TextStyle(
+                              color: statusColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(24),
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
                   ),
                   child: Row(
                     children: [
-                      _buildInfoItem(
-                        'ระยะเวลา',
-                        '${request.formattedStartDate} - ${request.formattedEndDate}',
-                        Icons.calendar_today_rounded,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'ระยะเวลาลา',
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${request.formattedStartDate} - ${request.formattedEndDate}',
+                              style: const TextStyle(
+                                color: Color(0xFF334155),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       Container(
                         width: 1,
-                        height: 30,
-                        color: AppTheme.border,
+                        height: 32,
+                        color: const Color(0xFFE2E8F0),
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                       ),
-                      _buildInfoItem(
-                        'จำนวน',
-                        '${request.totalDays} วัน',
-                        Icons.timer_outlined,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            'จำนวนวัน',
+                            style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${request.totalDays} วัน',
+                            style: const TextStyle(
+                              color: Color(0xFF6366F1),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () => _downloadLeavePdf(request),
-                      icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
-                      label: const Text(
-                        'PDF',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                        ),
-                      ),
+                const SizedBox(height: 12),
+                if (request.status == 'approved')
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        _downloadLeavePdf(request);
+                      },
+                      icon: const Icon(Icons.download_rounded, size: 18),
+                      label: const Text('ดาวน์โหลด PDF'),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.primary,
-                        backgroundColor: AppTheme.primary.withOpacity(0.08),
+                        foregroundColor: const Color(0xFF6366F1),
+                        backgroundColor: const Color(
+                          0xFF6366F1,
+                        ).withOpacity(0.1),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 10,
+                          vertical: 12,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        textStyle: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // --- Guard History Implementation ---
-
-  Widget _buildGuardHistory(GuardChangeProvider provider) {
-    if (provider.isLoading && provider.myRequests.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (provider.myRequests.isEmpty) {
-      return _buildEmptyState(
-        Icons.history_toggle_off_rounded,
-        'ยังไม่มีประวัติการเปลี่ยนเวร',
-        'รายการที่คุณขอเปลี่ยนเวรยามจะปรากฏที่นี่',
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async => provider.fetchMyRequests(),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(top: 20, bottom: 120),
-        itemCount: provider.myRequests.length,
-        itemBuilder: (context, index) =>
-            _buildGuardCard(provider.myRequests[index]),
       ),
     );
   }
@@ -397,234 +509,265 @@ class _ActivityScreenState extends State<ActivityScreen>
     final statusColor = _getGuardStatusColor(request.status);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.blue.withOpacity(0.08),
             blurRadius: 20,
-            offset: const Offset(0, 10),
+            offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(color: Colors.white),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(
-                        Icons.security_rounded,
-                        color: Colors.blueAccent,
-                        size: 26,
-                      ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF3B82F6).withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.shield_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        request.dutyPositionThai,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
                         children: [
-                          Text(
-                            request.dutyPositionThai,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 17,
-                              color: AppTheme.textMain,
-                            ),
+                          Icon(
+                            Icons.calendar_today_rounded,
+                            size: 12,
+                            color: const Color(0xFF94A3B8),
                           ),
+                          const SizedBox(width: 4),
                           Text(
-                            'ยื่นเมื่อ ${request.formattedCreatedAt}',
+                            request.formattedDutyDate,
                             style: const TextStyle(
-                              color: AppTheme.textSub,
+                              color: Color(0xFF64748B),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    _buildStatusChip(
-                      _getGuardStatusText(request.status),
-                      statusColor,
-                      Icons.pending_rounded,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  child: Row(
-                    children: [
-                      _buildInfoItem(
-                        'วันที่ปฏิบัติเวร',
-                        request.formattedDutyDate,
-                        Icons.calendar_month_outlined,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 30,
-                        color: AppTheme.border,
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      _buildInfoItem(
-                        'ผู้มาเปลี่ยนแทน',
-                        request.replacementUser?.name ?? '-',
-                        Icons.person_outline,
-                      ),
-                    ],
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: statusColor.withOpacity(0.2)),
+                  ),
+                  child: Text(
+                    _getGuardStatusText(request.status),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
-                if (request.status == 'fully_approved') ...[
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton.icon(
-                        onPressed: () => _downloadGuardPdf(request.id),
-                        icon: const Icon(
-                          Icons.picture_as_pdf_rounded,
-                          size: 18,
-                        ),
-                        label: const Text(
-                          'PDF',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.primary,
-                          backgroundColor: AppTheme.primary.withOpacity(0.08),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ],
             ),
-          ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFF1F5F9)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'ผู้มาเปลี่ยนแทน',
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 10,
+                              backgroundColor: Color(0xFFE2E8F0),
+                              child: Icon(
+                                Icons.person,
+                                size: 14,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                request.replacementUser?.name ?? '-',
+                                style: const TextStyle(
+                                  color: Color(0xFF334155),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (request.status == 'fully_approved') ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    _downloadGuardPdf(request.id);
+                  },
+                  icon: const Icon(Icons.download_rounded, size: 18),
+                  label: const Text('ดาวน์โหลด PDF'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF3B82F6).withOpacity(0.1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
   }
 
   // --- Helpers ---
-
-  Widget _buildStatusChip(String text, Color color, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w900,
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
-    );
+  Color _getLeaveStatusColor(String status) {
+    switch (status) {
+      case 'approved':
+        return const Color(0xFF10B981);
+      case 'rejected':
+        return const Color(0xFFEF4444);
+      default:
+        return const Color(0xFFF59E0B);
+    }
   }
 
-  Widget _buildInfoItem(String label, String value, IconData icon) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 12, color: AppTheme.textSub),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppTheme.textSub,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppTheme.textMain,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
+  List<Color> _getLeaveStatusGradient(String status) {
+    switch (status) {
+      case 'approved':
+        return [const Color(0xFF10B981), const Color(0xFF34D399)];
+      case 'rejected':
+        return [const Color(0xFFEF4444), const Color(0xFFF97316)];
+      default:
+        return [const Color(0xFFF59E0B), const Color(0xFFFBBF24)];
+    }
   }
 
-  Color _getLeaveStatusColor(String status) => status == 'approved'
-      ? AppTheme.success
-      : (status == 'rejected' ? AppTheme.error : AppTheme.warning);
-  IconData _getLeaveStatusIcon(String status) => status == 'approved'
-      ? Icons.check_circle_rounded
-      : (status == 'rejected' ? Icons.cancel_rounded : Icons.pending_rounded);
-  String _getLeaveStatusText(String status) => status == 'approved'
-      ? 'อนุมัติ'
-      : (status == 'rejected' ? 'ปฏิเสธ' : 'รออนุมัติ');
-  IconData _getLeaveTypeIcon(String slug) => slug == 'vacation'
-      ? Icons.beach_access_rounded
-      : (slug == 'sick'
-            ? Icons.medication_rounded
-            : Icons.business_center_rounded);
+  String _getLeaveStatusText(String status) {
+    switch (status) {
+      case 'approved':
+        return 'อนุมัติ';
+      case 'rejected':
+        return 'ปฏิเสธ';
+      default:
+        return 'รออนุมัติ';
+    }
+  }
+
+  List<Color> _getLeaveTypeGradient(String slug) {
+    switch (slug) {
+      case 'vacation':
+        return [const Color(0xFF6366F1), const Color(0xFF8B5CF6)];
+      case 'sick':
+        return [const Color(0xFFEF4444), const Color(0xFFF97316)];
+      case 'personal':
+        return [const Color(0xFF10B981), const Color(0xFF34D399)];
+      default:
+        return [const Color(0xFFF59E0B), const Color(0xFFFBBF24)];
+    }
+  }
+
+  IconData _getLeaveTypeIcon(String slug) {
+    switch (slug) {
+      case 'vacation':
+        return Icons.beach_access_rounded;
+      case 'sick':
+        return Icons.medication_rounded;
+      case 'personal':
+        return Icons.person_rounded;
+      default:
+        return Icons.business_center_rounded;
+    }
+  }
 
   Color _getGuardStatusColor(String status) {
-    if (status == 'fully_approved') return AppTheme.success;
-    if (status == 'rejected' || status == 'cancelled') return AppTheme.error;
-    if (status == 'pending') return AppTheme.warning;
-    return Colors.blue;
+    if (status == 'fully_approved') return const Color(0xFF10B981);
+    if (status == 'rejected' || status == 'cancelled') {
+      return const Color(0xFFEF4444);
+    }
+    if (status == 'pending') return const Color(0xFFF59E0B);
+    return const Color(0xFF3B82F6);
   }
 
   String _getGuardStatusText(String status) {
-    if (status == 'fully_approved') return 'อนุมัติเรียบร้อย';
+    if (status == 'fully_approved') return 'อนุมัติแล้ว';
     if (status == 'rejected') return 'ปฏิเสธ';
-    if (status == 'cancelled') return 'ยกเลิกแล้ว';
-    if (status == 'pending') return 'รอผู้แทนยืนยัน';
-    if (status == 'approved') return 'รอหัวหน้าแผนก';
-    if (status == 'director_approved') return 'รอ ผอ. อนุมัติ';
-    return 'กำลังรอ';
+    if (status == 'cancelled') return 'ยกเลิก';
+    if (status == 'pending') return 'รอผู้แทน';
+    if (status == 'approved') return 'รอหัวหน้า';
+    if (status == 'director_approved') return 'รอ ผอ.';
+    return 'รออนุมัติ';
   }
 
   Future<void> _downloadLeavePdf(LeaveRequest request) async {

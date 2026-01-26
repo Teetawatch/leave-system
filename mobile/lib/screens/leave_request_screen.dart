@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
 import '../models/leave_type_model.dart';
 import '../providers/leave_provider.dart';
+import '../widgets/animated_background.dart';
 
 class LeaveRequestScreen extends StatefulWidget {
   const LeaveRequestScreen({super.key});
@@ -48,6 +50,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   }
 
   Future<void> _selectDate(bool isStart) async {
+    HapticFeedback.lightImpact();
     final picked = await showDatePicker(
       context: context,
       initialDate: isStart
@@ -59,9 +62,15 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: AppTheme.primary,
+              primary: Color(0xFF6366F1), // Custom primary color
               onPrimary: Colors.white,
-              onSurface: AppTheme.textMain,
+              onSurface: Color(0xFF1E293B),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF6366F1),
+                textStyle: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
           ),
           child: child!,
@@ -87,12 +96,17 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      HapticFeedback.heavyImpact();
+      return;
+    }
     if (_startDate == null || _endDate == null) {
+      HapticFeedback.heavyImpact();
       _showSnackBar('กรุณาเลือกวันที่ลางาน', AppTheme.error);
       return;
     }
 
+    HapticFeedback.mediumImpact();
     setState(() => _isLoading = true);
     FocusScope.of(context).unfocus();
 
@@ -127,14 +141,29 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        content: Row(
+          children: [
+            Icon(
+              color == AppTheme.success
+                  ? Icons.check_circle_rounded
+                  : Icons.error_rounded,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              message,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontFamily: 'NotoSansThai',
+              ),
+            ),
+          ],
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
       ),
     );
   }
@@ -142,54 +171,48 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   @override
   Widget build(BuildContext context) {
     final leaveProvider = Provider.of<LeaveProvider>(context);
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           'ยื่นใบขอลา',
-          style: TextStyle(fontWeight: FontWeight.w900),
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1E293B),
+            letterSpacing: -0.5,
+          ),
         ),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
-        foregroundColor: AppTheme.textMain,
         elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+        ),
       ),
       body: Stack(
         children: [
-          // Background components
-          Container(
-            height: size.height,
-            width: size.width,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFF8FAFC), Colors.white, Color(0xFFF0F4FF)],
-              ),
-            ),
-          ),
-          _buildFloatingCircle(
-            top: -50,
-            right: -50,
-            size: 200,
-            color: AppTheme.primary.withOpacity(0.05),
-          ),
-          _buildFloatingCircle(
-            bottom: 100,
-            left: -80,
-            size: 300,
-            color: AppTheme.secondary.withOpacity(0.04),
-          ),
-
+          const Positioned.fill(child: AnimatedBackground()),
           SafeArea(
             child: FadeTransition(
               opacity: _animationController,
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
+                  horizontal: 24,
                   vertical: 20,
                 ),
                 child: Form(
@@ -198,25 +221,24 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeaderSection(),
-                      const SizedBox(height: 32),
-
-                      // Main Form Card
+                      const SizedBox(height: 24),
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.white.withOpacity(0.8),
                           borderRadius: BorderRadius.circular(32),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
+                              color: const Color(0xFF6366F1).withOpacity(0.1),
                               blurRadius: 30,
-                              offset: const Offset(0, 15),
+                              offset: const Offset(0, 10),
                             ),
                           ],
+                          border: Border.all(color: Colors.white),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(32),
                           child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: Padding(
                               padding: const EdgeInsets.all(24),
                               child: Column(
@@ -229,7 +251,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
                                   const SizedBox(height: 12),
                                   _buildTypeSelector(leaveProvider.leaveTypes),
                                   const SizedBox(height: 24),
-
                                   _buildSectionLabel(
                                     'ระยะเวลา',
                                     Icons.date_range_rounded,
@@ -237,7 +258,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
                                   const SizedBox(height: 12),
                                   _buildDateRow(),
                                   const SizedBox(height: 24),
-
                                   _buildSectionLabel(
                                     'รายละเอียดและที่ติดต่อ',
                                     Icons.edit_note_rounded,
@@ -250,10 +270,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 40),
-
-                      // Gradient Submit Button
+                      const SizedBox(height: 32),
                       _buildSubmitButton(),
                       const SizedBox(height: 40),
                     ],
@@ -267,47 +284,28 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
     );
   }
 
-  Widget _buildFloatingCircle({
-    required double size,
-    required Color color,
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-  }) {
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      ),
-    );
-  }
-
   Widget _buildHeaderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'ระบุรายละเอียดการลา',
+          'ระบุรายละเอียด',
           style: TextStyle(
-            fontSize: 26,
+            fontSize: 28,
             fontWeight: FontWeight.w900,
-            color: AppTheme.textMain,
-            letterSpacing: -0.5,
+            color: Color(0xFF1E293B),
+            letterSpacing: -1,
+            height: 1.2,
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          'เจ้าหน้าที่จะพิจารณาคำขอของคุณในลำดับถัดไป',
+          'กรอกข้อมูลให้ครบถ้วนเพื่อส่งคำขอลา\nเจ้าหน้าที่จะพิจารณาตามลำดับ',
           style: TextStyle(
-            color: AppTheme.textSub.withOpacity(0.7),
+            color: const Color(0xFF64748B).withOpacity(0.8),
             fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
+            height: 1.5,
           ),
         ),
       ],
@@ -317,14 +315,21 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   Widget _buildSectionLabel(String text, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppTheme.primary),
-        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6366F1).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: const Color(0xFF6366F1)),
+        ),
+        const SizedBox(width: 12),
         Text(
           text,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
-            color: AppTheme.textMain,
+            color: Color(0xFF1E293B),
           ),
         ),
       ],
@@ -333,10 +338,11 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
 
   Widget _buildTypeSelector(List<LeaveType> types) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.primaryLight.withOpacity(0.4),
+        color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<LeaveType>(
@@ -345,9 +351,17 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
             filled: false,
             contentPadding: EdgeInsets.zero,
           ),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFF64748B),
+          ),
           hint: const Text(
             'เลือกประเภทการลา',
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+              color: Color(0xFF94A3B8),
+            ),
           ),
           value: _selectedType,
           items: types.map((type) {
@@ -357,12 +371,15 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
                 type.name,
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.textMain,
+                  color: Color(0xFF334155),
                 ),
               ),
             );
           }).toList(),
-          onChanged: (val) => setState(() => _selectedType = val),
+          onChanged: (val) {
+            HapticFeedback.lightImpact();
+            setState(() => _selectedType = val);
+          },
           validator: (val) => val == null ? 'กรุณาเลือกประเภทการลา' : null,
         ),
       ),
@@ -392,35 +409,59 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   }
 
   Widget _buildDateItem(String label, DateTime? date, VoidCallback onTap) {
+    final bool isSelected = date != null;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.primaryLight.withOpacity(0.4),
+          color: isSelected
+              ? const Color(0xFF6366F1).withOpacity(0.05)
+              : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF6366F1).withOpacity(0.3)
+                : const Color(0xFFE2E8F0),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.textSub,
+                color: isSelected
+                    ? const Color(0xFF6366F1)
+                    : const Color(0xFF64748B),
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              date != null ? DateFormat('dd/MM/yy').format(date) : 'ระบุวันที่',
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 14,
-                color: date != null
-                    ? AppTheme.textMain
-                    : AppTheme.textSub.withOpacity(0.5),
-              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 16,
+                  color: isSelected
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFF94A3B8),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  date != null
+                      ? DateFormat('dd/MM/yy').format(date)
+                      : 'ระบุวันที่',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: isSelected
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -435,12 +476,14 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
           controller: _reasonController,
           hint: 'ระบุเหตุผลการลา...',
           maxLines: 3,
+          icon: Icons.chat_bubble_outline_rounded,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         _buildTextField(
           controller: _addressController,
           hint: 'ระบุที่อยู่ / เบอร์โทรติดต่อฉุกเฉิน',
           maxLines: 2,
+          icon: Icons.location_on_outlined,
         ),
       ],
     );
@@ -449,29 +492,42 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
+    required IconData icon,
     int maxLines = 1,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.primaryLight.withOpacity(0.4),
+        color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
         style: const TextStyle(
           fontWeight: FontWeight.w600,
-          color: AppTheme.textMain,
+          color: Color(0xFF334155),
           fontSize: 14,
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(
-            color: AppTheme.textSub.withOpacity(0.5),
+          hintStyle: const TextStyle(
+            color: Color(0xFF94A3B8),
             fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 12, right: 8, top: 12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [Icon(icon, color: const Color(0xFF94A3B8), size: 20)],
+            ),
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 16,
+            horizontal: 16,
+          ),
         ),
         validator: (val) => val!.isEmpty ? 'กรุณากรอกข้อมูล' : null,
       ),
@@ -480,16 +536,18 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
 
   Widget _buildSubmitButton() {
     return Container(
-      height: 64,
+      height: 60,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
-          colors: [AppTheme.primary, AppTheme.secondary],
+          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.3),
-            blurRadius: 15,
+            color: const Color(0xFF6366F1).withOpacity(0.4),
+            blurRadius: 20,
             offset: const Offset(0, 8),
           ),
         ],
@@ -513,12 +571,16 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
                   strokeWidth: 2,
                 ),
               )
-            : Row(
+            : const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Text(
                     'ส่งใบขอลา',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                   SizedBox(width: 12),
                   Icon(Icons.send_rounded, size: 20),
