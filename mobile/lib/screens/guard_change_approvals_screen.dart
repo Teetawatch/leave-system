@@ -202,7 +202,10 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                       radius: 24,
                       backgroundColor: AppTheme.primary.withOpacity(0.1),
                       child: Text(
-                        request.user?.name.substring(0, 1) ?? '?',
+                        (request.user?.name != null &&
+                                request.user!.name.isNotEmpty)
+                            ? request.user!.name[0].toUpperCase()
+                            : '?',
                         style: const TextStyle(
                           color: AppTheme.primary,
                           fontWeight: FontWeight.w900,

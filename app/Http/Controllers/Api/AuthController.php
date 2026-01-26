@@ -77,7 +77,9 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new UserResource($user),
+            'data' => [
+                'user' => new UserResource($user),
+            ],
         ]);
     }
 
@@ -108,7 +110,9 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'อัปเดตข้อมูลสำเร็จ',
-            'data' => new UserResource($user->load(['supervisor', 'manager'])),
+            'data' => [
+                'user' => new UserResource($user->load(['supervisor', 'manager'])),
+            ],
         ]);
     }
 

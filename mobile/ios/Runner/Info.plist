@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>แอปต้องการเข้าถึงรูปภาพเพื่อเลือกรูปภาพโปรไฟล์และลายเซ็นต์</string>
+	<key>NSCameraUsageDescription</key>
+	<string>แอปต้องการเข้าถึงกล้องเพื่อถ่ายรูปภาพโปรไฟล์และลายเซ็นต์</string>
 </dict>
 </plist>

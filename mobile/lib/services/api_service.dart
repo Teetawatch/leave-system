@@ -159,6 +159,23 @@ class ApiService {
     return await _dio.post('/fcm-token', data: {'token': token});
   }
 
+  Future<Response> updateProfile({
+    String? avatarPath,
+    String? signaturePath,
+  }) async {
+    final Map<String, dynamic> data = {};
+    if (avatarPath != null) {
+      data['avatar'] = await MultipartFile.fromFile(avatarPath);
+    }
+    if (signaturePath != null) {
+      data['signature'] = await MultipartFile.fromFile(signaturePath);
+    }
+
+    FormData formData = FormData.fromMap(data);
+
+    return await _dio.post('/profile', data: formData);
+  }
+
   Future<Response> getLatestNews() async {
     return await Dio().get(
       'https://nass.ac.th/wp-json/wp/v2/posts?per_page=5&_embed',

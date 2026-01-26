@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -35,6 +37,41 @@ class _ProfileScreenState extends State<ProfileScreen>
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
     final size = MediaQuery.of(context).size;
+    final ImagePicker _picker = ImagePicker();
+
+    Future<void> _pickSignature() async {
+      try {
+        final XFile? image = await _picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 80,
+          maxWidth: 1000,
+        );
+
+        if (image != null) {
+          final success = await authProvider.updateProfile(
+            signaturePath: image.path,
+          );
+
+          if (success && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('อัปโหลดลายเซ็นสำเร็จ'),
+                backgroundColor: AppTheme.success,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('เกิดข้อผิดพลาด: $e'),
+              backgroundColor: AppTheme.error,
+            ),
+          );
+        }
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -149,6 +186,124 @@ class _ProfileScreenState extends State<ProfileScreen>
                               'อีเมลบุคลากร',
                               user?.email ?? '-',
                               Colors.teal,
+                            ),
+                          ]),
+                          const SizedBox(height: 32),
+
+                          const Text(
+                            'ลายเซ็นต์ดิจิทัล',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.textMain,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildProfileInfoCard([
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    height: 150,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primary.withOpacity(0.03),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: AppTheme.border.withOpacity(0.5),
+                                        // dashArray is not available in standard BoxDecoration,
+                                        // but I'll use a simple border for now or skip dash
+                                      ),
+                                    ),
+                                    child: user?.signatureUrl != null
+                                        ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            child: Image.network(
+                                              user!.signatureUrl!,
+                                              fit: BoxFit.contain,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Center(
+                                                    child: Text(
+                                                      'ไม่สามารถโหลดรูปภาพได้',
+                                                      style: TextStyle(
+                                                        color: AppTheme.textSub,
+                                                      ),
+                                                    ),
+                                                  ),
+                                            ),
+                                          )
+                                        : const Center(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.history_edu_rounded,
+                                                  size: 48,
+                                                  color: AppTheme.textSub,
+                                                ),
+                                                SizedBox(height: 8),
+                                                Text(
+                                                  'ยังไม่มีลายเซ็นต์',
+                                                  style: TextStyle(
+                                                    color: AppTheme.textSub,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: authProvider.isLoading
+                                          ? null
+                                          : _pickSignature,
+                                      icon: authProvider.isLoading
+                                          ? const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          : const Icon(Icons.upload_rounded),
+                                      label: Text(
+                                        authProvider.isLoading
+                                            ? 'กำลังอัปโหลด...'
+                                            : 'อัปโหลดรูปภาพลายเซ็นต์',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.primary,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ]),
                         ],

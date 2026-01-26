@@ -61,7 +61,7 @@ class GuardChangeRequestController extends Controller
                 (new FCMService())->sendNotification(
                     $replacementUser->fcm_token,
                     'มีคำขอเปลี่ยนเวรใหม่ 🔔',
-                    Auth::user()->rank . ' ' . Auth::user()->name . " ขอเปลี่ยนเวรกับคุณวันที่ " . $guardChangeRequest->duty_date->format('d/m/Y'),
+                    Auth::user()->rank . ' ' . Auth::user()->name . " ขอเปลี่ยนเวรกับคุณวันที่ " . \Carbon\Carbon::parse($guardChangeRequest->duty_date)->format('d/m/Y'),
                     ['type' => 'new_guard_change', 'request_id' => $guardChangeRequest->id]
                 );
             }

@@ -21,7 +21,7 @@ class SignatureDialog extends StatefulWidget {
 class _SignatureDialogState extends State<SignatureDialog> {
   final SignatureController _controller = SignatureController(
     penStrokeWidth: 3,
-    penColor: Colors.black,
+    penColor: const Color(0xFF000080), // Dark Blue (Navy)
     exportBackgroundColor: Colors.white,
   );
 
@@ -112,20 +112,22 @@ class _SignatureDialogState extends State<SignatureDialog> {
                 ],
                 const SizedBox(height: 8),
                 if (!_useSavedSignature) ...[
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.border),
-                      borderRadius: BorderRadius.circular(16),
-                      color: Colors.white,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Signature(
-                        controller: _controller,
-                        height: 180,
-                        backgroundColor: Colors.white,
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Container(
+                      height: 180,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppTheme.border),
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.white,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Signature(
+                          controller: _controller,
+                          height: 180,
+                          backgroundColor: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -134,7 +136,7 @@ class _SignatureDialogState extends State<SignatureDialog> {
                     child: TextButton.icon(
                       onPressed: () => _controller.clear(),
                       icon: const Icon(Icons.clear, size: 18),
-                      label: const Text('ล้างลายนิ้วมือ'),
+                      label: const Text('ล้างลายเซ็น'),
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.error,
                       ),
@@ -151,14 +153,18 @@ class _SignatureDialogState extends State<SignatureDialog> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        widget.savedSignatureUrl!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Center(
-                              child: Text('ไม่สามารถโหลดลายเซ็นต์ได้'),
-                            ),
-                      ),
+                      child:
+                          widget.savedSignatureUrl != null &&
+                              widget.savedSignatureUrl!.isNotEmpty
+                          ? Image.network(
+                              widget.savedSignatureUrl!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Center(
+                                    child: Text('ไม่สามารถโหลดลายเซ็นต์ได้'),
+                                  ),
+                            )
+                          : const Center(child: Text('ไม่พบข้อมูลลายเซ็นต์')),
                     ),
                   ),
                   const SizedBox(height: 12),

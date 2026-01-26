@@ -41,21 +41,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         user?.role == 'deputy_director' ||
         user?.role == 'department_head';
 
-    // Show Approvals tab if management role OR if has pending guard peer confirmations
-    final bool showApprovalsTab =
-        isApprover || guardProvider.approvals.isNotEmpty;
-
+    // For stability, we keep the screens list consistent or handle index changes.
+    // However, it's safer to just include all screens and hide the tab icon.
     final List<Widget> screens = [
       const HomeScreen(),
-      const ActivityScreen(), // Unified History
-      if (showApprovalsTab) const ApprovalsScreen(), // Unified Approvals
+      const ActivityScreen(),
+      const ApprovalsScreen(), // Keep it even if no pending, it has its own "empty" state
       if (isAdmin) const ReportsScreen(),
       const ProfileScreen(),
     ];
 
+    // Ensure index visibility safety
+    int safeIndex = _selectedIndex;
+    if (safeIndex >= screens.length) {
+      safeIndex = 0;
+    }
+
+    // Show Approvals tab if management role OR if has pending guard peer confirmations
+    final bool showApprovalsTab =
+        isApprover || guardProvider.approvals.isNotEmpty;
+
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(index: _selectedIndex, children: screens),
+      body: IndexedStack(index: safeIndex, children: screens),
       bottomNavigationBar: _buildGlassNavigationBar(
         showApprovalsTab,
         isAdmin,

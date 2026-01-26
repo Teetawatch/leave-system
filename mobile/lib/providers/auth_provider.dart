@@ -93,4 +93,32 @@ class AuthProvider with ChangeNotifier {
     _user = null;
     notifyListeners();
   }
+
+  Future<bool> updateProfile({
+    String? avatarPath,
+    String? signaturePath,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.updateProfile(
+        avatarPath: avatarPath,
+        signaturePath: signaturePath,
+      );
+
+      if (response.data['success']) {
+        _user = User.fromJson(response.data['data']['user']);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      print('Update Profile Error: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
 }
