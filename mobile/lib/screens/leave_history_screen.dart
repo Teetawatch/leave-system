@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import '../models/leave_request_model.dart';
 import '../providers/leave_provider.dart';
+import '../services/pdf_service.dart';
 
 class LeaveHistoryScreen extends StatefulWidget {
   const LeaveHistoryScreen({super.key});
@@ -265,6 +266,47 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen> {
                       ],
                     ),
                   ],
+                  const SizedBox(height: 16),
+                  const Divider(height: 1),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'ตัวเลือกเพิ่มเติม',
+                        style: TextStyle(
+                          color: AppTheme.textSub.withOpacity(0.6),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => _downloadPdf(request),
+                        icon: const Icon(
+                          Icons.picture_as_pdf_outlined,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'ส่งออก PDF',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          backgroundColor: AppTheme.primary.withOpacity(0.05),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -360,6 +402,44 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen> {
         return Icons.business_center_rounded;
       default:
         return Icons.event_note_rounded;
+    }
+  }
+
+  Future<void> _downloadPdf(LeaveRequest request) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'กำลังสร้างไฟล์ PDF สำหรับการลา${request.leaveType.name}...',
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      final fileName = "Leave_${request.leaveType.slug}_${request.id}";
+      await PdfService.downloadAndOpenPdf(request.id, fileName);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ไม่สามารถดาวน์โหลด PDF ได้: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
     }
   }
 }

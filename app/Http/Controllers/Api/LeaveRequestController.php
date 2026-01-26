@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LeaveRequestResource;
+use App\Models\User;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\LeaveBalance;
-use App\Models\User;
 use App\Notifications\NewLeaveRequestNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LeaveRequestController extends Controller
 {
@@ -21,7 +22,7 @@ class LeaveRequestController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         $query = LeaveRequest::with(['leaveType', 'approvals.approver'])
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc');
@@ -55,7 +56,7 @@ class LeaveRequestController extends Controller
     public function show(Request $request, $id)
     {
         $user = $request->user();
-        
+
         $leaveRequest = LeaveRequest::with(['user', 'leaveType', 'approvals.approver'])
             ->findOrFail($id);
 
@@ -88,7 +89,7 @@ class LeaveRequestController extends Controller
 
         $user = $request->user();
         $leaveType = LeaveType::findOrFail($request->leave_type_id);
-        
+
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $diffDays = $startDate->diffInDays($endDate) + 1;
@@ -161,12 +162,12 @@ class LeaveRequestController extends Controller
 
         if ($user->supervisor_id) {
             $supervisor = User::find($user->supervisor_id);
-            
+
             // 1. Send Database/Email Notification (Existing)
             if ($supervisor) {
                 Log::info('Supervisor found: ' . $supervisor->id . ' Has Token: ' . ($supervisor->fcm_token ? 'YES' : 'NO'));
                 $supervisor->notify(new NewLeaveRequestNotification($leaveRequest, $user));
-                
+
                 // 2. Send Push Notification via FCM (New)
                 if ($supervisor->fcm_token) {
                     $fcmService = new \App\Services\FCMService();
@@ -193,7 +194,7 @@ class LeaveRequestController extends Controller
     public function cancel(Request $request, $id)
     {
         $user = $request->user();
-        
+
         $leaveRequest = LeaveRequest::findOrFail($id);
 
         // Check ownership
@@ -246,5 +247,63 @@ class LeaveRequestController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Export leave request to PDF
+     */
+    public function exportPdf(Request $request, $id)
+    {
+        $user = $request->user();
+        $leaveRequest = LeaveRequest::with(['user', 'leaveType', 'approvals.approver'])
+            ->findOrFail($id);
+
+        // Check authorization - user can view their own or if they are authorized roles
+        if ($leaveRequest->user_id !== $user->id && !$this->canViewRequest($user, $leaveRequest)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ไม่มีสิทธิ์ดูข้อมูลนี้',
+            ], 403);
+        }
+
+        $leaveBalance = LeaveBalance::where('user_id', $leaveRequest->user_id)
+            ->where('leave_type_id', $leaveRequest->leave_type_id)
+            ->where('year', now()->year)
+            ->first();
+
+        // Create default balance if not exists
+        if (!$leaveBalance) {
+            $leaveBalance = new LeaveBalance([
+                'user_id' => $leaveRequest->user_id,
+                'leave_type_id' => $leaveRequest->leave_type_id,
+                'year' => now()->year,
+                'total_days' => 10,
+                'used_days' => 0,
+                'remaining_days' => 10,
+            ]);
+        }
+
+        // Previous year balance (optional)
+        $lastYearBalance = LeaveBalance::where('user_id', $leaveRequest->user_id)
+            ->where('leave_type_id', $leaveRequest->leave_type_id)
+            ->where('year', now()->year - 1)
+            ->first();
+
+        // Determine View based on Leave Type
+        $viewName = 'leave_request.pdf'; // Default
+
+        if ($leaveRequest->leaveType) {
+            $slug = $leaveRequest->leaveType->slug;
+            if ($slug == 'sick') {
+                $viewName = 'leave_request.pdf_sick';
+            } elseif ($slug == 'personal') {
+                $viewName = 'leave_request.pdf_personal';
+            }
+        }
+
+        $pdf = Pdf::loadView($viewName, compact('leaveRequest', 'leaveBalance', 'lastYearBalance'));
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->stream('leave-request-' . $leaveRequest->id . '.pdf');
     }
 }

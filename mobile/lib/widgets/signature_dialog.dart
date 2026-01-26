@@ -40,111 +40,133 @@ class _SignatureDialogState extends State<SignatureDialog> {
     final hasSavedSignature = widget.savedSignatureUrl != null;
 
     return AlertDialog(
-      scrollable: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Text(
         widget.isApprove ? 'ยืนยันการอนุมัติ' : 'ระบุเหตุผลการปฏิเสธ',
         style: const TextStyle(fontWeight: FontWeight.w900),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _commentController,
-            decoration: InputDecoration(
-              hintText: widget.isApprove
-                  ? 'ความคิดเห็นเพิ่มเติม (ถ้ามี)'
-                  : 'ระบุเหตุผลที่ปฏิเสธ',
-              filled: true,
-              fillColor: AppTheme.background,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            maxLines: 3,
-          ),
-          if (widget.isApprove) ...[
-            const SizedBox(height: 24),
-            const Text(
-              'ลายเซ็นต์ผู้อนุมัติ',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: AppTheme.textMain,
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (hasSavedSignature)
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  'ใช้ลายเซ็นต์ที่มีอยู่',
-                  style: TextStyle(fontSize: 14),
-                ),
-                value: _useSavedSignature,
-                onChanged: (val) {
-                  setState(() {
-                    _useSavedSignature = val ?? false;
-                  });
-                },
-                controlAffinity: ListTileControlAffinity.leading,
-                activeColor: AppTheme.primary,
-              ),
-            if (!_useSavedSignature) ...[
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppTheme.border),
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.white,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Signature(
-                    controller: _controller,
-                    height: 150,
-                    backgroundColor: Colors.white,
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _commentController,
+                decoration: InputDecoration(
+                  hintText: widget.isApprove
+                      ? 'ความคิดเห็นเพิ่มเติม (ถ้ามี)'
+                      : 'ระบุเหตุผลที่ปฏิเสธ',
+                  filled: true,
+                  fillColor: AppTheme.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
                   ),
                 ),
+                maxLines: 3,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton.icon(
-                    onPressed: () => _controller.clear(),
-                    icon: const Icon(Icons.clear, size: 18),
-                    label: const Text('ล้าง'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.error,
+              if (widget.isApprove) ...[
+                const SizedBox(height: 24),
+                const Text(
+                  'ลายเซ็นต์ผู้อนุมัติ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppTheme.textMain,
+                  ),
+                ),
+                if (hasSavedSignature) ...[
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _useSavedSignature = !_useSavedSignature;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _useSavedSignature,
+                            onChanged: (val) {
+                              setState(() {
+                                _useSavedSignature = val ?? false;
+                              });
+                            },
+                            activeColor: AppTheme.primary,
+                          ),
+                          const Text(
+                            'ใช้ลายเซ็นต์ที่มีอยู่',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ] else if (hasSavedSignature) ...[
-              Container(
-                height: 150,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppTheme.border),
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.white,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    widget.savedSignatureUrl!,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Center(child: Text('ไม่สามารถโหลดลายเซ็นต์ได้')),
+                const SizedBox(height: 8),
+                if (!_useSavedSignature) ...[
+                  Container(
+                    height: 180,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppTheme.border),
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.white,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Signature(
+                        controller: _controller,
+                        height: 180,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => _controller.clear(),
+                      icon: const Icon(Icons.clear, size: 18),
+                      label: const Text('ล้างลายนิ้วมือ'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.error,
+                      ),
+                    ),
+                  ),
+                ] else if (hasSavedSignature) ...[
+                  Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppTheme.border),
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.white,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        widget.savedSignatureUrl!,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                              child: Text('ไม่สามารถโหลดลายเซ็นต์ได้'),
+                            ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ],
             ],
-          ],
-        ],
+          ),
+        ),
       ),
       actions: [
         TextButton(
