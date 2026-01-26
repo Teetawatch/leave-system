@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\LeaveRequestController;
 use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\LeaveBalanceController;
+use App\Http\Controllers\Api\GuardChangeRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/approvals', [ApprovalController::class, 'index']);
     Route::post('/approvals/{id}/approve', [ApprovalController::class, 'approve']);
     Route::post('/approvals/{id}/reject', [ApprovalController::class, 'reject']);
+
+    // -------------------------------------------------------------------------
+    // Guard Change Requests
+    // -------------------------------------------------------------------------
+    Route::get('/guard-change-requests', [GuardChangeRequestController::class, 'index']);
+    Route::post('/guard-change-requests', [GuardChangeRequestController::class, 'store']);
+    Route::get('/guard-change-requests/users', [GuardChangeRequestController::class, 'getUsers']);
+    Route::get('/guard-change-requests/{id}', [GuardChangeRequestController::class, 'show']);
+    Route::get('/guard-change-requests/{id}/pdf', [GuardChangeRequestController::class, 'exportPdf']);
+
+    Route::get('/guard-change-approvals', [GuardChangeRequestController::class, 'approvalIndex']);
+    Route::post('/guard-change-approvals/{id}/approve', [GuardChangeRequestController::class, 'approve']);
+    Route::post('/guard-change-approvals/{id}/reject', [GuardChangeRequestController::class, 'reject']);
 
     // -------------------------------------------------------------------------
     // Reports (For Admins/Commanders)

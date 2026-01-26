@@ -30,4 +30,30 @@ class PdfService {
       rethrow;
     }
   }
+
+  static Future<void> downloadAndOpenGuardChangePdf(
+    int requestId,
+    String fileName,
+  ) async {
+    try {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final String savePath = "${appDocDir.path}/$fileName.pdf";
+
+      final response = await _apiService.client.get(
+        '/guard-change-requests/$requestId/pdf',
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+        ),
+      );
+
+      final file = File(savePath);
+      await file.writeAsBytes(response.data);
+
+      await OpenFilex.open(savePath);
+    } catch (e) {
+      debugPrint("Error downloading/opening Guard Change PDF: $e");
+      rethrow;
+    }
+  }
 }

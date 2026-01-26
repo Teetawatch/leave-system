@@ -114,6 +114,47 @@ class ApiService {
     return await _dio.post('/approvals/$id/reject', data: {'comment': comment});
   }
 
+  // --- Guard Change Features ---
+
+  Future<Response> getGuardChangeRequests() async {
+    return await _dio.get('/guard-change-requests');
+  }
+
+  Future<Response> submitGuardChangeRequest(Map<String, dynamic> data) async {
+    return await _dio.post('/guard-change-requests', data: data);
+  }
+
+  Future<Response> getGuardChangeApprovals() async {
+    return await _dio.get('/guard-change-approvals');
+  }
+
+  Future<Response> approveGuardChange(
+    int id, {
+    String? comment,
+    String? signature,
+    bool useSavedSignature = false,
+  }) async {
+    return await _dio.post(
+      '/guard-change-approvals/$id/approve',
+      data: {
+        'comment': comment,
+        'signature': signature,
+        'use_saved_signature': useSavedSignature ? '1' : '0',
+      },
+    );
+  }
+
+  Future<Response> rejectGuardChange(int id, {String? comment}) async {
+    return await _dio.post(
+      '/guard-change-approvals/$id/reject',
+      data: {'comment': comment},
+    );
+  }
+
+  Future<Response> getGuardChangeUsers() async {
+    return await _dio.get('/guard-change-requests/users');
+  }
+
   Future<Response> updateFcmToken(String token) async {
     return await _dio.post('/fcm-token', data: {'token': token});
   }

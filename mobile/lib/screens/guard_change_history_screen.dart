@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
-import '../models/leave_request_model.dart';
-import '../providers/leave_provider.dart';
+import '../models/guard_change_model.dart';
+import '../providers/guard_change_provider.dart';
 import '../services/pdf_service.dart';
 
-class LeaveHistoryScreen extends StatefulWidget {
-  const LeaveHistoryScreen({super.key});
+class GuardChangeHistoryScreen extends StatefulWidget {
+  const GuardChangeHistoryScreen({super.key});
 
   @override
-  State<LeaveHistoryScreen> createState() => _LeaveHistoryScreenState();
+  State<GuardChangeHistoryScreen> createState() =>
+      _GuardChangeHistoryScreenState();
 }
 
-class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
+class _GuardChangeHistoryScreenState extends State<GuardChangeHistoryScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
@@ -24,9 +25,11 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..forward();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LeaveProvider>(context, listen: false).fetchMyRequests();
+      Provider.of<GuardChangeProvider>(
+        context,
+        listen: false,
+      ).fetchMyRequests();
     });
   }
 
@@ -38,7 +41,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    final leaveProvider = Provider.of<LeaveProvider>(context);
+    final provider = Provider.of<GuardChangeProvider>(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -46,7 +49,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          'ประวัติการลา',
+          'ประวัติการเปลี่ยนยาม',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
         backgroundColor: Colors.transparent,
@@ -63,7 +66,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFFF8FAFC), Colors.white, Color(0xFFF0F7FF)],
+                colors: [Color(0xFFF8FAFC), Colors.white, Color(0xFFF0F9FF)],
               ),
             ),
           ),
@@ -71,22 +74,22 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
             top: -40,
             right: -40,
             size: 220,
-            color: AppTheme.primary.withOpacity(0.06),
+            color: Colors.blue.withOpacity(0.06),
           ),
           _buildFloatingCircle(
             bottom: -50,
             left: -50,
             size: 280,
-            color: AppTheme.secondary.withOpacity(0.05),
+            color: Colors.teal.withOpacity(0.05),
           ),
 
           SafeArea(
             child: RefreshIndicator(
-              onRefresh: () => leaveProvider.fetchMyRequests(),
+              onRefresh: () => provider.fetchMyRequests(),
               color: AppTheme.primary,
               child: FadeTransition(
                 opacity: _animationController,
-                child: _buildContent(leaveProvider),
+                child: _buildContent(provider),
               ),
             ),
           ),
@@ -116,7 +119,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
     );
   }
 
-  Widget _buildContent(LeaveProvider provider) {
+  Widget _buildContent(GuardChangeProvider provider) {
     if (provider.isLoading && provider.myRequests.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -140,7 +143,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
             ),
             const SizedBox(height: 24),
             const Text(
-              'ยังไม่มีประวัติการลา',
+              'ยังไม่มีประวัติการเปลี่ยนยาม',
               style: TextStyle(
                 color: AppTheme.textSub,
                 fontSize: 18,
@@ -149,7 +152,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'รายการที่คุณยื่นลาจะปรากฏที่นี่',
+              'รายการที่คุณขอเปลี่ยนเวรยามจะปรากฏที่นี่',
               style: TextStyle(
                 color: AppTheme.textSub.withOpacity(0.5),
                 fontSize: 14,
@@ -187,9 +190,8 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
     );
   }
 
-  Widget _buildHistoryCard(LeaveRequest request) {
+  Widget _buildHistoryCard(GuardChangeRequest request) {
     final statusColor = _getStatusColor(request.status);
-    final statusIcon = _getStatusIcon(request.status);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
@@ -222,9 +224,9 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
                         color: statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Icon(
-                        _getLeaveTypeIcon(request.leaveType.slug),
-                        color: statusColor,
+                      child: const Icon(
+                        Icons.security_rounded,
+                        color: Colors.blueAccent,
                         size: 26,
                       ),
                     ),
@@ -234,7 +236,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            request.leaveType.name,
+                            request.dutyPositionThai,
                             style: const TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 17,
@@ -252,7 +254,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
                         ],
                       ),
                     ),
-                    _buildStatusChip(request.status, statusColor, statusIcon),
+                    _buildStatusChip(request.status, statusColor),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -265,9 +267,9 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
                   child: Row(
                     children: [
                       _buildInfoItem(
-                        'ระยะเวลา',
-                        '${request.formattedStartDate} - ${request.formattedEndDate}',
-                        Icons.calendar_today_rounded,
+                        'วันที่ปฏิบัติเวร',
+                        request.formattedDutyDate,
+                        Icons.calendar_month_outlined,
                       ),
                       Container(
                         width: 1,
@@ -276,55 +278,46 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       _buildInfoItem(
-                        'จำนวน',
-                        '${request.totalDays} วัน',
-                        Icons.timer_outlined,
+                        'ผู้มาเปลี่ยนแทน',
+                        request.replacementUser?.name ?? '-',
+                        Icons.person_outline,
                       ),
                     ],
                   ),
                 ),
-                if (request.reason.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    request.reason,
-                    style: TextStyle(
-                      color: AppTheme.textSub.withOpacity(0.8),
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                if (request.status == 'fully_approved') ...[
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => _openPdf(request.id),
+                        icon: const Icon(
+                          Icons.picture_as_pdf_rounded,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'ดาวน์โหลดรายงาน',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.primary,
+                          backgroundColor: AppTheme.primary.withOpacity(0.08),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () => _downloadPdf(request),
-                      icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
-                      label: const Text(
-                        'ดาวน์โหลด PDF',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.primary,
-                        backgroundColor: AppTheme.primary.withOpacity(0.08),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
@@ -333,27 +326,20 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
     );
   }
 
-  Widget _buildStatusChip(String status, Color color, IconData icon) {
+  Widget _buildStatusChip(String status, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 6),
-          Text(
-            _getStatusText(status),
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w900,
-              fontSize: 11,
-            ),
-          ),
-        ],
+      child: Text(
+        _getStatusText(status),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w900,
+          fontSize: 11,
+        ),
       ),
     );
   }
@@ -394,61 +380,56 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
   }
 
   Color _getStatusColor(String status) {
-    if (status == 'approved') return AppTheme.success;
-    if (status == 'rejected') return AppTheme.error;
-    return AppTheme.warning;
-  }
-
-  IconData _getStatusIcon(String status) {
-    if (status == 'approved') return Icons.check_circle_rounded;
-    if (status == 'rejected') return Icons.cancel_rounded;
-    return Icons.pending_rounded;
+    switch (status) {
+      case 'fully_approved':
+        return AppTheme.success;
+      case 'rejected':
+      case 'cancelled':
+        return AppTheme.error;
+      case 'pending':
+        return AppTheme.warning;
+      case 'approved':
+      case 'director_approved':
+        return Colors.blue;
+      default:
+        return AppTheme.primary;
+    }
   }
 
   String _getStatusText(String status) {
-    if (status == 'approved') return 'อนุมัติ';
-    if (status == 'rejected') return 'ปฏิเสธ';
-    return 'รออนุมัติ';
+    switch (status) {
+      case 'fully_approved':
+        return 'อนุมัติเรียบร้อย';
+      case 'rejected':
+        return 'ปฏิเสธ';
+      case 'cancelled':
+        return 'ยกเลิกแล้ว';
+      case 'pending':
+        return 'รอผู้แทนยืนยัน';
+      case 'approved':
+        return 'รอหัวหน้าแผนก';
+      case 'director_approved':
+        return 'รอ ผอ. อนุมัติ';
+      default:
+        return 'กำลังรอ';
+    }
   }
 
-  IconData _getLeaveTypeIcon(String slug) {
-    if (slug == 'vacation') return Icons.beach_access_rounded;
-    if (slug == 'sick') return Icons.medication_rounded;
-    return Icons.business_center_rounded;
-  }
-
-  Future<void> _downloadPdf(LeaveRequest request) async {
+  Future<void> _openPdf(int id) async {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Text(
-                  'กำลังส้าางไฟล์ PDF...',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
+          content: const Text(
+            'กำลังดาวน์โหลดรายงาน PDF...',
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
-          duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
         ),
       );
-      final fileName = "Leave_${request.leaveType.slug}_${request.id}";
-      await PdfService.downloadAndOpenPdf(request.id, fileName);
+      await PdfService.downloadAndOpenGuardChangePdf(id, 'GuardChange_$id');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
