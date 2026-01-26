@@ -5,10 +5,10 @@ import '../services/api_service.dart';
 class NewsProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
 
-  List<NewsItem> _newsList = [];
+  List<NewsModel> _newsList = [];
   bool _isLoading = false;
 
-  List<NewsItem> get newsList => _newsList;
+  List<NewsModel> get newsList => _newsList;
   bool get isLoading => _isLoading;
 
   Future<void> fetchLatestNews() async {
@@ -18,7 +18,7 @@ class NewsProvider with ChangeNotifier {
     try {
       final response = await _apiService.getLatestNews();
       final List list = response.data;
-      _newsList = list.map((e) => NewsItem.fromJson(e)).toList();
+      _newsList = list.map((e) => NewsModel.fromJson(e)).toList();
     } catch (e) {
       debugPrint('Error fetching news: $e');
     } finally {

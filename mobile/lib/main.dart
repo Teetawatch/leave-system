@@ -5,8 +5,13 @@ import 'providers/auth_provider.dart';
 import 'providers/leave_provider.dart';
 import 'providers/guard_change_provider.dart';
 import 'providers/news_provider.dart';
+import 'providers/notification_provider.dart';
+import 'providers/directory_provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/security_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_navigation_screen.dart';
+import 'screens/security/pin_screen.dart';
 import 'config/app_theme.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -28,7 +33,6 @@ void main() async {
     await NotificationService().initialize();
   } catch (e) {
     debugPrint('Firebase initialization failed: $e');
-    // Continue running app even if Firebase fails (e.g. missing google-services.json)
   }
 
   runApp(const MyApp());
@@ -45,12 +49,22 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LeaveProvider()),
         ChangeNotifierProvider(create: (_) => GuardChangeProvider()),
         ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => DirectoryProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => SecurityProvider()),
       ],
-      child: MaterialApp(
-        title: AppConfig.appName,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const AuthWrapper(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: AppConfig.appName,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const AuthWrapper(),
+          );
+        },
       ),
     );
   }
@@ -67,19 +81,31 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
-    // Try auto login on app start
     Provider.of<AuthProvider>(context, listen: false).tryAutoLogin();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (ctx, auth, _) {
-        if (auth.isAuthenticated) {
-          return const MainNavigationScreen();
-        } else {
+    return Consumer2<AuthProvider, SecurityProvider>(
+      builder: (ctx, auth, security, _) {
+        if (!auth.isAuthenticated) {
           return const LoginScreen();
         }
+
+        if (security.isPinEnabled && !security.isAuthenticated) {
+          return PinScreen(
+            mode: PinMode.verify,
+            onSuccess: () {
+              // The provider is updated inside the PinScreen via verifyPin,
+              // but we can also set it explicitly if needed, though verifyPin does it.
+              // Actually PinScreen calls widget.onSuccess, but we need to make sure state is updated.
+              // In PinScreen _handlePinComplete: securityProvider.verifyPin(_pin) sets _isAuthenticated = true;
+              // So we just need this widget to rebuild, which Consumer2 does.
+            },
+          );
+        }
+
+        return const MainNavigationScreen();
       },
     );
   }

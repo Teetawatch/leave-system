@@ -6,6 +6,7 @@ import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/animated_background.dart';
+import 'settings/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -378,6 +379,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                               'เปลี่ยนรหัสผ่าน',
                               () {
                                 HapticFeedback.lightImpact();
+                              },
+                            ),
+                            _buildDivider(),
+                            _buildActionItem(
+                              Icons.settings_suggest_rounded,
+                              'ตั้งค่าธีมและความปลอดภัย',
+                              () {
+                                HapticFeedback.lightImpact();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SettingsScreen(),
+                                  ),
+                                );
                               },
                             ),
                             _buildDivider(),

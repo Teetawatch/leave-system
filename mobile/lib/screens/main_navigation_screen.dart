@@ -40,13 +40,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         user?.role == 'director' ||
         user?.role == 'deputy_director' ||
         user?.role == 'department_head';
+    // Show Approvals tab if management role OR if has pending guard peer confirmations
+    final bool showApprovalsTab =
+        isApprover || guardProvider.approvals.isNotEmpty;
 
     // For stability, we keep the screens list consistent or handle index changes.
     // However, it's safer to just include all screens and hide the tab icon.
     final List<Widget> screens = [
       const HomeScreen(),
       const ActivityScreen(),
-      const ApprovalsScreen(), // Keep it even if no pending, it has its own "empty" state
+      if (showApprovalsTab) const ApprovalsScreen(),
       if (isAdmin) const ReportsScreen(),
       const ProfileScreen(),
     ];
@@ -56,10 +59,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (safeIndex >= screens.length) {
       safeIndex = 0;
     }
-
-    // Show Approvals tab if management role OR if has pending guard peer confirmations
-    final bool showApprovalsTab =
-        isApprover || guardProvider.approvals.isNotEmpty;
 
     return Scaffold(
       extendBody: true,
@@ -80,13 +79,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     GuardChangeProvider guardProvider,
   ) {
     int currentIndex = 0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 95,
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: isDark
+            ? AppTheme.surfaceDark.withOpacity(0.8)
+            : Colors.white.withOpacity(0.8),
         borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.white.withOpacity(0.5),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppTheme.primary.withOpacity(0.12),
@@ -146,6 +154,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     int badgeCount = 0,
   }) {
     final isSelected = _selectedIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveColor = isDark ? AppTheme.textSubDark : AppTheme.textSub;
 
     return Expanded(
       child: InkWell(
@@ -169,7 +179,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       icon,
                       color: isSelected
                           ? AppTheme.primary
-                          : AppTheme.textSub.withOpacity(0.4),
+                          : inactiveColor.withOpacity(0.4),
                       size: 26,
                     ),
                     if (badgeCount > 0)
@@ -207,7 +217,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: isSelected ? AppTheme.primary : AppTheme.textSub,
+                    color: isSelected ? AppTheme.primary : inactiveColor,
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                     letterSpacing: -0.2,

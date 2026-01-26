@@ -49,5 +49,7 @@
 	<string>แอปต้องการเข้าถึงรูปภาพเพื่อเลือกรูปภาพโปรไฟล์และลายเซ็นต์</string>
 	<key>NSCameraUsageDescription</key>
 	<string>แอปต้องการเข้าถึงกล้องเพื่อถ่ายรูปภาพโปรไฟล์และลายเซ็นต์</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>แอปต้องการใช้ Face ID เพื่อยืนยันตัวตนเข้าใช้งาน</string>
 </dict>
 </plist>
