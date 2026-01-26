@@ -6,6 +6,7 @@ class User {
   final String roleLabel;
   final String department;
   final String? position;
+  final String? rank;
   final String? avatarUrl;
   final String? signatureUrl;
 
@@ -17,6 +18,7 @@ class User {
     required this.roleLabel,
     required this.department,
     this.position,
+    this.rank,
     this.avatarUrl,
     this.signatureUrl,
   });
@@ -41,6 +43,7 @@ class User {
       roleLabel: json['role_label'] ?? json['role'],
       department: json['department'],
       position: json['position'],
+      rank: json['rank'],
       avatarUrl: avatar,
       signatureUrl: signature,
     );
@@ -55,8 +58,16 @@ class User {
       'role_label': roleLabel,
       'department': department,
       'position': position,
+      'rank': rank,
       'avatar_url': avatarUrl,
       'signature_url': signatureUrl,
     };
+  }
+
+  String get fullName {
+    if (rank != null && rank!.isNotEmpty) {
+      return '$rank $name';
+    }
+    return name;
   }
 }

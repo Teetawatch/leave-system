@@ -379,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        user?.name ?? 'พนักงาน',
+                        user?.fullName ?? 'พนักงาน',
                         style: const TextStyle(
                           color: Color(0xFF1E293B),
                           fontSize: 24,

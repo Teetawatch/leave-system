@@ -237,7 +237,7 @@ class _GuardChangeApprovalsScreenState extends State<GuardChangeApprovalsScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            request.user?.name ?? 'ไม่ระบุชื่อ',
+                            request.user?.fullName ?? 'ไม่ระบุชื่อ',
                             style: const TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 18,

@@ -402,7 +402,7 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
                 (u) => DropdownMenuItem<int>(
                   value: u['id'],
                   child: Text(
-                    '${u['rank']}${u['name']}',
+                    '${u['rank'] ?? ''} ${u['name']}'.trim(),
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF334155),

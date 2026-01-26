@@ -338,7 +338,7 @@ class _GuardChangeHistoryScreenState extends State<GuardChangeHistoryScreen>
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                request.replacementUser?.name ?? '-',
+                                request.replacementUser?.fullName ?? '-',
                                 style: const TextStyle(
                                   color: Color(0xFF334155),
                                   fontSize: 13,

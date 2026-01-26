@@ -147,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            user?.name ?? 'ไม่พบข้อมูลชื่อ',
+                            user?.fullName ?? 'ไม่พบข้อมูลชื่อ',
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 28,
