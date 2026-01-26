@@ -9,6 +9,9 @@ import 'leave_history_screen.dart';
 import 'guard_change_request_screen.dart';
 import 'guard_change_history_screen.dart';
 import 'guard_change_approvals_screen.dart';
+import '../providers/news_provider.dart';
+import '../models/news_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,6 +44,8 @@ class _HomeScreenState extends State<HomeScreen>
               user.role == 'admin')) {
         leaveProvider.fetchPendingApprovals();
       }
+
+      Provider.of<NewsProvider>(context, listen: false).fetchLatestNews();
     });
   }
 
@@ -52,9 +57,11 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _refreshData() async {
     final leaveProvider = Provider.of<LeaveProvider>(context, listen: false);
+    final newsProvider = Provider.of<NewsProvider>(context, listen: false);
     await Future.wait([
       leaveProvider.fetchLeaveBalances(),
       leaveProvider.fetchMyRequests(),
+      newsProvider.fetchLatestNews(),
     ]);
   }
 
@@ -69,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     final user = Provider.of<AuthProvider>(context).user;
     final leaveProvider = Provider.of<LeaveProvider>(context);
+    final newsProvider = Provider.of<NewsProvider>(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -199,8 +207,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          const LeaveHistoryScreen(),
+                                      builder: (_) => const ActivityScreen(),
                                     ),
                                   ),
                                 ),
@@ -275,6 +282,14 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // 5.5 News Section
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 32),
+                      child: _buildNewsSection(newsProvider),
+                    ),
+                  ),
+
                   // 6. Recent Activities
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -287,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen>
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const LeaveHistoryScreen(),
+                                builder: (_) => const ActivityScreen(),
                               ),
                             ),
                             child: const Text(
@@ -416,95 +431,323 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildBalanceList(LeaveProvider provider) {
-    if (provider.isLoading && provider.balances.isEmpty) {
+  Widget _buildNewsSection(NewsProvider provider) {
+    if (provider.isLoading && provider.newsList.isEmpty) {
       return const SizedBox(
         height: 100,
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    if (provider.balances.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppTheme.border.withOpacity(0.5)),
-        ),
-        child: const Center(child: Text('ไม่พบข้อมูลสิทธิ์คงเหลือ')),
-      );
-    }
+    if (provider.newsList.isEmpty) return const SizedBox.shrink();
 
-    return SizedBox(
-      height: 140,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: provider.balances.length,
-        itemBuilder: (context, index) {
-          final bal = provider.balances[index];
-          final color = _getLeaveTypeColor(bal.leaveType?.slug ?? '');
-          return Container(
-            width: 140,
-            margin: const EdgeInsets.only(right: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      _getLeaveTypeIcon(bal.leaveType?.slug ?? ''),
-                      color: color,
-                      size: 18,
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${bal.remainingDays.toString().replaceAll(RegExp(r'\.0$'), '')} วัน',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                          color: AppTheme.textMain,
-                        ),
-                      ),
-                      Text(
-                        bal.leaveType?.name ?? 'ไม่ระบุ',
-                        style: const TextStyle(
-                          color: AppTheme.textSub,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: _buildSectionTitle('ข่าวสารประชาสัมพันธ์'),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 220,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: provider.newsList.length,
+            itemBuilder: (context, index) {
+              final news = provider.newsList[index];
+              return GestureDetector(
+                onTap: () async {
+                  final url = Uri.parse(news.link);
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  }
+                },
+                child: Container(
+                  width: 280,
+                  margin: const EdgeInsets.only(right: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                ],
-              ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(32),
+                    child: Stack(
+                      children: [
+                        // Background Image
+                        Positioned.fill(
+                          child: Image.network(
+                            news.imageUrl,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        // Black Gradient
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.8),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Label Info
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                news.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                news.date.split('T')[0],
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBalanceList(LeaveProvider provider) {
+    if (provider.isLoading && provider.balances.isEmpty) {
+      return const SizedBox(
+        height: 160,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (provider.balances.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        ),
+        child: const Center(
+          child: Text(
+            'ไม่พบข้อมูลสิทธิ์คงเหลือ',
+            style: TextStyle(
+              color: AppTheme.textSub,
+              fontWeight: FontWeight.w600,
             ),
-          );
-        },
-      ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: provider.balances.map((bal) {
+        final slug = bal.leaveType?.slug ?? '';
+        final color = _getLeaveTypeColor(slug);
+        final title = bal.leaveType?.name ?? 'ไม่ระบุ';
+        final remaining = bal.remainingDays.toString().replaceAll(
+          RegExp(r'\.0$'),
+          '',
+        );
+        final total = bal.totalDays.toString().replaceAll(RegExp(r'\.0$'), '');
+        final progress = (bal.remainingDays / bal.totalDays).clamp(0.0, 1.0);
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          height: 130,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.15),
+                blurRadius: 25,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Main Gradient Background
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [color, color.withOpacity(0.85)],
+                  ),
+                  borderRadius: BorderRadius.circular(32),
+                ),
+              ),
+
+              // Decorative Glass Bubbles
+              Positioned(
+                top: -30,
+                right: -20,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -40,
+                right: 60,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.05),
+                  ),
+                ),
+              ),
+
+              // Content Layout
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  children: [
+                    // Icon Container
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        _getLeaveTypeIcon(slug),
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+
+                    // Middle Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'สิทธิ์ทั้งหมด $total วัน',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Mini Progress Bar
+                          Container(
+                            height: 6,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: progress,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.3),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 20),
+
+                    // Days Counter
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          remaining,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                          ),
+                        ),
+                        const Text(
+                          'วันคงเหลือ',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 

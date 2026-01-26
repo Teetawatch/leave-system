@@ -3,35 +3,45 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
 import '../models/leave_request_model.dart';
+import '../models/guard_change_model.dart';
 import '../providers/leave_provider.dart';
+import '../providers/guard_change_provider.dart';
 import '../services/pdf_service.dart';
 
-class LeaveHistoryScreen extends StatefulWidget {
-  const LeaveHistoryScreen({super.key});
+class ActivityScreen extends StatefulWidget {
+  const ActivityScreen({super.key});
 
   @override
-  State<LeaveHistoryScreen> createState() => _LeaveHistoryScreenState();
+  State<ActivityScreen> createState() => _ActivityScreenState();
 }
 
-class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
-    with SingleTickerProviderStateMixin {
+class _ActivityScreenState extends State<ActivityScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
   late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LeaveProvider>(context, listen: false).fetchMyRequests();
+      _refreshData();
     });
+  }
+
+  void _refreshData() {
+    Provider.of<LeaveProvider>(context, listen: false).fetchMyRequests();
+    Provider.of<GuardChangeProvider>(context, listen: false).fetchMyRequests();
   }
 
   @override
   void dispose() {
+    _tabController.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -39,6 +49,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
   @override
   Widget build(BuildContext context) {
     final leaveProvider = Provider.of<LeaveProvider>(context);
+    final guardProvider = Provider.of<GuardChangeProvider>(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -46,16 +57,50 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          'ประวัติการลา',
+          'รายการกิจกรรม',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
         backgroundColor: Colors.transparent,
         foregroundColor: AppTheme.textMain,
         elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(70),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.04),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              labelColor: AppTheme.primary,
+              unselectedLabelColor: AppTheme.textSub,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              tabs: const [
+                Tab(text: 'ประวัติการลา'),
+                Tab(text: 'ประวัติเปลี่ยนเวร'),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Stack(
         children: [
-          // Background Design
           Container(
             height: size.height,
             width: size.width,
@@ -81,12 +126,15 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
           ),
 
           SafeArea(
-            child: RefreshIndicator(
-              onRefresh: () => leaveProvider.fetchMyRequests(),
-              color: AppTheme.primary,
-              child: FadeTransition(
-                opacity: _animationController,
-                child: _buildContent(leaveProvider),
+            child: FadeTransition(
+              opacity: _animationController,
+              child: TabBarView(
+                controller: _tabController,
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildLeaveHistory(leaveProvider),
+                  _buildGuardHistory(guardProvider),
+                ],
               ),
             ),
           ),
@@ -116,80 +164,75 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
     );
   }
 
-  Widget _buildContent(LeaveProvider provider) {
+  Widget _buildEmptyState(IconData icon, String title, String subtitle) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: AppTheme.border.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 64,
+              color: AppTheme.textSub.withOpacity(0.2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppTheme.textSub,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: AppTheme.textSub.withOpacity(0.5),
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Leave History Implementation ---
+
+  Widget _buildLeaveHistory(LeaveProvider provider) {
     if (provider.isLoading && provider.myRequests.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (provider.myRequests.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: AppTheme.border.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.history_toggle_off_rounded,
-                size: 64,
-                color: AppTheme.textSub.withOpacity(0.2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'ยังไม่มีประวัติการลา',
-              style: TextStyle(
-                color: AppTheme.textSub,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'รายการที่คุณยื่นลาจะปรากฏที่นี่',
-              style: TextStyle(
-                color: AppTheme.textSub.withOpacity(0.5),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
+      return _buildEmptyState(
+        Icons.history_toggle_off_rounded,
+        'ยังไม่มีประวัติการลา',
+        'รายการที่คุณยื่นลาจะปรากฏที่นี่',
       );
     }
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(28, 16, 28, 16),
-          sliver: SliverToBoxAdapter(
-            child: Text(
-              'รายการทั้งหมด (${provider.myRequests.length})',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.textMain,
-              ),
-            ),
-          ),
-        ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
-            final request = provider.myRequests[index];
-            return _buildHistoryCard(request);
-          }, childCount: provider.myRequests.length),
-        ),
-        const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
-      ],
+    return RefreshIndicator(
+      onRefresh: () async => provider.fetchMyRequests(),
+      child: ListView.builder(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(top: 20, bottom: 120),
+        itemCount: provider.myRequests.length,
+        itemBuilder: (context, index) =>
+            _buildLeaveCard(provider.myRequests[index]),
+      ),
     );
   }
 
-  Widget _buildHistoryCard(LeaveRequest request) {
-    final statusColor = _getStatusColor(request.status);
-    final statusIcon = _getStatusIcon(request.status);
+  Widget _buildLeaveCard(LeaveRequest request) {
+    final statusColor = _getLeaveStatusColor(request.status);
+    final statusIcon = _getLeaveStatusIcon(request.status);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
@@ -252,7 +295,11 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
                         ],
                       ),
                     ),
-                    _buildStatusChip(request.status, statusColor, statusIcon),
+                    _buildStatusChip(
+                      _getLeaveStatusText(request.status),
+                      statusColor,
+                      statusIcon,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -283,29 +330,15 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
                     ],
                   ),
                 ),
-                if (request.reason.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    request.reason,
-                    style: TextStyle(
-                      color: AppTheme.textSub.withOpacity(0.8),
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton.icon(
-                      onPressed: () => _downloadPdf(request),
+                      onPressed: () => _downloadLeavePdf(request),
                       icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
                       label: const Text(
-                        'ดาวน์โหลด PDF',
+                        'PDF',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
@@ -333,7 +366,176 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
     );
   }
 
-  Widget _buildStatusChip(String status, Color color, IconData icon) {
+  // --- Guard History Implementation ---
+
+  Widget _buildGuardHistory(GuardChangeProvider provider) {
+    if (provider.isLoading && provider.myRequests.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (provider.myRequests.isEmpty) {
+      return _buildEmptyState(
+        Icons.history_toggle_off_rounded,
+        'ยังไม่มีประวัติการเปลี่ยนเวร',
+        'รายการที่คุณขอเปลี่ยนเวรยามจะปรากฏที่นี่',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async => provider.fetchMyRequests(),
+      child: ListView.builder(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(top: 20, bottom: 120),
+        itemCount: provider.myRequests.length,
+        itemBuilder: (context, index) =>
+            _buildGuardCard(provider.myRequests[index]),
+      ),
+    );
+  }
+
+  Widget _buildGuardCard(GuardChangeRequest request) {
+    final statusColor = _getGuardStatusColor(request.status);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(32),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.security_rounded,
+                        color: Colors.blueAccent,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            request.dutyPositionThai,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 17,
+                              color: AppTheme.textMain,
+                            ),
+                          ),
+                          Text(
+                            'ยื่นเมื่อ ${request.formattedCreatedAt}',
+                            style: const TextStyle(
+                              color: AppTheme.textSub,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _buildStatusChip(
+                      _getGuardStatusText(request.status),
+                      statusColor,
+                      Icons.pending_rounded,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildInfoItem(
+                        'วันที่ปฏิบัติเวร',
+                        request.formattedDutyDate,
+                        Icons.calendar_month_outlined,
+                      ),
+                      Container(
+                        width: 1,
+                        height: 30,
+                        color: AppTheme.border,
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      _buildInfoItem(
+                        'ผู้มาเปลี่ยนแทน',
+                        request.replacementUser?.name ?? '-',
+                        Icons.person_outline,
+                      ),
+                    ],
+                  ),
+                ),
+                if (request.status == 'fully_approved') ...[
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => _downloadGuardPdf(request.id),
+                        icon: const Icon(
+                          Icons.picture_as_pdf_rounded,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'PDF',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.primary,
+                          backgroundColor: AppTheme.primary.withOpacity(0.08),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- Helpers ---
+
+  Widget _buildStatusChip(String text, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -346,7 +548,7 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
           Icon(icon, size: 12, color: color),
           const SizedBox(width: 6),
           Text(
-            _getStatusText(status),
+            text,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w900,
@@ -393,72 +595,44 @@ class _LeaveHistoryScreenState extends State<LeaveHistoryScreen>
     );
   }
 
-  Color _getStatusColor(String status) {
-    if (status == 'approved') return AppTheme.success;
-    if (status == 'rejected') return AppTheme.error;
-    return AppTheme.warning;
+  Color _getLeaveStatusColor(String status) => status == 'approved'
+      ? AppTheme.success
+      : (status == 'rejected' ? AppTheme.error : AppTheme.warning);
+  IconData _getLeaveStatusIcon(String status) => status == 'approved'
+      ? Icons.check_circle_rounded
+      : (status == 'rejected' ? Icons.cancel_rounded : Icons.pending_rounded);
+  String _getLeaveStatusText(String status) => status == 'approved'
+      ? 'อนุมัติ'
+      : (status == 'rejected' ? 'ปฏิเสธ' : 'รออนุมัติ');
+  IconData _getLeaveTypeIcon(String slug) => slug == 'vacation'
+      ? Icons.beach_access_rounded
+      : (slug == 'sick'
+            ? Icons.medication_rounded
+            : Icons.business_center_rounded);
+
+  Color _getGuardStatusColor(String status) {
+    if (status == 'fully_approved') return AppTheme.success;
+    if (status == 'rejected' || status == 'cancelled') return AppTheme.error;
+    if (status == 'pending') return AppTheme.warning;
+    return Colors.blue;
   }
 
-  IconData _getStatusIcon(String status) {
-    if (status == 'approved') return Icons.check_circle_rounded;
-    if (status == 'rejected') return Icons.cancel_rounded;
-    return Icons.pending_rounded;
-  }
-
-  String _getStatusText(String status) {
-    if (status == 'approved') return 'อนุมัติ';
+  String _getGuardStatusText(String status) {
+    if (status == 'fully_approved') return 'อนุมัติเรียบร้อย';
     if (status == 'rejected') return 'ปฏิเสธ';
-    return 'รออนุมัติ';
+    if (status == 'cancelled') return 'ยกเลิกแล้ว';
+    if (status == 'pending') return 'รอผู้แทนยืนยัน';
+    if (status == 'approved') return 'รอหัวหน้าแผนก';
+    if (status == 'director_approved') return 'รอ ผอ. อนุมัติ';
+    return 'กำลังรอ';
   }
 
-  IconData _getLeaveTypeIcon(String slug) {
-    if (slug == 'vacation') return Icons.beach_access_rounded;
-    if (slug == 'sick') return Icons.medication_rounded;
-    return Icons.business_center_rounded;
+  Future<void> _downloadLeavePdf(LeaveRequest request) async {
+    final fileName = "Leave_${request.leaveType.slug}_${request.id}";
+    await PdfService.downloadAndOpenPdf(request.id, fileName);
   }
 
-  Future<void> _downloadPdf(LeaveRequest request) async {
-    try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Text(
-                  'กำลังส้าางไฟล์ PDF...',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      );
-      final fileName = "Leave_${request.leaveType.slug}_${request.id}";
-      await PdfService.downloadAndOpenPdf(request.id, fileName);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('ไม่สามารถดาวน์โหลด PDF: $e'),
-            backgroundColor: AppTheme.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
+  Future<void> _downloadGuardPdf(int id) async {
+    await PdfService.downloadAndOpenGuardChangePdf(id, 'GuardChange_$id');
   }
 }

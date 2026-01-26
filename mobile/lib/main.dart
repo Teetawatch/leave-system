@@ -4,6 +4,7 @@ import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
 import 'providers/leave_provider.dart';
 import 'providers/guard_change_provider.dart';
+import 'providers/news_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_navigation_screen.dart';
 import 'config/app_theme.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => LeaveProvider()),
         ChangeNotifierProvider(create: (_) => GuardChangeProvider()),
+        ChangeNotifierProvider(create: (_) => NewsProvider()),
       ],
       child: MaterialApp(
         title: AppConfig.appName,

@@ -4,12 +4,36 @@ import 'dart:ui';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = Provider.of<AuthProvider>(context).user;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.user;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -41,131 +65,134 @@ class ProfileScreen extends StatelessWidget {
             color: AppTheme.secondary.withOpacity(0.05),
           ),
 
-          CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Premium Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 80, 28, 40),
-                  child: Column(
-                    children: [
-                      _buildAvatar(user),
-                      const SizedBox(height: 20),
-                      Text(
-                        user?.name ?? 'พนักงาน',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.textMain,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          user?.position ?? '-',
-                          style: const TextStyle(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13,
+          SafeArea(
+            child: FadeTransition(
+              opacity: _animationController,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Premium Header
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(28, 40, 28, 40),
+                      child: Column(
+                        children: [
+                          _buildAvatar(user),
+                          const SizedBox(height: 24),
+                          Text(
+                            user?.name ?? 'ไม่พบข้อมูลชื่อ',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.textMain,
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Text(
+                              user?.position ?? 'ไม่ระบุตำแหน่ง',
+                              style: const TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              // Info Section
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'ข้อมูลส่วนตัว',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.textMain,
-                        ),
+                  // Info Section
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'ข้อมูลส่วนตัว',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.textMain,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildProfileInfoCard([
+                            _buildInfoItem(
+                              Icons.badge_rounded,
+                              'ตำแหน่งงาน',
+                              user?.position ?? '-',
+                              Colors.blue,
+                            ),
+                            _buildDivider(),
+                            _buildInfoItem(
+                              Icons.apartment_rounded,
+                              'แผนก / สังกัด',
+                              user?.department ?? '-',
+                              Colors.orange,
+                            ),
+                            _buildDivider(),
+                            _buildInfoItem(
+                              Icons.alternate_email_rounded,
+                              'อีเมลบุคลากร',
+                              user?.email ?? '-',
+                              Colors.teal,
+                            ),
+                          ]),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      _buildProfileInfoCard([
-                        _buildInfoItem(
-                          Icons.badge_rounded,
-                          'ตำแหน่ง',
-                          user?.position ?? '-',
-                          Colors.blue,
-                        ),
-                        _buildDivider(),
-                        _buildInfoItem(
-                          Icons.apartment_rounded,
-                          'แผนก / สังกัด',
-                          user?.department ?? '-',
-                          Colors.orange,
-                        ),
-                        _buildDivider(),
-                        _buildInfoItem(
-                          Icons.alternate_email_rounded,
-                          'อีเมลบุคลากร',
-                          user?.email ?? '-',
-                          Colors.teal,
-                        ),
-                      ]),
-                    ],
+                    ),
                   ),
-                ),
-              ),
 
-              // Actions Section
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(28, 32, 28, 100),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'ความเป็นส่วนตัว',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.textMain,
-                        ),
+                  // Actions Section
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(28, 32, 28, 120),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'ความปลอดภัย',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.textMain,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildProfileInfoCard([
+                            _buildActionItem(
+                              Icons.lock_person_rounded,
+                              'เปลี่ยนรหัสผ่าน',
+                              () {},
+                            ),
+                            _buildDivider(),
+                            _buildActionItem(
+                              Icons.logout_rounded,
+                              'ออกจากระบบ',
+                              () => authProvider.logout(),
+                              isDestructive: true,
+                            ),
+                          ]),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      _buildProfileInfoCard([
-                        _buildActionItem(
-                          Icons.lock_person_rounded,
-                          'ตั้งค่ารหัสผ่านใหม่',
-                          () {},
-                        ),
-                        _buildDivider(),
-                        _buildActionItem(
-                          Icons.logout_rounded,
-                          'ออกจากระบบ',
-                          () => Provider.of<AuthProvider>(
-                            context,
-                            listen: false,
-                          ).logout(),
-                          isDestructive: true,
-                        ),
-                      ]),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -195,8 +222,8 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildAvatar(dynamic user) {
     return Container(
-      width: 120,
-      height: 120,
+      width: 130,
+      height: 130,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white,
@@ -210,12 +237,20 @@ class ProfileScreen extends StatelessWidget {
         border: Border.all(color: Colors.white, width: 4),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(60),
+        borderRadius: BorderRadius.circular(65),
         child: user?.avatarUrl != null
-            ? Image.network(user!.avatarUrl!, fit: BoxFit.cover)
+            ? Image.network(
+                user!.avatarUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.person_rounded,
+                  size: 70,
+                  color: AppTheme.textSub,
+                ),
+              )
             : const Icon(
                 Icons.person_rounded,
-                size: 60,
+                size: 70,
                 color: AppTheme.textSub,
               ),
       ),
@@ -238,7 +273,7 @@ class ProfileScreen extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Column(children: children),
         ),
       ),
@@ -252,18 +287,18 @@ class ProfileScreen extends StatelessWidget {
     Color color,
   ) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: color, size: 22),
+            child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,15 +307,16 @@ class ProfileScreen extends StatelessWidget {
                   label,
                   style: const TextStyle(
                     color: AppTheme.textSub,
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   value,
                   style: const TextStyle(
                     color: AppTheme.textMain,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -299,25 +335,28 @@ class ProfileScreen extends StatelessWidget {
     bool isDestructive = false,
   }) {
     final color = isDestructive ? AppTheme.error : AppTheme.textMain;
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(width: 16),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: 20),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            const Spacer(),
-            Icon(Icons.chevron_right_rounded, color: color.withOpacity(0.3)),
-          ],
+              const Spacer(),
+              Icon(Icons.chevron_right_rounded, color: color.withOpacity(0.3)),
+            ],
+          ),
         ),
       ),
     );
@@ -325,7 +364,7 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildDivider() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Divider(height: 1, color: AppTheme.border.withOpacity(0.5)),
     );
   }

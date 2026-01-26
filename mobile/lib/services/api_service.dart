@@ -159,6 +159,12 @@ class ApiService {
     return await _dio.post('/fcm-token', data: {'token': token});
   }
 
+  Future<Response> getLatestNews() async {
+    return await Dio().get(
+      'https://nass.ac.th/wp-json/wp/v2/posts?per_page=5&_embed',
+    );
+  }
+
   // Expose dio for other calls
   Dio get client => _dio;
 }
