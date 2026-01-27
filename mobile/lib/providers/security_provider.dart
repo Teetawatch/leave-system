@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:local_auth/local_auth.dart';
+import 'package:local_auth/local_auth.dart' as local_auth;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SecurityProvider with ChangeNotifier {
@@ -10,7 +10,8 @@ class SecurityProvider with ChangeNotifier {
   static const String keyPinCode = 'pin_code';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  final LocalAuthentication _localAuth = LocalAuthentication();
+  final local_auth.LocalAuthentication _localAuth =
+      local_auth.LocalAuthentication();
 
   bool _isPinEnabled = false;
   bool _isBiometricEnabled = false;
@@ -88,7 +89,7 @@ class SecurityProvider with ChangeNotifier {
       if (canCheckBiometrics) {
         bool authenticated = await _localAuth.authenticate(
           localizedReason: 'โปรดยืนยันตัวตนเพื่อเปิดใช้งาน Biometric',
-          options: const AuthenticationOptions(
+          options: const local_auth.AuthenticationOptions(
             biometricOnly: true,
             stickyAuth: true,
           ),
@@ -115,7 +116,7 @@ class SecurityProvider with ChangeNotifier {
     try {
       bool authenticated = await _localAuth.authenticate(
         localizedReason: 'โปรดยืนยันตัวตนเพื่อเข้าใช้งาน',
-        options: const AuthenticationOptions(
+        options: const local_auth.AuthenticationOptions(
           biometricOnly: true,
           stickyAuth: true,
         ),

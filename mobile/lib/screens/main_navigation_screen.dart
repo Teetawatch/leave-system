@@ -12,7 +12,13 @@ import 'profile_screen.dart';
 import 'reports_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
+  final int initialIndex;
+  final int initialHistoryTab;
+  const MainNavigationScreen({
+    super.key,
+    this.initialIndex = 0,
+    this.initialHistoryTab = 0,
+  });
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -20,6 +26,12 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +60,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     // However, it's safer to just include all screens and hide the tab icon.
     final List<Widget> screens = [
       const HomeScreen(),
-      const ActivityScreen(),
+      ActivityScreen(initialTabIndex: widget.initialHistoryTab),
       if (showApprovalsTab) const ApprovalsScreen(),
       if (isAdmin) const ReportsScreen(),
       const ProfileScreen(),
@@ -61,7 +73,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
 
     return Scaffold(
-      extendBody: true,
+      extendBody: false,
       body: IndexedStack(index: safeIndex, children: screens),
       bottomNavigationBar: _buildGlassNavigationBar(
         showApprovalsTab,
@@ -82,64 +94,72 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      height: 95,
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
+      margin: EdgeInsets.zero,
       decoration: BoxDecoration(
         color: isDark
-            ? AppTheme.surfaceDark.withOpacity(0.8)
-            : Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(40),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.white.withOpacity(0.5),
-          width: 1.5,
+            ? AppTheme.surfaceDark.withOpacity(0.85)
+            : Colors.white.withOpacity(0.85),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.white.withOpacity(0.5),
+            width: 1.5,
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.12),
-            blurRadius: 40,
-            spreadRadius: -10,
-            offset: const Offset(0, 15),
+            color: AppTheme.primary.withOpacity(0.15),
+            blurRadius: 30,
+            spreadRadius: -5,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  currentIndex++,
-                  Icons.grid_view_rounded,
-                  'หน้าหลัก',
-                ),
-                _buildNavItem(
-                  currentIndex++,
-                  Icons.calendar_today_rounded,
-                  'ประวัติ',
-                ),
-                if (showApprovalsTab)
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   _buildNavItem(
                     currentIndex++,
-                    Icons.assignment_turned_in_rounded,
-                    'อนุมัติ',
-                    badgeCount:
-                        leaveProvider.pendingApprovals.length +
-                        guardProvider.approvals.length,
+                    Icons.grid_view_rounded,
+                    'หน้าหลัก',
                   ),
-                if (isAdmin)
                   _buildNavItem(
                     currentIndex++,
-                    Icons.insert_chart_rounded, // Better report icon
-                    'รายงาน',
+                    Icons.calendar_today_rounded,
+                    'ประวัติ',
                   ),
-                _buildNavItem(currentIndex++, Icons.person_rounded, 'โปรไฟล์'),
-              ],
+                  if (showApprovalsTab)
+                    _buildNavItem(
+                      currentIndex++,
+                      Icons.assignment_turned_in_rounded,
+                      'อนุมัติ',
+                      badgeCount:
+                          leaveProvider.pendingApprovals.length +
+                          guardProvider.approvals.length,
+                    ),
+                  if (isAdmin)
+                    _buildNavItem(
+                      currentIndex++,
+                      Icons.insert_chart_rounded, // Better report icon
+                      'รายงาน',
+                    ),
+                  _buildNavItem(
+                    currentIndex++,
+                    Icons.person_rounded,
+                    'โปรไฟล์',
+                  ),
+                ],
+              ),
             ),
           ),
         ),

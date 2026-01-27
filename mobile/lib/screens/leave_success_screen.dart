@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../models/leave_type_model.dart';
-import 'home_screen.dart';
-import 'leave_history_screen.dart';
+
+import 'main_navigation_screen.dart';
 
 class LeaveSuccessScreen extends StatelessWidget {
   final LeaveType leaveType;
@@ -131,7 +131,7 @@ class LeaveSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => const HomeScreen(),
+                        builder: (context) => const MainNavigationScreen(),
                       ),
                       (route) => false,
                     );
@@ -163,13 +163,11 @@ class LeaveSuccessScreen extends StatelessWidget {
                   // For now, let's push replacement or clear until home and push history.
                   // User flow: Success -> History -> Back -> Home
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    (route) => false,
-                  );
-                  Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const ActivityScreen(),
+                      builder: (context) =>
+                          const MainNavigationScreen(initialIndex: 1),
                     ),
+                    (route) => false,
                   );
                 },
                 child: Text(

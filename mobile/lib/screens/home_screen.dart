@@ -15,6 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../providers/guard_change_provider.dart';
+import 'package:dio/dio.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +27,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
+  String _weatherTemp = '--';
+  String _pm25 = '--';
 
   @override
   void initState() {
@@ -55,6 +58,77 @@ class _HomeScreenState extends State<HomeScreen>
 
     Provider.of<NewsProvider>(context, listen: false).fetchLatestNews();
     Provider.of<GuardChangeProvider>(context, listen: false).fetchMyRequests();
+    _fetchWeatherAndPM25();
+  }
+
+  Future<void> _fetchWeatherAndPM25() async {
+    try {
+      final dio = Dio();
+
+      // Fetch Weather (Bangkok)
+      final weatherResponse = await dio.get(
+        'https://api.open-meteo.com/v1/forecast?latitude=13.7563&longitude=100.5018&current=temperature_2m',
+      );
+      if (weatherResponse.statusCode == 200) {
+        final temp = weatherResponse.data['current']['temperature_2m'];
+        if (mounted) {
+          setState(() {
+            _weatherTemp = temp.toString();
+          });
+        }
+      }
+
+      // Fetch PM2.5 (Bangkok)
+      final airResponse = await dio.get(
+        'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=13.7563&longitude=100.5018&current=pm2_5',
+      );
+      if (airResponse.statusCode == 200) {
+        final pm25 = airResponse.data['current']['pm2_5'];
+        if (mounted) {
+          setState(() {
+            _pm25 = pm25.toString();
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching weather/pm2.5: $e');
+    }
+  }
+
+  String _getGreetingText() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return 'สวัสดีตอนเช้า';
+    } else if (hour >= 12 && hour < 13) {
+      return 'สวัสดีตอนเที่ยง';
+    } else if (hour >= 13 && hour < 17) {
+      return 'สวัสดีตอนบ่าย';
+    } else {
+      return 'สวัสดีตอนเย็น';
+    }
+  }
+
+  String _getGreetingIcon() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return '☀️';
+    } else if (hour >= 12 && hour < 13) {
+      return '🌤️';
+    } else if (hour >= 13 && hour < 17) {
+      return '⛅';
+    } else {
+      return '🌙';
+    }
+  }
+
+  Color _getPm25Color(double value) {
+    if (value <= 25) return Colors.green; // Good
+    if (value <= 37)
+      return Colors
+          .yellow[700]!; // Moderate (Thai standard is stricter, adjusted slightly)
+    if (value <= 50) return Colors.orange; // Unhealthy for sensitive groups
+    if (value <= 90) return Colors.red; // Unhealthy
+    return Colors.purple; // Very Unhealthy / Hazardous
   }
 
   @override
@@ -93,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen>
               physics: const BouncingScrollPhysics(),
               slivers: [
                 SliverAppBar(
-                  backgroundColor: Colors.transparent,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   pinned: false,
@@ -126,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   Row(
                                     children: [
                                       Text(
-                                        'สวัสดีตอนเย็น',
+                                        _getGreetingText(),
                                         style: GoogleFonts.kanit(
                                           fontSize: 16,
                                           color: AppTheme.textSub,
@@ -134,16 +208,16 @@ class _HomeScreenState extends State<HomeScreen>
                                         ),
                                       ),
                                       const SizedBox(width: 4),
-                                      const Text(
-                                        '🌙',
-                                        style: TextStyle(fontSize: 16),
+                                      Text(
+                                        _getGreetingIcon(),
+                                        style: const TextStyle(fontSize: 16),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 2),
                                   SizedBox(
                                     width:
-                                        MediaQuery.of(context).size.width * 0.5,
+                                        MediaQuery.of(context).size.width * 0.4,
                                     child: Text(
                                       user?.fullName ?? 'พนักงาน',
                                       style: GoogleFonts.kanit(
@@ -156,6 +230,65 @@ class _HomeScreenState extends State<HomeScreen>
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
+                                  if (_weatherTemp != '--' ||
+                                      _pm25 != '--') ...[
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        // Weather
+                                        if (_weatherTemp != '--') ...[
+                                          const Icon(
+                                            Icons.cloud_outlined,
+                                            size: 14,
+                                            color: AppTheme.textSub,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '$_weatherTemp°C',
+                                            style: GoogleFonts.sarabun(
+                                              fontSize: 12,
+                                              color: AppTheme.textSub,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                        ],
+                                        // PM 2.5
+                                        if (_pm25 != '--') ...[
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                              vertical: 1,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: _getPm25Color(
+                                                double.tryParse(_pm25) ?? 0,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              'PM 2.5',
+                                              style: GoogleFonts.kanit(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            _pm25,
+                                            style: GoogleFonts.sarabun(
+                                              fontSize: 12,
+                                              color: AppTheme.textSub,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ],
                                 ],
                               ),
                             ],

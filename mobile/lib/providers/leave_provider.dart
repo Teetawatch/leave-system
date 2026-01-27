@@ -182,4 +182,32 @@ class LeaveProvider with ChangeNotifier {
       return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
     }
   }
+
+  Future<Map<String, dynamic>> cancelRequest(int id) async {
+    try {
+      final response = await _apiService.cancelLeaveRequest(id);
+      if (response.data['success']) {
+        await fetchMyRequests();
+        await fetchLeaveBalances();
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'ยกเลิกคำขอเรียบร้อยแล้ว',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'ไม่สามารถยกเลิกได้',
+      };
+    } catch (e) {
+      debugPrint('Error canceling request: $e');
+      if (e is DioException && e.response?.data != null) {
+        return {
+          'success': false,
+          'message':
+              e.response!.data['message'] ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+        };
+      }
+      return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
+    }
+  }
 }

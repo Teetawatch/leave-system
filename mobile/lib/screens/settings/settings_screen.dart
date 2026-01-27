@@ -42,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
             onChanged: (value) {
               themeProvider.toggleTheme(value);
             },
-            activeColor: AppTheme.primary,
+            activeThumbColor: AppTheme.primary,
           ),
         ],
       ),
@@ -102,7 +102,7 @@ class SettingsScreen extends StatelessWidget {
                     );
                   }
                 },
-                activeColor: AppTheme.primary,
+                activeThumbColor: AppTheme.primary,
               ),
               if (security.isPinEnabled) ...[
                 Divider(color: Theme.of(context).dividerColor),
@@ -148,7 +148,7 @@ class SettingsScreen extends StatelessWidget {
                       );
                     }
                   },
-                  activeColor: AppTheme.primary,
+                  activeThumbColor: AppTheme.primary,
                 ),
               ],
             ],

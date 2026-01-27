@@ -222,7 +222,7 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
                   children: [
                     ...contacts
                         .map((contact) => _buildContactCard(contact))
-                        .toList(),
+                        ,
                     const SizedBox(height: 24),
                     Center(
                       child: Text(

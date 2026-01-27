@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/guard_change_model.dart';
 import '../services/api_service.dart';
+import 'package:dio/dio.dart';
 
 class GuardChangeProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -111,6 +112,38 @@ class GuardChangeProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('Error rejecting guard change: $e');
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> cancelRequest(int id) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final response = await _apiService.cancelGuardChangeRequest(id);
+      if (response.data['success']) {
+        await fetchMyRequests();
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'ยกเลิกคำขอเรียบร้อยแล้ว',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'ไม่สามารถยกเลิกได้',
+      };
+    } catch (e) {
+      debugPrint('Error canceling guard change request: $e');
+      if (e is DioException && e.response?.data != null) {
+        return {
+          'success': false,
+          'message':
+              e.response!.data['message'] ?? 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+        };
+      }
+      return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
     } finally {
       _isLoading = false;
       notifyListeners();

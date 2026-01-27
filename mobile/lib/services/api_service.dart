@@ -128,6 +128,10 @@ class ApiService {
     return await _dio.post('/guard-change-requests', data: data);
   }
 
+  Future<Response> cancelGuardChangeRequest(int id) async {
+    return await _dio.post('/guard-change-requests/$id/cancel');
+  }
+
   Future<Response> getGuardChangeApprovals() async {
     return await _dio.get('/guard-change-approvals');
   }

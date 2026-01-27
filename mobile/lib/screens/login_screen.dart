@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -240,14 +241,16 @@ class _LoginScreenState extends State<LoginScreen>
           },
         ),
         const SizedBox(height: 32),
-        const Text(
-          'ระบบบริหารจัดการงานธุรการด้านกำลังพล',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            color: AppTheme.textMain,
-            letterSpacing: 2,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'ระบบบริหารจัดการงานธุรการด้านกำลังพล',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.kanit(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: AppTheme.textMain,
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -316,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen>
                   // Email
                   _buildModernField(
                     controller: _emailController,
-                    hint: 'อีเมลพนักงาน',
+                    hint: 'อีเมล',
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                   ),

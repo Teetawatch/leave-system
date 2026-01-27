@@ -14,7 +14,8 @@ import 'leave_request_screen.dart';
 import 'guard_change_request_screen.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({super.key});
+  final int initialTabIndex;
+  const ActivityScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
@@ -30,7 +31,11 @@ class _ActivityScreenState extends State<ActivityScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -64,6 +69,9 @@ class _ActivityScreenState extends State<ActivityScreen>
     final leaveProvider = Provider.of<LeaveProvider>(context);
     final guardProvider = Provider.of<GuardChangeProvider>(context);
 
+    // Only show back button if we can actually pop (i.e. not a main tab)
+    final bool canPop = Navigator.of(context).canPop();
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -79,21 +87,24 @@ class _ActivityScreenState extends State<ActivityScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-              color: Color(0xFF1E293B),
-            ),
-          ),
-        ),
+        automaticallyImplyLeading: false, // Handle leading manually
+        leading: canPop
+            ? IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+              )
+            : null,
       ),
       body: Stack(
         children: [
@@ -143,15 +154,13 @@ class _ActivityScreenState extends State<ActivityScreen>
                     ),
                     labelColor: Colors.white,
                     unselectedLabelColor: const Color(0xFF64748B),
-                    labelStyle: const TextStyle(
+                    labelStyle: GoogleFonts.kanit(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
-                      fontFamily: 'Kanit',
                     ),
-                    unselectedLabelStyle: const TextStyle(
+                    unselectedLabelStyle: GoogleFonts.kanit(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      fontFamily: 'Kanit',
                     ),
                     indicatorSize: TabBarIndicatorSize.tab,
                     dividerColor: Colors.transparent,
@@ -195,9 +204,9 @@ class _ActivityScreenState extends State<ActivityScreen>
           }
         },
         backgroundColor: const Color(0xFF3B82F6),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }
@@ -333,8 +342,9 @@ class _ActivityScreenState extends State<ActivityScreen>
           'director_approved',
         ].contains(request.status);
       }
-      if (_guardFilter == 'completed')
+      if (_guardFilter == 'completed') {
         return request.status == 'fully_approved';
+      }
       if (_guardFilter == 'cancelled') {
         return ['rejected', 'cancelled'].contains(request.status);
       }
@@ -501,6 +511,15 @@ class _ActivityScreenState extends State<ActivityScreen>
     final leaveIcon = _getLeaveTypeIcon(request.leaveType.slug);
     final leaveColor = _getLeaveTypeColor(request.leaveType.slug);
 
+    // Determine if cancellable (including approved for user convenience, backend might reject)
+    final bool canCancel = [
+      'pending',
+      'waiting_head',
+      'waiting_hr',
+      'waiting_director',
+      'approved', // Added to allow cancelling approved leave
+    ].contains(request.status);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -658,8 +677,109 @@ class _ActivityScreenState extends State<ActivityScreen>
                 ),
               ),
             ],
+
+            // Cancel Button - displayed for pending and approved states (below download if approved)
+            if (canCancel) ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _showCancelDialog(request.id);
+                },
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(20),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.cancel_outlined,
+                        size: 18,
+                        color: AppTheme.error,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'ยกเลิกคำขอ',
+                        style: GoogleFonts.kanit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showCancelDialog(int id) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'ยกเลิกคำขอ?',
+          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'คุณต้องการยกเลิกคำขอลาใช่หรือไม่',
+          style: GoogleFonts.sarabun(),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ไม่',
+              style: GoogleFonts.kanit(color: const Color(0xFF64748B)),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final provider = Provider.of<LeaveProvider>(
+                context,
+                listen: false,
+              );
+              final result = await provider.cancelRequest(id);
+              if (mounted) {
+                if (result['success']) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        result['message'],
+                        style: GoogleFonts.kanit(),
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        result['message'],
+                        style: GoogleFonts.kanit(),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text(
+              'ใช่, ยกเลิก',
+              style: GoogleFonts.kanit(color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -707,6 +827,11 @@ class _ActivityScreenState extends State<ActivityScreen>
     final dateHeader = createdDate != null
         ? "${createdDate.day} ${_mToMonth(createdDate.month)}".toUpperCase()
         : "";
+
+    // Show cancel button if NOT cancelled, even if completed (fully_approved)
+    // The previous logic was `!isCompleted && !isCancelled`.
+    // We now allow users to attempt cancel even if fully approved, as long as it's not already cancelled/rejected.
+    final bool showCancel = !isCancelled;
 
     return Container(
       decoration: BoxDecoration(
@@ -880,8 +1005,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                           ),
                         ),
                       ),
-                    ),
-
+                    ), // Close Spacer
                     // Bottom Item
                     SizedBox(
                       height: 72,
@@ -944,38 +1068,51 @@ class _ActivityScreenState extends State<ActivityScreen>
             ),
           ),
           const SizedBox(height: 24),
+
           if (isCompleted) ...[
             const Divider(height: 1, color: Color(0xFFF1F5F9)),
             _buildDownloadButton(request.id),
           ],
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildAvatar(String? url) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
+          if (showCancel) ...[
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            InkWell(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _showCancelGuardDialog(request.id);
+              },
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(24),
+              ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.cancel_outlined,
+                      size: 18,
+                      color: AppTheme.error,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'ยกเลิกคำขอ',
+                      style: GoogleFonts.kanit(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.error,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 8),
+          ],
         ],
-        image: url != null
-            ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover)
-            : null,
       ),
-      child: url == null
-          ? const Icon(Icons.person_rounded, color: Color(0xFF94A3B8))
-          : null,
     );
   }
 
@@ -988,7 +1125,7 @@ class _ActivityScreenState extends State<ActivityScreen>
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -999,7 +1136,7 @@ class _ActivityScreenState extends State<ActivityScreen>
             ),
             const SizedBox(width: 8),
             Text(
-              'ดาวน์โหลดรายงาน',
+              'ดาวน์โหลดใบสลับกะ',
               style: GoogleFonts.kanit(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -1012,7 +1149,137 @@ class _ActivityScreenState extends State<ActivityScreen>
     );
   }
 
+  Future<void> _showCancelGuardDialog(int id) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'ยกเลิกคำขอ?',
+          style: GoogleFonts.kanit(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'คุณต้องการยกเลิกคำขอเปลี่ยนเวรใช่หรือไม่',
+          style: GoogleFonts.sarabun(),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ไม่',
+              style: GoogleFonts.kanit(color: const Color(0xFF64748B)),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final provider = Provider.of<GuardChangeProvider>(
+                context,
+                listen: false,
+              );
+              try {
+                final result = await provider.cancelRequest(id);
+                if (mounted) {
+                  if (result['success']) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          result['message'],
+                          style: GoogleFonts.kanit(),
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          result['message'],
+                          style: GoogleFonts.kanit(),
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+                        style: GoogleFonts.kanit(),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text(
+              'ใช่, ยกเลิก',
+              style: GoogleFonts.kanit(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // --- Helpers ---
+  Widget _buildAvatar(String? avatarUrl) {
+    const double size = 40;
+
+    Widget placeholder = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: const Icon(
+        Icons.person_rounded,
+        color: Color(0xFF94A3B8),
+        size: 20,
+      ),
+    );
+
+    if (avatarUrl == null || avatarUrl.isEmpty) {
+      return placeholder;
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Image.network(
+          avatarUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => placeholder,
+        ),
+      ),
+    );
+  }
+
   Color _getLeaveStatusColor(String status) {
     switch (status) {
       case 'approved':

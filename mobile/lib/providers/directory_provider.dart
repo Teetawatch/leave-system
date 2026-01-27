@@ -125,24 +125,29 @@ class DirectoryProvider with ChangeNotifier {
     final input = raw.toLowerCase().trim();
 
     // Check for exact keys or English terms
-    if (input.contains('govern') || input.contains('ปกครอง'))
+    if (input.contains('govern') || input.contains('ปกครอง')) {
       return 'แผนกปกครอง';
+    }
     if (input.contains('edu') ||
         input.contains('study') ||
         input.contains('train') ||
-        input.contains('ศึกษา'))
+        input.contains('ศึกษา')) {
       return 'แผนกศึกษา';
+    }
     if (input.contains('support') ||
         input.contains('up') ||
         input.contains('supply') ||
-        input.contains('สนับสนุน'))
+        input.contains('สนับสนุน')) {
       return 'แผนกสนับสนุน';
-    if (input.contains('admin') || input.contains('ธุรการ'))
+    }
+    if (input.contains('admin') || input.contains('ธุรการ')) {
       return 'ฝ่ายธุรการ';
+    }
     if (input.contains('fin') ||
         input.contains('account') ||
-        input.contains('การเงิน'))
+        input.contains('การเงิน')) {
       return 'ฝ่ายการเงิน';
+    }
 
     // If already one of the valid thai keys, return it (handled by contains above mostly, but strict check)
     return 'แผนกสนับสนุน'; // Fallback to Support if unknown

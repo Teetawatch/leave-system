@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'home_screen.dart';
-import 'guard_change_history_screen.dart';
+
+import 'main_navigation_screen.dart';
 
 class GuardChangeSuccessScreen extends StatelessWidget {
   final DateTime dutyDate;
@@ -118,7 +118,7 @@ class GuardChangeSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => const HomeScreen(),
+                        builder: (context) => const MainNavigationScreen(),
                       ),
                       (route) => false,
                     );
@@ -146,13 +146,13 @@ class GuardChangeSuccessScreen extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    (route) => false,
-                  );
-                  Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const GuardChangeHistoryScreen(),
+                      builder: (context) => const MainNavigationScreen(
+                        initialIndex: 1,
+                        initialHistoryTab: 1,
+                      ),
                     ),
+                    (route) => false,
                   );
                 },
                 child: Text(

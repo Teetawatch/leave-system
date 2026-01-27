@@ -300,7 +300,7 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
                         context,
                       ).copyWith(canvasColor: Colors.white),
                       child: DropdownButtonFormField<String>(
-                        value: _selectedPosition,
+                        initialValue: _selectedPosition,
                         decoration: const InputDecoration(
                           isDense: true,
                           contentPadding: EdgeInsets.zero,

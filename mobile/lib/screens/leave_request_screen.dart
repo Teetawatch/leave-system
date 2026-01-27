@@ -422,7 +422,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<String>(
           isExpanded: true,
-          value: _temporarySlot,
+          initialValue: _temporarySlot,
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
             color: Color(0xFF64748B),
@@ -566,7 +566,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButtonFormField<String>(
               isExpanded: true,
-              value: _selectedProvince,
+              initialValue: _selectedProvince,
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color: Color(0xFF64748B),
@@ -641,7 +641,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButtonFormField<LeaveType>(
               isExpanded: true,
-              value: _selectedType,
+              initialValue: _selectedType,
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color: Color(0xFF64748B),
