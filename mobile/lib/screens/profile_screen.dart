@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
-import 'dart:ui';
-import '../config/app_theme.dart';
-import '../providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../widgets/animated_background.dart';
+import '../providers/auth_provider.dart';
+import '../models/user_model.dart';
+import '../config/app_theme.dart';
 import 'settings/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,602 +13,421 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+class _ProfileScreenState extends State<ProfileScreen> {
+  final ImagePicker _picker = ImagePicker();
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    )..forward();
-  }
+  Future<void> _pickAvatar() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 1000,
+      );
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+      if (image != null) {
+        final success = await authProvider.updateProfile(
+          avatarPath: image.path,
+        );
+
+        if (success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('อัปโหลดรูปโปรไฟล์สำเร็จ'),
+              backgroundColor: AppTheme.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('เกิดข้อผิดพลาด: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
-    final ImagePicker _picker = ImagePicker();
-
-    Future<void> _pickSignature() async {
-      try {
-        final XFile? image = await _picker.pickImage(
-          source: ImageSource.gallery,
-          imageQuality: 80,
-          maxWidth: 1000,
-        );
-
-        if (image != null) {
-          final success = await authProvider.updateProfile(
-            signaturePath: image.path,
-          );
-
-          if (success && mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('อัปโหลดลายเซ็นสำเร็จ'),
-                backgroundColor: AppTheme.success,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            );
-          }
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('เกิดข้อผิดพลาด: $e'),
-              backgroundColor: AppTheme.error,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          );
-        }
-      }
-    }
-
-    Future<void> _pickAvatar() async {
-      try {
-        final XFile? image = await _picker.pickImage(
-          source: ImageSource.gallery,
-          imageQuality: 80,
-          maxWidth: 1000,
-        );
-
-        if (image != null) {
-          final success = await authProvider.updateProfile(
-            avatarPath: image.path,
-          );
-
-          if (success && mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('อัปโหลดรูปโปรไฟล์สำเร็จ'),
-                backgroundColor: AppTheme.success,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            );
-          }
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('เกิดข้อผิดพลาด: $e'),
-              backgroundColor: AppTheme.error,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          );
-        }
-      }
-    }
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          const Positioned.fill(child: AnimatedBackground()),
-
-          SafeArea(
-            child: FadeTransition(
-              opacity: _animationController,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  // Premium Header
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(28, 40, 28, 40),
-                      child: Column(
-                        children: [
-                          _buildAvatar(
-                            user,
-                            authProvider.isLoading ? null : _pickAvatar,
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            user?.fullName ?? 'ไม่พบข้อมูลชื่อ',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF1E293B),
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFF6366F1,
-                                  ).withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              user?.position ?? 'ไม่ระบุตำแหน่ง',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Info Section
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
-                    sliver: SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'ข้อมูลส่วนตัว',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildProfileInfoCard([
-                            _buildInfoItem(
-                              Icons.badge_rounded,
-                              'ตำแหน่งงาน',
-                              user?.position ?? '-',
-                              Colors.blue,
-                            ),
-                            _buildDivider(),
-                            _buildInfoItem(
-                              Icons.apartment_rounded,
-                              'แผนก / สังกัด',
-                              user?.department ?? '-',
-                              Colors.orange,
-                            ),
-                            _buildDivider(),
-                            _buildInfoItem(
-                              Icons.alternate_email_rounded,
-                              'อีเมลบุคลากร',
-                              user?.email ?? '-',
-                              Colors.teal,
-                            ),
-                          ]),
-                          const SizedBox(height: 32),
-
-                          const Text(
-                            'ลายเซ็นต์ดิจิทัล',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildProfileInfoCard([
-                            Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: double.infinity,
-                                    height: 150,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF8FAFC),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: const Color(0xFFE2E8F0),
-                                      ),
-                                    ),
-                                    child: user?.signatureUrl != null
-                                        ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                            child: Image.network(
-                                              user!.signatureUrl!,
-                                              fit: BoxFit.contain,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Center(
-                                                    child: Text(
-                                                      'ไม่สามารถโหลดรูปภาพได้',
-                                                      style: TextStyle(
-                                                        color: Color(
-                                                          0xFF94A3B8,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                            ),
-                                          )
-                                        : const Center(
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.history_edu_rounded,
-                                                  size: 48,
-                                                  color: Color(0xFFCBD5E1),
-                                                ),
-                                                SizedBox(height: 8),
-                                                Text(
-                                                  'ยังไม่มีลายเซ็นต์',
-                                                  style: TextStyle(
-                                                    color: Color(0xFF94A3B8),
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton.icon(
-                                      onPressed: authProvider.isLoading
-                                          ? null
-                                          : _pickSignature,
-                                      icon: authProvider.isLoading
-                                          ? const SizedBox(
-                                              width: 20,
-                                              height: 20,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Colors.white,
-                                              ),
-                                            )
-                                          : const Icon(
-                                              Icons.cloud_upload_rounded,
-                                            ),
-                                      label: Text(
-                                        authProvider.isLoading
-                                            ? 'กำลังอัปโหลด...'
-                                            : 'อัปโหลดรูปภาพลายเซ็นต์',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xFF0F172A,
-                                        ),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 16,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        elevation: 0,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ]),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Actions Section
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(28, 32, 28, 120),
-                    sliver: SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'ความปลอดภัย',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildProfileInfoCard([
-                            _buildActionItem(
-                              Icons.lock_outline_rounded,
-                              'เปลี่ยนรหัสผ่าน',
-                              () {
-                                HapticFeedback.lightImpact();
-                              },
-                            ),
-                            _buildDivider(),
-                            _buildActionItem(
-                              Icons.settings_suggest_rounded,
-                              'ตั้งค่าธีมและความปลอดภัย',
-                              () {
-                                HapticFeedback.lightImpact();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SettingsScreen(),
-                                  ),
-                                );
-                              },
-                            ),
-                            _buildDivider(),
-                            _buildActionItem(
-                              Icons.logout_rounded,
-                              'ออกจากระบบ',
-                              () {
-                                HapticFeedback.mediumImpact();
-                                authProvider.logout();
-                              },
-                              isDestructive: true,
-                            ),
-                          ]),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+      backgroundColor: Colors.grey[50], // Light background like design
+      appBar: AppBar(
+        title: const Text(
+          'โปรไฟล์',
+          style: TextStyle(
+            color: Color(0xFF1E293B),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                color: const Color(0xFF3B82F6), // Blue back button
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: TextButton(
+              onPressed: () {
+                // Edit profile action - for now just show snackbar or could trigger avatar picker
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('ฟีเจอร์นี้ยังไม่เปิดใช้งาน')),
+                );
+              },
+              child: const Text(
+                'แก้ไข',
+                style: TextStyle(
+                  color: Color(0xFF3B82F6),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildAvatar(dynamic user, VoidCallback? onEdit) {
-    return Stack(
-      children: [
-        Container(
-          width: 140,
-          height: 140,
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Container(
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            padding: const EdgeInsets.all(4),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(70),
-              child: user?.avatarUrl != null
-                  ? Image.network(
-                      user!.avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.person_rounded,
-                        size: 70,
-                        color: Color(0xFFCBD5E1),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              // 1. Profile Avatar Section
+              Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                          width: 1,
+                        ),
                       ),
-                    )
-                  : const Icon(
-                      Icons.person_rounded,
-                      size: 70,
-                      color: Color(0xFFCBD5E1),
+                      child: GestureDetector(
+                        onTap: authProvider.isLoading ? null : _pickAvatar,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey[200],
+                          backgroundImage: user?.avatarUrl != null
+                              ? NetworkImage(user!.avatarUrl!)
+                              : null,
+                          child: user?.avatarUrl == null
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.grey,
+                                )
+                              : null,
+                        ),
+                      ),
                     ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onEdit,
-              customBorder: const CircleBorder(),
-              child: Container(
-                padding: const EdgeInsets.all(10),
+                    // Online Status Dot
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF22C55E), // Green
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Name and Position
+              Text(
+                user?.fullName ?? 'ไม่ระบุชื่อ',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                user?.position ?? 'ไม่ระบุตำแหน่ง',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // 2. Personal Information Section
+              _buildSectionHeader('ข้อมูลส่วนตัว'),
+              Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withOpacity(0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.camera_alt_rounded,
-                  color: Color(0xFF6366F1),
-                  size: 20,
+                child: Column(
+                  children: [
+                    _buildListTile(
+                      icon: Icons.email_outlined,
+                      title: 'อีเมล',
+                      subtitle: user?.email ?? '-',
+                    ),
+                    _buildDivider(),
+                    _buildListTile(
+                      icon: Icons.phone_outlined,
+                      title: 'เบอร์โทรศัพท์',
+                      subtitle: user?.phoneNumber ?? '-',
+                    ),
+                  ],
                 ),
               ),
-            ),
+
+              const SizedBox(height: 24),
+
+              // 3. Work Details Section
+              _buildSectionHeader('ข้อมูลงาน'),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildListTile(
+                      icon: Icons.badge_outlined,
+                      title: 'รหัสพนักงาน',
+                      subtitle: '#${user?.id ?? '-'}',
+                    ),
+                    _buildDivider(),
+                    _buildListTile(
+                      icon: Icons.business_outlined,
+                      title: 'แผนก',
+                      subtitle: user?.department ?? '-',
+                    ),
+                    // _buildDivider(),
+                    // Note: Date Joined is not available in User model, hiding it for now as per instructions to use real data only.
+                    // _buildListTile(
+                    //   icon: Icons.calendar_today_outlined,
+                    //   title: 'วันที่เริ่มงาน',
+                    //   subtitle: 'March 12, 2019', // Placeholder
+                    // ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // 4. Account Settings Section
+              _buildSectionHeader('ตั้งค่าบัญชี'),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildListTile(
+                      icon: Icons.lock_outline_rounded,
+                      title: 'เปลี่ยนรหัสผ่าน',
+                      showArrow: true,
+                      onTap: () {
+                        // TODO: Navigate to change password screen
+                      },
+                    ),
+                    _buildDivider(),
+                    _buildListTile(
+                      icon: Icons.notifications_none_rounded,
+                      title: 'การแจ้งเตือน',
+                      showArrow: true,
+                      onTap: () {
+                        // TODO: Navigate to notifications settings
+                      },
+                    ),
+                    _buildDivider(),
+                    _buildListTile(
+                      icon: Icons.settings_outlined,
+                      title: 'ความปลอดภัยและอื่นๆ',
+                      showArrow: true,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // 5. Log Out Button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    authProvider.logout();
+                  },
+                  icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
+                  label: const Text(
+                    'ออกจากระบบ',
+                    style: TextStyle(
+                      color: Color(0xFFEF4444),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: BorderSide(
+                      color: const Color(0xFFEF4444).withOpacity(0.2),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildProfileInfoCard(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-        border: Border.all(color: Colors.white),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Column(children: children),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoItem(
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
+  Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, color: color, size: 24),
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF94A3B8),
+            letterSpacing: 1.0,
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Color(0xFF1E293B),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildActionItem(
-    IconData icon,
-    String label,
-    VoidCallback onTap, {
-    bool isDestructive = false,
+  Widget _buildListTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    bool showArrow = false,
+    VoidCallback? onTap,
   }) {
-    final color = isDestructive
-        ? const Color(0xFFEF4444)
-        : const Color(0xFF1E293B);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.05),
+                  color: const Color(
+                    0xFF3B82F6,
+                  ).withOpacity(0.1), // Light blue bg
                   shape: BoxShape.circle,
+                  // borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 22),
+                child: Icon(icon, color: const Color(0xFF3B82F6), size: 20),
               ),
-              const SizedBox(width: 20),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      showArrow ? title : title.toUpperCase(),
+                      style: showArrow
+                          ? const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E293B),
+                            )
+                          : const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF94A3B8),
+                            ),
+                    ),
+                    if (!showArrow && subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              const Spacer(),
-              Icon(Icons.chevron_right_rounded, color: color.withOpacity(0.3)),
+              if (showArrow ||
+                  (!showArrow &&
+                      subtitle != null)) // Design has arrows for info too?
+                // Image shows arrows for Email and Phone!
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Colors.grey[300],
+                ),
             ],
           ),
         ),
@@ -619,12 +436,12 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Divider(
-        height: 1,
-        color: const Color(0xFFE2E8F0).withOpacity(0.8),
-      ),
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Colors.grey[100],
+      indent: 16,
+      endIndent: 16,
     );
   }
 }

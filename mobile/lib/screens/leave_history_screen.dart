@@ -9,6 +9,9 @@ import '../providers/leave_provider.dart';
 import '../providers/guard_change_provider.dart';
 import '../services/pdf_service.dart';
 import '../widgets/animated_background.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'leave_request_screen.dart';
+import 'guard_change_request_screen.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -21,6 +24,8 @@ class _ActivityScreenState extends State<ActivityScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _animationController;
+  String _leaveFilter = 'all'; // all, pending, approved, rejected
+  String _guardFilter = 'all'; // all, pending, completed, cancelled
 
   @override
   void initState() {
@@ -33,6 +38,12 @@ class _ActivityScreenState extends State<ActivityScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshData();
+    });
+
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
     });
   }
 
@@ -135,12 +146,12 @@ class _ActivityScreenState extends State<ActivityScreen>
                     labelStyle: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
-                      fontFamily: 'NotoSansThai',
+                      fontFamily: 'Kanit',
                     ),
                     unselectedLabelStyle: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      fontFamily: 'NotoSansThai',
+                      fontFamily: 'Kanit',
                     ),
                     indicatorSize: TabBarIndicatorSize.tab,
                     dividerColor: Colors.transparent,
@@ -167,6 +178,27 @@ class _ActivityScreenState extends State<ActivityScreen>
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (_tabController.index == 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const LeaveRequestScreen()),
+            ).then((_) => _refreshData());
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const GuardChangeRequestScreen(),
+              ),
+            ).then((_) => _refreshData());
+          }
+        },
+        backgroundColor: const Color(0xFF3B82F6),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
     );
   }
 
@@ -175,32 +207,114 @@ class _ActivityScreenState extends State<ActivityScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.myRequests.isEmpty) {
-      return _buildEmptyState(
-        Icons.event_busy_rounded,
-        'ยังไม่มีประวัติการลา',
-        'เริ่มสร้างรายการลาแรกของคุณได้เลย',
-      );
-    }
+    // Filter requests
+    final filteredRequests = provider.myRequests.where((request) {
+      if (_leaveFilter == 'all') return true;
+      if (_leaveFilter == 'pending') {
+        return request.status == 'pending' ||
+            request.status == 'waiting_head' ||
+            request.status == 'waiting_hr' ||
+            request.status == 'waiting_director';
+      }
+      return request.status == _leaveFilter;
+    }).toList();
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        HapticFeedback.mediumImpact();
-        await provider.fetchMyRequests();
-      },
-      displacement: 20,
-      color: AppTheme.primary,
-      backgroundColor: Colors.white,
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
+    return Column(
+      children: [
+        // Filter Tabs
+        Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            children: [
+              _buildFilterChip('ทั้งหมด', 'all'),
+              const SizedBox(width: 8),
+              _buildFilterChip('รออนุมัติ', 'pending'),
+              const SizedBox(width: 8),
+              _buildFilterChip('อนุมัติแล้ว', 'approved'),
+              const SizedBox(width: 8),
+              _buildFilterChip('ปฏิเสธ', 'rejected'),
+            ],
+          ),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
-        itemCount: provider.myRequests.length,
-        itemBuilder: (context, index) {
-          final request = provider.myRequests[index];
-          return _buildAnimatedListItem(index, _buildLeaveCard(request));
-        },
+
+        // List
+        Expanded(
+          child: filteredRequests.isEmpty
+              ? _buildEmptyState(
+                  Icons.event_busy_rounded,
+                  'ไม่พบข้อมูลการลา',
+                  'ไม่มีรายการในช่วงที่เลือก',
+                )
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    HapticFeedback.mediumImpact();
+                    await provider.fetchMyRequests();
+                  },
+                  displacement: 20,
+                  color: AppTheme.primary,
+                  backgroundColor: Colors.white,
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
+                    itemCount: filteredRequests.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final request = filteredRequests[index];
+                      return _buildAnimatedListItem(
+                        index,
+                        _buildLeaveCard(request),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final isSelected = _leaveFilter == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _leaveFilter = value;
+        });
+        HapticFeedback.lightImpact();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.kanit(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected
+                  ? const Color(0xFF1E293B)
+                  : const Color(0xFF64748B),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -210,32 +324,119 @@ class _ActivityScreenState extends State<ActivityScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (provider.myRequests.isEmpty) {
-      return _buildEmptyState(
-        Icons.security_rounded,
-        'ยังไม่มีประวัติเปลี่ยนเวร',
-        'รายการขอเปลี่ยนเวรจะแสดงที่นี่',
-      );
-    }
+    final filteredRequests = provider.myRequests.where((request) {
+      if (_guardFilter == 'all') return true;
+      if (_guardFilter == 'pending') {
+        return [
+          'pending',
+          'approved',
+          'director_approved',
+        ].contains(request.status);
+      }
+      if (_guardFilter == 'completed')
+        return request.status == 'fully_approved';
+      if (_guardFilter == 'cancelled') {
+        return ['rejected', 'cancelled'].contains(request.status);
+      }
+      return false;
+    }).toList();
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        HapticFeedback.mediumImpact();
-        await provider.fetchMyRequests();
-      },
-      displacement: 20,
-      color: AppTheme.primary,
-      backgroundColor: Colors.white,
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
+    return Column(
+      children: [
+        // Filter Tabs
+        Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            children: [
+              _buildGuardFilterChip('ทั้งหมด', 'all'),
+              const SizedBox(width: 8),
+              _buildGuardFilterChip('รออนุมัติ', 'pending'),
+              const SizedBox(width: 8),
+              _buildGuardFilterChip('อนุมัติแล้ว', 'completed'),
+              const SizedBox(width: 8),
+              _buildGuardFilterChip('ยกเลิก', 'cancelled'),
+            ],
+          ),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
-        itemCount: provider.myRequests.length,
-        itemBuilder: (context, index) {
-          final request = provider.myRequests[index];
-          return _buildAnimatedListItem(index, _buildGuardCard(request));
-        },
+
+        // List
+        Expanded(
+          child: filteredRequests.isEmpty
+              ? _buildEmptyState(
+                  Icons.security_rounded,
+                  'ไม่พบประวัติเปลี่ยนเวร',
+                  'ไม่มีรายการในช่วงที่เลือก',
+                )
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    HapticFeedback.mediumImpact();
+                    await provider.fetchMyRequests();
+                  },
+                  displacement: 20,
+                  color: AppTheme.primary,
+                  backgroundColor: Colors.white,
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
+                    itemCount: filteredRequests.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final request = filteredRequests[index];
+                      return _buildAnimatedListItem(
+                        index,
+                        _buildGuardCard(request),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGuardFilterChip(String label, String value) {
+    final isSelected = _guardFilter == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _guardFilter = value;
+        });
+        HapticFeedback.lightImpact();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.kanit(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected
+                  ? const Color(0xFF1E293B)
+                  : const Color(0xFF64748B),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -296,294 +497,251 @@ class _ActivityScreenState extends State<ActivityScreen>
 
   Widget _buildLeaveCard(LeaveRequest request) {
     final statusColor = _getLeaveStatusColor(request.status);
-    final statusGradient = _getLeaveStatusGradient(request.status);
+    final statusIcon = _getLeaveStatusIcon(request.status);
+    final leaveIcon = _getLeaveTypeIcon(request.leaveType.slug);
+    final leaveColor = _getLeaveTypeColor(request.leaveType.slug);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.white),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: _getLeaveTypeGradient(request.leaveType.slug),
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _getLeaveTypeGradient(
-                              request.leaveType.slug,
-                            )[0].withOpacity(0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _getLeaveTypeIcon(request.leaveType.slug),
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            request.leaveType.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
-                              color: Color(0xFF1E293B),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            request.formattedCreatedAt,
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: statusColor.withOpacity(0.2)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _getLeaveStatusText(request.status),
-                            style: TextStyle(
-                              color: statusColor,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFF1F5F9)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'ระยะเวลาลา',
-                              style: TextStyle(
-                                color: Color(0xFF64748B),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${request.formattedStartDate} - ${request.formattedEndDate}',
-                              style: const TextStyle(
-                                color: Color(0xFF334155),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 32,
-                        color: const Color(0xFFE2E8F0),
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text(
-                            'จำนวนวัน',
-                            style: TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${request.totalDays} วัน',
-                            style: const TextStyle(
-                              color: Color(0xFF6366F1),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (request.status == 'approved')
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton.icon(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        _downloadLeavePdf(request);
-                      },
-                      icon: const Icon(Icons.download_rounded, size: 18),
-                      label: const Text('ดาวน์โหลด PDF'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF6366F1),
-                        backgroundColor: const Color(
-                          0xFF6366F1,
-                        ).withOpacity(0.1),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGuardCard(GuardChangeRequest request) {
-    final statusColor = _getGuardStatusColor(request.status);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-        border: Border.all(color: Colors.white),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // Top Row: Icon + Title + Status
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Icon
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF3B82F6).withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    color: leaveColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.shield_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: Icon(leaveIcon, color: leaveColor, size: 24),
                 ),
                 const SizedBox(width: 16),
+
+                // Title & Duration
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        request.dutyPositionThai,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
+                        request.leaveType.name,
+                        style: GoogleFonts.kanit(
                           fontSize: 16,
-                          color: Color(0xFF1E293B),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1E293B),
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today_rounded,
-                            size: 12,
-                            color: const Color(0xFF94A3B8),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            request.formattedDutyDate,
-                            style: const TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        request.reason.isNotEmpty
+                            ? request.reason
+                            : 'ไม่มีเหตุผลระบุ',
+                        style: GoogleFonts.sarabun(
+                          fontSize: 13,
+                          color: const Color(0xFF94A3B8),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
+
+                // Status Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, size: 14, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        _getLeaveStatusSimpleText(request.status).toUpperCase(),
+                        style: GoogleFonts.kanit(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            const SizedBox(height: 16),
+
+            // Bottom Row: Date & Days
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 16,
+                  color: const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _formatDateRange(request.startDate, request.endDate),
+                  style: GoogleFonts.sarabun(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF475569),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${request.totalDays} วัน',
+                  style: GoogleFonts.kanit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+            if (request.status == 'approved') ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _downloadLeavePdf(request.id);
+                },
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(20),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.download_rounded,
+                        size: 18,
+                        color: Color(0xFF3B82F6),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'ดาวน์โหลดใบลา',
+                        style: GoogleFonts.kanit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF3B82F6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDateRange(DateTime start, DateTime end) {
+    final startStr = "${_mToMonth(start.month)} ${start.day}"; // e.g. Oct 24
+    if (start.year == end.year &&
+        start.month == end.month &&
+        start.day == end.day) {
+      return startStr;
+    }
+    final endStr = "${_mToMonth(end.month)} ${end.day}";
+    return "$startStr - $endStr";
+  }
+
+  String _mToMonth(int m) {
+    const months = [
+      "ม.ค.",
+      "ก.พ.",
+      "มี.ค.",
+      "เม.ย.",
+      "พ.ค.",
+      "มิ.ย.",
+      "ก.ค.",
+      "ส.ค.",
+      "ก.ย.",
+      "ต.ค.",
+      "พ.ย.",
+      "ธ.ค.",
+    ];
+    return months[m - 1];
+  }
+
+  Widget _buildGuardCard(GuardChangeRequest request) {
+    final statusColor = _getGuardStatusColor(request.status);
+    final statusLabel = _getGuardStatusText(request.status);
+    final isCompleted = request.status == 'fully_approved';
+    final isCancelled = ['rejected', 'cancelled'].contains(request.status);
+
+    DateTime? createdDate;
+    try {
+      createdDate = DateTime.parse(request.createdAt);
+    } catch (_) {}
+
+    final dateHeader = createdDate != null
+        ? "${createdDate.day} ${_mToMonth(createdDate.month)}".toUpperCase()
+        : "";
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header: Date & Status
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Row(
+              children: [
+                Text(
+                  (isCompleted
+                          ? 'เสร็จสิ้น $dateHeader'
+                          : isCancelled
+                          ? 'ยกเลิก $dateHeader'
+                          : 'ยื่นคำขอ $dateHeader')
+                      .toUpperCase(),
+                  style: GoogleFonts.kanit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF94A3B8),
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -592,99 +750,262 @@ class _ActivityScreenState extends State<ActivityScreen>
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withOpacity(0.2)),
                   ),
-                  child: Text(
-                    _getGuardStatusText(request.status),
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        statusLabel,
+                        style: GoogleFonts.kanit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFF1F5F9)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ผู้มาเปลี่ยนแทน',
-                          style: TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+          ),
+
+          const SizedBox(height: 20),
+
+          // Timeline Content
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Stack(
+              children: [
+                // Connector Line (Background)
+                Positioned(
+                  left: 23, // Center of width 48 (24) - half line width (1)
+                  top: 36, // Center of top item (72/2)
+                  bottom: 36, // Center of bottom item (72/2)
+                  child: Container(width: 2, color: const Color(0xFFE2E8F0)),
+                ),
+
+                // Content
+                Column(
+                  children: [
+                    // Top Item
+                    SizedBox(
+                      height: 72,
+                      child: Row(
+                        children: [
+                          // Avatar
+                          SizedBox(
+                            width: 48,
+                            child: Center(
+                              child: _buildAvatar(request.user?.avatarUrl),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Text
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'MY SHIFT',
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF94A3B8),
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                Text(
+                                  request.dutyPositionThai,
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  request.formattedDutyDate,
+                                  style: GoogleFonts.sarabun(
+                                    fontSize: 13,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Spacer / Icon
+                    Container(
+                      height: 32, // Gap between items
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: 48,
+                        child: Center(
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.03),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.arrow_downward_rounded,
+                              size: 14,
+                              color: Color(0xFF64748B),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Color(0xFFE2E8F0),
-                              child: Icon(
-                                Icons.person,
-                                size: 14,
-                                color: Color(0xFF94A3B8),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                request.replacementUser?.fullName ?? '-',
-                                style: const TextStyle(
-                                  color: Color(0xFF334155),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+
+                    // Bottom Item
+                    SizedBox(
+                      height: 72,
+                      child: Row(
+                        children: [
+                          // Avatar
+                          SizedBox(
+                            width: 48,
+                            child: Center(
+                              child: _buildAvatar(
+                                request.replacementUser?.avatarUrl,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Text
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  (request.replacementUser?.fullName ?? '-')
+                                      .toUpperCase(),
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF94A3B8),
+                                    letterSpacing: 0.5,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  request.dutyPositionThai,
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  request.formattedDutyDate,
+                                  style: GoogleFonts.sarabun(
+                                    fontSize: 13,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (isCompleted) ...[
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            _buildDownloadButton(request.id),
+          ],
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar(String? url) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        image: url != null
+            ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover)
+            : null,
+      ),
+      child: url == null
+          ? const Icon(Icons.person_rounded, color: Color(0xFF94A3B8))
+          : null,
+    );
+  }
+
+  Widget _buildDownloadButton(int id) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _downloadGuardPdf(id);
+      },
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.download_rounded,
+              size: 18,
+              color: Color(0xFF3B82F6),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'ดาวน์โหลดรายงาน',
+              style: GoogleFonts.kanit(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF3B82F6),
               ),
             ),
-            if (request.status == 'fully_approved') ...[
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    _downloadGuardPdf(request.id);
-                  },
-                  icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const Text('ดาวน์โหลด PDF'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF3B82F6),
-                    backgroundColor: const Color(0xFF3B82F6).withOpacity(0.1),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -703,18 +1024,35 @@ class _ActivityScreenState extends State<ActivityScreen>
     }
   }
 
-  List<Color> _getLeaveStatusGradient(String status) {
-    switch (status) {
-      case 'approved':
-        return [const Color(0xFF10B981), const Color(0xFF34D399)];
-      case 'rejected':
-        return [const Color(0xFFEF4444), const Color(0xFFF97316)];
+  Color _getLeaveTypeColor(String slug) {
+    switch (slug) {
+      case 'vacation':
+        return const Color(0xFF3B82F6); // Blue
+      case 'sick':
+        return const Color(0xFFF97316); // Orange
+      case 'personal':
+        return const Color(0xFF8B5CF6); // Purple
       default:
-        return [const Color(0xFFF59E0B), const Color(0xFFFBBF24)];
+        return const Color(0xFF64748B); // Slate
     }
   }
 
-  String _getLeaveStatusText(String status) {
+  IconData _getLeaveTypeIcon(String slug) {
+    switch (slug) {
+      case 'vacation':
+        return Icons
+            .umbrella_rounded; // Assuming this fits "Annual Leave" better
+      case 'sick':
+        return Icons.sick_rounded;
+      case 'personal':
+        return Icons.person_rounded;
+      default:
+        return Icons.work_off_rounded;
+    }
+  }
+
+  // Simplified status text for the badge
+  String _getLeaveStatusSimpleText(String status) {
     switch (status) {
       case 'approved':
         return 'อนุมัติ';
@@ -725,29 +1063,14 @@ class _ActivityScreenState extends State<ActivityScreen>
     }
   }
 
-  List<Color> _getLeaveTypeGradient(String slug) {
-    switch (slug) {
-      case 'vacation':
-        return [const Color(0xFF6366F1), const Color(0xFF8B5CF6)];
-      case 'sick':
-        return [const Color(0xFFEF4444), const Color(0xFFF97316)];
-      case 'personal':
-        return [const Color(0xFF10B981), const Color(0xFF34D399)];
+  IconData _getLeaveStatusIcon(String status) {
+    switch (status) {
+      case 'approved':
+        return Icons.check_circle_rounded;
+      case 'rejected':
+        return Icons.cancel_rounded;
       default:
-        return [const Color(0xFFF59E0B), const Color(0xFFFBBF24)];
-    }
-  }
-
-  IconData _getLeaveTypeIcon(String slug) {
-    switch (slug) {
-      case 'vacation':
-        return Icons.beach_access_rounded;
-      case 'sick':
-        return Icons.medication_rounded;
-      case 'personal':
-        return Icons.person_rounded;
-      default:
-        return Icons.business_center_rounded;
+        return Icons.access_time_filled_rounded;
     }
   }
 
@@ -770,12 +1093,65 @@ class _ActivityScreenState extends State<ActivityScreen>
     return 'รออนุมัติ';
   }
 
-  Future<void> _downloadLeavePdf(LeaveRequest request) async {
-    final fileName = "Leave_${request.leaveType.slug}_${request.id}";
-    await PdfService.downloadAndOpenPdf(request.id, fileName);
+  Future<void> _downloadGuardPdf(int id) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'กำลังดาวน์โหลดรายงาน PDF...',
+            style: TextStyle(fontFamily: 'NotoSansThai'),
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+      await PdfService.downloadAndOpenGuardChangePdf(id, 'GuardChange_$id');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('ไม่สามารถเปิดไฟล์ PDF ได้'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    }
   }
 
-  Future<void> _downloadGuardPdf(int id) async {
-    await PdfService.downloadAndOpenGuardChangePdf(id, 'GuardChange_$id');
+  Future<void> _downloadLeavePdf(int id) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'กำลังดาวน์โหลดใบลา PDF...',
+            style: TextStyle(fontFamily: 'NotoSansThai'),
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+      await PdfService.downloadAndOpenPdf(id, 'LeaveRequest_$id');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('ไม่สามารถเปิดไฟล์ PDF ได้'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    }
   }
 }

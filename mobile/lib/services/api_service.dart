@@ -64,6 +64,10 @@ class ApiService {
     return await _dio.get('/me');
   }
 
+  Future<Response> getAllUsers() async {
+    return await _dio.get('/users');
+  }
+
   // --- Leave Features ---
 
   Future<Response> getLeaveTypes() async {
@@ -178,7 +182,7 @@ class ApiService {
 
   Future<Response> getLatestNews() async {
     return await Dio().get(
-      'https://nass.ac.th/wp-json/wp/v2/posts?per_page=5&_embed&categories=5',
+      'https://nass.ac.th/wp-json/wp/v2/posts?per_page=6&_embed&categories=5',
     );
   }
 

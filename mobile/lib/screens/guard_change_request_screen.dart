@@ -5,8 +5,9 @@ import 'dart:ui';
 import '../config/app_theme.dart';
 import '../providers/guard_change_provider.dart';
 import '../services/api_service.dart';
-import '../widgets/animated_background.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'guard_change_success_screen.dart';
 
 class GuardChangeRequestScreen extends StatefulWidget {
   const GuardChangeRequestScreen({super.key});
@@ -26,8 +27,10 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
   int? _selectedReplacementId;
   DateTime? _selectedDate;
   final TextEditingController _remarksController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   List<dynamic> _users = [];
+  List<dynamic> _filteredUsers = []; // For search functionality
   bool _isLoadingUsers = true;
 
   final Map<String, String> _positions = {
@@ -41,16 +44,29 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 800),
     )..forward();
     _fetchUsers();
+    _searchController.addListener(_filterUsers);
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     _remarksController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  void _filterUsers() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredUsers = _users.where((user) {
+        final name = (user['name'] ?? '').toString().toLowerCase();
+        final rank = (user['rank'] ?? '').toString().toLowerCase();
+        return name.contains(query) || rank.contains(query);
+      }).toList();
+    });
   }
 
   Future<void> _fetchUsers() async {
@@ -59,6 +75,7 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
       if (response.data['success']) {
         setState(() {
           _users = response.data['data'];
+          _filteredUsers = _users;
           _isLoadingUsers = false;
         });
       }
@@ -72,307 +89,310 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
   Widget build(BuildContext context) {
     final provider = Provider.of<GuardChangeProvider>(context);
 
+    // Using AppTheme colors directly for consistency with the design request
+    const kBlueAccent = Color(0xFF3B82F6); // Bright blue
+    const kBgColor = Color(0xFFF8FAFC);
+    const kBlueDark = Color(0xFF1E293B);
+
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: kBgColor,
       appBar: AppBar(
         title: const Text(
           'ขอเปลี่ยนเวรยาม',
           style: TextStyle(
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF1E293B),
-            letterSpacing: -0.5,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            color: kBlueDark,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: kBlueDark),
           onPressed: () => Navigator.pop(context),
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-              color: Color(0xFF1E293B),
-            ),
-          ),
         ),
       ),
-      body: Stack(
-        children: [
-          const Positioned.fill(child: AnimatedBackground()),
-
-          SafeArea(
-            child: _isLoadingUsers
-                ? const Center(child: CircularProgressIndicator())
-                : FadeTransition(
-                    opacity: _animationController,
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 20,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildHeaderSection(),
-                            const SizedBox(height: 24),
-
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
-                                borderRadius: BorderRadius.circular(32),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFF6366F1,
-                                    ).withOpacity(0.1),
-                                    blurRadius: 30,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                                border: Border.all(color: Colors.white),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(32),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 10,
-                                    sigmaY: 10,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(24),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _buildSectionLabel(
-                                          'ตำแหน่งเวรยาม',
-                                          Icons.security_rounded,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        _buildPositionSelector(),
-                                        const SizedBox(height: 24),
-
-                                        _buildSectionLabel(
-                                          'วันที่ปฏิบัติเวร',
-                                          Icons.calendar_month_rounded,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        _buildDatePicker(),
-                                        const SizedBox(height: 24),
-
-                                        _buildSectionLabel(
-                                          'ผู้มาเปลี่ยนแทน',
-                                          Icons.person_search_rounded,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        _buildReplacementSelector(),
-                                        const SizedBox(height: 24),
-
-                                        _buildSectionLabel(
-                                          'หมายเหตุเพิ่มเติม',
-                                          Icons.notes_rounded,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        _buildRemarksField(),
-                                      ],
-                                    ),
-                                  ),
+      body: SafeArea(
+        child: _isLoadingUsers
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Expanded(
+                    child: FadeTransition(
+                      opacity: _animationController,
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(20),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // SECTION 1: SELECT YOUR SHIFT (Card Style)
+                              Text(
+                                'ข้อมูลเวรยาม',
+                                style: GoogleFonts.kanit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                            ),
+                              const SizedBox(height: 12),
+                              _buildShiftSelectionCard(kBlueAccent),
 
-                            const SizedBox(height: 32),
-                            _buildSubmitButton(provider),
-                            const SizedBox(height: 40),
-                          ],
+                              const SizedBox(height: 24),
+
+                              // SECTION 2: SELECT COLLEAGUE
+                              Text(
+                                'เลือกผู้มาเปลี่ยนแทน',
+                                style: GoogleFonts.kanit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSearchField(),
+                              const SizedBox(height: 12),
+                              _buildColleagueList(kBlueAccent),
+
+                              const SizedBox(height: 24),
+
+                              // SECTION 3: REASON
+                              Text(
+                                'เหตุผลการขอเปลี่ยน',
+                                style: GoogleFonts.kanit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildReasonField(),
+                              const SizedBox(
+                                height: 80,
+                              ), // Space for bottom button
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
+                ],
+              ),
+      ),
+      bottomSheet: Container(
+        color: kBgColor,
+        padding: const EdgeInsets.all(20),
+        child: _buildSubmitButton(provider, kBlueAccent),
+      ),
+    );
+  }
+
+  Widget _buildShiftSelectionCard(Color accentColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHeaderSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'ระบุรายละเอียด',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF1E293B),
-            letterSpacing: -1,
-            height: 1.2,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'กรุณาตรวจสอบผู้มาเปลี่ยนแทนว่าสามารถปฏิบัติภารกิจได้',
-          style: TextStyle(
-            color: const Color(0xFF64748B).withOpacity(0.8),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            height: 1.5,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionLabel(String text, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, size: 18, color: const Color(0xFF6366F1)),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF1E293B),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPositionSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButtonFormField<String>(
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            filled: false,
-            contentPadding: EdgeInsets.zero,
-          ),
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: Color(0xFF64748B),
-          ),
-          value: _selectedPosition,
-          items: _positions.entries
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e.key,
-                  child: Text(
-                    e.value,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF334155),
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: (val) {
-            HapticFeedback.lightImpact();
-            setState(() => _selectedPosition = val);
-          },
-          validator: (val) => val == null ? 'กรุณาเลือกตำแหน่ง' : null,
-          hint: const Text(
-            'เลือกตำแหน่ง',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: Color(0xFF94A3B8),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return GestureDetector(
-      onTap: () async {
-        HapticFeedback.lightImpact();
-        final date = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(const Duration(days: 365)),
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: const ColorScheme.light(
-                  primary: Color(0xFF6366F1),
-                  onPrimary: Colors.white,
-                  onSurface: Color(0xFF1E293B),
-                ),
-                textButtonTheme: TextButtonThemeData(
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF6366F1),
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-              child: child!,
-            );
-          },
-        );
-        if (date != null) setState(() => _selectedDate = date);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: _selectedDate != null
-              ? const Color(0xFF6366F1).withOpacity(0.05)
-              : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: _selectedDate != null
-                ? const Color(0xFF6366F1).withOpacity(0.3)
-                : const Color(0xFFE2E8F0),
-          ),
-        ),
+      child: IntrinsicHeight(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              _selectedDate == null
-                  ? 'เลือกวันที่'
-                  : DateFormat('dd MMM yyyy').format(_selectedDate!),
-              style: TextStyle(
-                color: _selectedDate == null
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF1E293B),
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
+            // Left Blue Accent Line
+            Container(
+              width: 6,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                ),
               ),
             ),
-            Icon(
-              Icons.calendar_today_rounded,
-              size: 20,
-              color: _selectedDate != null
-                  ? const Color(0xFF6366F1)
-                  : const Color(0xFF94A3B8),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'เลือกวัน และหน้าที่',
+                          style: TextStyle(
+                            color: accentColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.access_time_filled_rounded,
+                            color: accentColor,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Date Picker Integration
+                    InkWell(
+                      onTap: _pickDate,
+                      child: Row(
+                        children: [
+                          Text(
+                            _selectedDate == null
+                                ? 'เลือกวันที่'
+                                : DateFormat(
+                                    'MMM dd, yyyy',
+                                  ).format(_selectedDate!),
+                            style: GoogleFonts.kanit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E293B),
+                            ),
+                          ),
+                          if (_selectedDate != null)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                '• 08:00 - 16:00', // Hardcoded time as per example, or generic
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Colors.grey[400],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Position Dropdown Integration
+                    Theme(
+                      data: Theme.of(
+                        context,
+                      ).copyWith(canvasColor: Colors.white),
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedPosition,
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          filled: false,
+                          prefixIcon: Icon(
+                            Icons.location_on,
+                            size: 18,
+                            color: Color(0xFF64748B),
+                          ),
+                          prefixIconConstraints: BoxConstraints(
+                            minWidth: 24,
+                            minHeight: 0,
+                          ),
+                        ),
+                        hint: Text(
+                          'เลือกตำแหน่ง',
+                          style: GoogleFonts.kanit(
+                            fontSize: 14,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                        style: GoogleFonts.kanit(
+                          fontSize: 14,
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        icon: Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 16,
+                          color: Colors.grey[400],
+                        ),
+                        items: _positions.entries.map((e) {
+                          return DropdownMenuItem(
+                            value: e.key,
+                            child: Text(e.value),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() => _selectedPosition = val);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 14,
+                              backgroundColor: Colors.grey[200],
+                              child: const Icon(
+                                Icons.person,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            CircleAvatar(
+                              radius: 14,
+                              backgroundColor: const Color(0xFFDBEAFE),
+                              child: Text(
+                                "You",
+                                style: GoogleFonts.kanit(
+                                  fontSize: 10,
+                                  color: accentColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          'REF: #SHIFT-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
+                          style: GoogleFonts.roboto(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -380,99 +400,189 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
     );
   }
 
-  Widget _buildReplacementSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
+        hintText: 'ค้นหาชื่อ หรือ ยศ...',
+        hintStyle: GoogleFonts.kanit(color: const Color(0xFF94A3B8)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButtonFormField<int>(
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            filled: false,
-            contentPadding: EdgeInsets.zero,
-          ),
-          icon: const Icon(Icons.search_rounded, color: Color(0xFF64748B)),
-          value: _selectedReplacementId,
-          items: _users
-              .map(
-                (u) => DropdownMenuItem<int>(
-                  value: u['id'],
-                  child: Text(
-                    '${u['rank'] ?? ''} ${u['name']}'.trim(),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF334155),
-                    ),
+    );
+  }
+
+  Widget _buildColleagueList(Color accentColor) {
+    if (_filteredUsers.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.person_search_outlined,
+              size: 48,
+              color: Colors.grey[300],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'ไม่พบรายชื่อ',
+              style: GoogleFonts.kanit(color: Colors.grey[400]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _filteredUsers.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final user = _filteredUsers[index];
+        final isSelected = _selectedReplacementId == user['id'];
+        final rank = user['rank'] ?? '';
+        final name = user['name'] ?? '';
+        // Mocking available status since we don't have it in the API response yet
+        // In a real app, you'd check scheduling
+        final bool isAvailable = true;
+
+        return GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            setState(() => _selectedReplacementId = user['id']);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected ? accentColor : Colors.transparent,
+                width: 2,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: accentColor.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: isSelected
+                      ? accentColor.withOpacity(0.1)
+                      : Colors.grey[100],
+                  backgroundImage: user['avatar_url'] != null
+                      ? NetworkImage(user['avatar_url'])
+                      : null,
+                  child: user['avatar_url'] == null
+                      ? Text(
+                          name.isNotEmpty ? name[0] : '?',
+                          style: GoogleFonts.kanit(
+                            color: isSelected ? accentColor : Colors.grey,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$rank $name',
+                        style: GoogleFonts.kanit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      Text(
+                        isAvailable ? 'พร้อมปฏิบัติงาน' : 'ติดภารกิจ',
+                        style: GoogleFonts.kanit(
+                          fontSize: 13,
+                          color: isAvailable
+                              ? Colors.grey[600]
+                              : Colors.red[300],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              )
-              .toList(),
-          onChanged: (val) {
-            HapticFeedback.lightImpact();
-            setState(() => _selectedReplacementId = val);
-          },
-          validator: (val) => val == null ? 'กรุณาเลือกผู้มาเปลี่ยนแทน' : null,
-          hint: const Text(
-            'ค้นหาเจ้าหน้าที่',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: Color(0xFF94A3B8),
+                if (isSelected)
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: accentColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  )
+                else
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey[300]!),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
             ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReasonField() {
+    return TextFormField(
+      controller: _remarksController,
+      maxLines: 4,
+      style: GoogleFonts.kanit(),
+      decoration: InputDecoration(
+        hintText: 'อธิบายเหตุผลที่ต้องการขอเปลี่ยน (ไม่บังคับ)...',
+        hintStyle: GoogleFonts.kanit(color: const Color(0xFF94A3B8)),
+        contentPadding: const EdgeInsets.all(20),
       ),
     );
   }
 
-  Widget _buildRemarksField() {
+  Widget _buildSubmitButton(GuardChangeProvider provider, Color accentColor) {
     return Container(
+      width: double.infinity,
+      height: 56,
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: TextFormField(
-        controller: _remarksController,
-        maxLines: 3,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF334155),
-          fontSize: 14,
-        ),
-        decoration: const InputDecoration(
-          hintText: 'เหตุผลการขอเปลี่ยน หรือข้อความเพิ่มเติม...',
-          hintStyle: TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.all(16),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton(GuardChangeProvider provider) {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [accentColor, const Color(0xFF2563EB)],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: accentColor.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -480,10 +590,9 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
         onPressed: provider.isLoading ? null : _submit,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
         child: provider.isLoading
@@ -495,33 +604,54 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
                   strokeWidth: 2,
                 ),
               )
-            : const Row(
+            : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'ส่งคำขอเปลี่ยนยาม',
-                    style: TextStyle(
+                    style: GoogleFonts.kanit(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Icon(Icons.swap_horiz_rounded, size: 24),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.send_rounded, color: Colors.white, size: 20),
                 ],
               ),
       ),
     );
   }
 
+  Future<void> _pickDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: AppTheme.lightTheme.copyWith(
+            colorScheme: const ColorScheme.light(primary: Color(0xFF3B82F6)),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (date != null) setState(() => _selectedDate = date);
+  }
+
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) {
-      HapticFeedback.heavyImpact();
+    if (_selectedPosition == null) {
+      _showSnackBar('กรุณาเลือกตำแหน่ง', AppTheme.error);
       return;
     }
     if (_selectedDate == null) {
-      HapticFeedback.heavyImpact();
       _showSnackBar('กรุณาเลือกวันที่', AppTheme.error);
+      return;
+    }
+    if (_selectedReplacementId == null) {
+      _showSnackBar('กรุณาเลือกผู้มาเปลี่ยนแทน', AppTheme.error);
       return;
     }
 
@@ -535,10 +665,27 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
     });
 
     if (success && mounted) {
-      _showSnackBar('ส่งคำขอเปลี่ยนยามเรียบร้อยแล้ว', AppTheme.success);
-      Navigator.pop(context);
+      // Find replacement user details
+      final user = _users.firstWhere(
+        (u) => u['id'] == _selectedReplacementId,
+        orElse: () => {'name': 'Unknown', 'rank': ''},
+      );
+      final replacementName = '${user['rank'] ?? ''} ${user['name'] ?? ''}';
+
+      // Get position name
+      final positionName = _positions[_selectedPosition] ?? _selectedPosition!;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => GuardChangeSuccessScreen(
+            dutyDate: _selectedDate!,
+            position: positionName,
+            replacementName: replacementName,
+          ),
+        ),
+      );
     } else if (mounted) {
-      _showSnackBar('เกิดข้อผิดพลาดในการส่งคำขอ', AppTheme.error);
+      _showSnackBar('เกิดข้อผิดพลาด', AppTheme.error);
     }
   }
 
@@ -548,26 +695,17 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
         content: Row(
           children: [
             Icon(
-              color == AppTheme.success
-                  ? Icons.check_circle_rounded
-                  : Icons.error_rounded,
+              color == AppTheme.success ? Icons.check_circle : Icons.error,
               color: Colors.white,
             ),
             const SizedBox(width: 12),
-            Text(
-              message,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontFamily: 'NotoSansThai',
-              ),
-            ),
+            Text(message, style: GoogleFonts.kanit()),
           ],
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(20),
       ),
     );
   }

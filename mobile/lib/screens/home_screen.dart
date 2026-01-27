@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/leave_provider.dart';
@@ -93,68 +92,79 @@ class _HomeScreenState extends State<HomeScreen>
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // 1. Header (Avatar + Search/Notif)
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(
-                    24,
-                    MediaQuery.of(context).padding.top + 24,
-                    24,
-                    24,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Left: Avatar + Heading
-                        Row(
-                          children: [
-                            _buildAvatar(user),
-                            const SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'สวัสดีตอนเย็น',
-                                      style: GoogleFonts.kanit(
-                                        fontSize: 16,
-                                        color: AppTheme.textSub,
-                                        fontWeight: FontWeight.w500,
+                SliverAppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  pinned: false,
+                  floating: true,
+                  snap: true,
+                  stretch: true,
+                  expandedHeight: 140,
+                  collapsedHeight: 140,
+                  automaticallyImplyLeading: false,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        24,
+                        MediaQuery.of(context).padding.top + 24,
+                        24,
+                        24,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Left: Avatar + Heading
+                          Row(
+                            children: [
+                              _buildAvatar(user),
+                              const SizedBox(width: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'สวัสดีตอนเย็น',
+                                        style: GoogleFonts.kanit(
+                                          fontSize: 16,
+                                          color: AppTheme.textSub,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Text(
-                                      '🌙',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.5,
-                                  child: Text(
-                                    user?.fullName ?? 'พนักงาน',
-                                    style: GoogleFonts.kanit(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark
-                                          ? Colors.white
-                                          : AppTheme.textMain,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                      const SizedBox(width: 4),
+                                      const Text(
+                                        '🌙',
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                                  const SizedBox(height: 2),
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.5,
+                                    child: Text(
+                                      user?.fullName ?? 'พนักงาน',
+                                      style: GoogleFonts.kanit(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark
+                                            ? Colors.white
+                                            : AppTheme.textMain,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
 
-                        // Right: Notification Bell
-                        _buildNotificationBell(context),
-                      ],
+                          // Right: Notification Bell
+                          _buildNotificationBell(context),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -605,42 +615,55 @@ class _HomeScreenState extends State<HomeScreen>
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.campaign_rounded,
-                color: AppTheme.primary,
-                size: 20,
-              ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.campaign_rounded,
+                    color: AppTheme.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'ข่าวสารประชาสัมพันธ์',
+                  style: GoogleFonts.kanit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : AppTheme.textMain,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Text(
-              'ข่าวสารประชาสัมพันธ์',
-              style: GoogleFonts.kanit(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : AppTheme.textMain,
-              ),
-            ),
+            // Optional: 'View All' button if needed
+            // TextButton(onPressed: (){}, child: Text('ดูทั้งหมด'))
           ],
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 200, // Adjusted height
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: newsProvider.newsList.length,
-            itemBuilder: (context, index) {
-              final news = newsProvider.newsList[index];
-              return _buildNewsCard(context, news);
-            },
+        GridView.builder(
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 0.75, // Taller card to fit content
           ),
+          itemCount: newsProvider.newsList.length > 6
+              ? 6
+              : newsProvider.newsList.length, // Limit to 6
+          itemBuilder: (context, index) {
+            final news = newsProvider.newsList[index];
+            return _buildNewsCard(context, news);
+          },
         ),
       ],
     );
@@ -658,11 +681,7 @@ class _HomeScreenState extends State<HomeScreen>
         }
       },
       child: Container(
-        width: 280,
-        margin: const EdgeInsets.only(
-          right: 16,
-          bottom: 8,
-        ), // Added bottom margin for shadow
+        // Remove fixed width/margin as GridView handles it
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -676,111 +695,126 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
-          child: Stack(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image placeholder or gradient content
-              Container(
-                height: 100,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primary.withOpacity(0.8),
-                      AppTheme.primaryDark,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.article_rounded,
-                    color: Colors.white.withOpacity(0.5),
-                    size: 40,
-                  ),
+              // Image Section
+              Expanded(
+                flex: 5,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.primary.withOpacity(0.8),
+                            AppTheme.primaryDark,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.article_rounded,
+                          color: Colors.white.withOpacity(0.5),
+                          size: 32,
+                        ),
+                      ),
+                    ),
+                    if (news.imageUrl != null)
+                      Image.network(
+                        news.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      ),
+
+                    // Badge "New"
+                    if (DateTime.now()
+                            .difference(DateTime.parse(news.createdAt))
+                            .inDays <
+                        3)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.error,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.error.withOpacity(0.4),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'NEW',
+                            style: GoogleFonts.kanit(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              if (news.imageUrl != null)
-                Positioned.fill(
-                  bottom: 80,
-                  child: Image.network(
-                    news.imageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                  ),
-                ),
 
-              // Content
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
+              // Content Section
+              Expanded(
+                flex: 4,
                 child: Container(
-                  height: 90,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
+                  width: double.infinity,
                   color: isDark ? const Color(0xFF1E293B) : Colors.white,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         news.title,
                         style: GoogleFonts.kanit(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : AppTheme.textMain,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        news.content,
-                        style: GoogleFonts.sarabun(
-                          fontSize: 13,
-                          color: AppTheme.textSub,
+                          height: 1.2,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Expanded(
+                        child: Text(
+                          news.content,
+                          style: GoogleFonts.sarabun(
+                            fontSize: 11,
+                            color: AppTheme.textSub,
+                            height: 1.3,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat(
+                          'dd MMM yyyy',
+                        ).format(DateTime.parse(news.createdAt)),
+                        style: GoogleFonts.sarabun(
+                          fontSize: 10,
+                          color: AppTheme.textSub.withOpacity(0.7),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-
-              // Badge "New"
-              if (DateTime.now()
-                      .difference(DateTime.parse(news.createdAt))
-                      .inDays <
-                  3)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.error,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.error.withOpacity(0.4),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      'NEW',
-                      style: GoogleFonts.kanit(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -794,7 +828,7 @@ class _HomeScreenState extends State<HomeScreen>
     final isHoliday =
         DateTime.now().weekday == DateTime.saturday ||
         DateTime.now().weekday == DateTime.sunday;
-    final statusText = isHoliday ? 'วันหยุด' : 'เข้าเวรปกติ';
+    final statusText = isHoliday ? 'วันหยุด' : 'เข้าเวรปกติ (กำลังพัฒนา)';
     final statusIcon = isHoliday
         ? Icons.weekend_rounded
         : Icons.shield_moon_rounded;

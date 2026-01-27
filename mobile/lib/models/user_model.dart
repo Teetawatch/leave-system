@@ -9,6 +9,8 @@ class User {
   final String? rank;
   final String? avatarUrl;
   final String? signatureUrl;
+  final String? phoneNumber;
+  final String? lineId;
 
   User({
     required this.id,
@@ -21,6 +23,8 @@ class User {
     this.rank,
     this.avatarUrl,
     this.signatureUrl,
+    this.phoneNumber,
+    this.lineId,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -46,6 +50,8 @@ class User {
       rank: json['rank'],
       avatarUrl: avatar,
       signatureUrl: signature,
+      phoneNumber: json['phone_number'],
+      lineId: json['line_id'],
     );
   }
 
@@ -61,6 +67,8 @@ class User {
       'rank': rank,
       'avatar_url': avatarUrl,
       'signature_url': signatureUrl,
+      'phone_number': phoneNumber,
+      'line_id': lineId,
     };
   }
 

@@ -18,6 +18,14 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<DirectoryProvider>(context, listen: false).fetchContacts();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -62,7 +70,7 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
         children: [
           // Search Bar
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             color: Colors.white,
             child: TextField(
               controller: _searchController,
@@ -73,10 +81,11 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
                 ).search(value);
               },
               decoration: InputDecoration(
-                hintText: 'ค้นหาชื่อ, ตำแหน่ง หรือเบอร์โทร...',
+                hintText: 'ค้นหาชื่อ, แผนก หรือเบอร์โทร...',
                 hintStyle: GoogleFonts.sarabun(
                   color: AppTheme.textSub,
                   fontWeight: FontWeight.w300,
+                  fontSize: 14,
                 ),
                 prefixIcon: const Icon(Icons.search, color: AppTheme.textSub),
                 filled: true,
@@ -90,10 +99,99 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
             ),
           ),
 
+          // Department Filters
+          Container(
+            height: 60,
+            color: Colors.white,
+            child: Consumer<DirectoryProvider>(
+              builder: (context, provider, child) {
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: provider.departments.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final dept = provider.departments[index];
+                    final isSelected = dept == provider.selectedDepartment;
+                    return ChoiceChip(
+                      label: Text(
+                        dept,
+                        style: GoogleFonts.sarabun(
+                          fontSize: 14,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isSelected ? Colors.white : AppTheme.textSub,
+                        ),
+                      ),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          provider.setDepartment(dept);
+                        }
+                      },
+                      selectedColor: AppTheme.primary,
+                      backgroundColor: AppTheme.background,
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
           // Contact List
           Expanded(
             child: Consumer<DirectoryProvider>(
               builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (provider.error != null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppTheme.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          provider.error!,
+                          style: GoogleFonts.sarabun(
+                            color: AppTheme.textSub,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: provider.fetchContacts,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'ลองใหม่',
+                            style: GoogleFonts.kanit(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 final contacts = provider.contacts;
 
                 if (contacts.isEmpty) {
@@ -119,13 +217,26 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
                   );
                 }
 
-                return ListView.separated(
+                return ListView(
                   padding: const EdgeInsets.all(16),
-                  itemCount: contacts.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    return _buildContactCard(contacts[index]);
-                  },
+                  children: [
+                    ...contacts
+                        .map((contact) => _buildContactCard(contact))
+                        .toList(),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Text(
+                        'END OF DIRECTORY',
+                        style: GoogleFonts.sarabun(
+                          fontSize: 12,
+                          color: AppTheme.textSub.withOpacity(0.5),
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 );
               },
             ),
@@ -137,6 +248,7 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
 
   Widget _buildContactCard(EmployeeContact contact) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -153,30 +265,22 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
         child: Row(
           children: [
             // Avatar
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primary.withOpacity(0.8),
-                    AppTheme.primaryLight,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  contact.name[0],
-                  style: GoogleFonts.kanit(
-                    fontSize: 24,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: AppTheme.background,
+              backgroundImage: contact.avatarUrl != null
+                  ? NetworkImage(contact.avatarUrl!)
+                  : null,
+              child: contact.avatarUrl == null
+                  ? Text(
+                      contact.name[0],
+                      style: GoogleFonts.kanit(
+                        fontSize: 20,
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
             ),
             const SizedBox(width: 16),
             // Info
@@ -188,41 +292,73 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
                     contact.name,
                     style: GoogleFonts.kanit(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       color: AppTheme.textMain,
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Text(
-                    '${contact.position} • ${contact.department}',
+                    contact.position.toUpperCase(),
                     style: GoogleFonts.sarabun(
-                      fontSize: 13,
-                      color: AppTheme.textSub,
+                      fontSize: 12,
+                      color: AppTheme.primary.withOpacity(0.8),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
               ),
             ),
-            // Call Button
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => _makePhoneCall(contact.phoneNumber),
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.success.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.phone,
-                    color: AppTheme.success,
-                    size: 24,
-                  ),
+            // Actions
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildActionButton(
+                  icon: Icons.phone,
+                  color: AppTheme.primary,
+                  onTap: () => _makePhoneCall(contact.phoneNumber),
                 ),
-              ),
+                const SizedBox(width: 12),
+                _buildActionButton(
+                  icon: Icons.chat_bubble_outline,
+                  color: Colors.blue,
+                  onTap: () {
+                    // Implement chat functionality or show snackbar
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('เริ่มการสนทนากับ ${contact.name}'),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(50),
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1), // Light background
+            shape: BoxShape.circle,
+            border: Border.all(color: color.withOpacity(0.2), width: 1),
+          ),
+          child: Icon(icon, color: color, size: 20),
         ),
       ),
     );

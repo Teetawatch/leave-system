@@ -1,76 +1,150 @@
 import 'package:flutter/material.dart';
 import '../models/employee_contact.dart';
+import '../services/api_service.dart';
 
 class DirectoryProvider with ChangeNotifier {
-  List<EmployeeContact> _contacts = [
-    EmployeeContact(
-      id: '1',
-      name: 'พล.ต.ท. สมชาย มุ่งมั่น',
-      position: 'ผบ.ศฝร.',
-      department: 'ผู้บริหาร',
-      phoneNumber: '081-234-5678',
-      lineId: 'somchai.m',
-      avatarUrl: null,
-    ),
-    EmployeeContact(
-      id: '2',
-      name: 'พ.ต.อ. วินัย ใฝ่ดี',
-      position: 'รอง ผบ.ศฝร.',
-      department: 'ผู้บริหาร',
-      phoneNumber: '089-876-5432',
-      lineId: 'winai.f',
-      avatarUrl: null,
-    ),
-    EmployeeContact(
-      id: '3',
-      name: 'ร.ต.อ. กล้าหาญ ชาญชัย',
-      position: 'ครูฝึก',
-      department: 'ฝอ.1',
-      phoneNumber: '086-111-2222',
-      lineId: 'kla.han',
-      avatarUrl: null,
-    ),
-    EmployeeContact(
-      id: '4',
-      name: 'ด.ต. มานะ อดทน',
-      position: 'เจ้าหน้าที่ธุรการ',
-      department: 'ฝอ.2',
-      phoneNumber: '085-555-4444',
-      lineId: 'mana.a',
-      avatarUrl: null,
-    ),
-    EmployeeContact(
-      id: '5',
-      name: 'นาย สมศักดิ์ รักงาน',
-      position: 'พนักงานขับรถ',
-      department: 'ยานยนต์',
-      phoneNumber: '084-333-7777',
-      lineId: null,
-      avatarUrl: null,
-    ),
+  final ApiService _apiService = ApiService();
+  List<EmployeeContact> _allContacts = [];
+  List<EmployeeContact> _filteredContacts = [];
+
+  bool _isLoading = false;
+  String? _error;
+
+  String _searchQuery = '';
+  String _selectedDepartment = 'ทั้งหมด';
+
+  final List<String> departments = [
+    'ทั้งหมด',
+    'แผนกปกครอง',
+    'แผนกศึกษา',
+    'แผนกสนับสนุน',
+    'ฝ่ายธุรการ',
+    'ฝ่ายการเงิน',
   ];
 
-  List<EmployeeContact> _filteredContacts = [];
-  String _searchQuery = '';
+  List<EmployeeContact> get contacts => _filteredContacts;
+  String get selectedDepartment => _selectedDepartment;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  DirectoryProvider() {
-    _filteredContacts = _contacts;
+  Future<void> fetchContacts() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // Use the known working endpoint from Guard Change feature
+      final response = await _apiService.getGuardChangeUsers();
+
+      final List<dynamic> usersJson;
+      if (response.data is Map && (response.data as Map).containsKey('data')) {
+        usersJson = response.data['data'] ?? [];
+      } else if (response.data is List) {
+        usersJson = response.data;
+      } else {
+        usersJson = [];
+      }
+
+      _allContacts = usersJson.map((json) {
+        // Manually parse to avoid strict validation in User.fromJson
+        // and to handle potential missing fields in the list API
+        final id = json['id']?.toString() ?? '';
+        final name = json['name']?.toString() ?? '-';
+        final rank = json['rank']?.toString() ?? '';
+        final fullName = rank.isNotEmpty ? '$rank $name' : name;
+
+        final position = json['position']?.toString() ?? '-';
+        // Map department to ensure it matches the filter tabs
+        final rawDept = json['department']?.toString();
+        final department = _mapDepartment(rawDept);
+        final phone =
+            json['phone_number']?.toString() ?? json['tel']?.toString() ?? '-';
+        final line = json['line_id']?.toString();
+
+        String? avatar = json['avatar_url'];
+        // Fix for emulator
+        if (avatar != null && avatar.contains('localhost')) {
+          avatar = avatar.replaceFirst('localhost', '10.0.2.2');
+        }
+
+        return EmployeeContact(
+          id: id,
+          name: fullName,
+          position: position,
+          department: department,
+          phoneNumber: phone,
+          lineId: line,
+          avatarUrl: avatar,
+        );
+      }).toList();
+
+      _filter();
+    } catch (e) {
+      debugPrint('Error fetching contacts: $e');
+      _error = 'ไม่สามารถโหลดรายชื่อได้';
+      _allContacts = [];
+      _filter();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  List<EmployeeContact> get contacts => _filteredContacts;
+  void setDepartment(String department) {
+    _selectedDepartment = department;
+    _filter();
+  }
 
   void search(String query) {
     _searchQuery = query;
-    if (query.isEmpty) {
-      _filteredContacts = _contacts;
-    } else {
-      _filteredContacts = _contacts.where((contact) {
-        return contact.name.contains(query) ||
-            contact.department.contains(query) ||
-            contact.position.contains(query) ||
-            contact.phoneNumber.contains(query);
-      }).toList();
-    }
+    _filter();
+  }
+
+  void _filter() {
+    _filteredContacts = _allContacts.where((contact) {
+      final matchesQuery =
+          contact.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          contact.department.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
+          contact.position.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          contact.phoneNumber.contains(_searchQuery);
+
+      final matchesDepartment =
+          _selectedDepartment == 'ทั้งหมด' ||
+          contact.department == _selectedDepartment;
+
+      return matchesQuery && matchesDepartment;
+    }).toList();
     notifyListeners();
+  }
+
+  String _mapDepartment(String? raw) {
+    if (raw == null || raw.isEmpty) return 'แผนกสนับสนุน'; // Default fallback
+
+    final input = raw.toLowerCase().trim();
+
+    // Check for exact keys or English terms
+    if (input.contains('govern') || input.contains('ปกครอง'))
+      return 'แผนกปกครอง';
+    if (input.contains('edu') ||
+        input.contains('study') ||
+        input.contains('train') ||
+        input.contains('ศึกษา'))
+      return 'แผนกศึกษา';
+    if (input.contains('support') ||
+        input.contains('up') ||
+        input.contains('supply') ||
+        input.contains('สนับสนุน'))
+      return 'แผนกสนับสนุน';
+    if (input.contains('admin') || input.contains('ธุรการ'))
+      return 'ฝ่ายธุรการ';
+    if (input.contains('fin') ||
+        input.contains('account') ||
+        input.contains('การเงิน'))
+      return 'ฝ่ายการเงิน';
+
+    // If already one of the valid thai keys, return it (handled by contains above mostly, but strict check)
+    return 'แผนกสนับสนุน'; // Fallback to Support if unknown
   }
 }

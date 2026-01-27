@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/leave_type_model.dart';
 import '../providers/leave_provider.dart';
+import 'leave_success_screen.dart';
 
 class LeaveRequestScreen extends StatefulWidget {
   const LeaveRequestScreen({super.key});
@@ -22,6 +23,94 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   final TextEditingController _reasonController = TextEditingController();
+  final TextEditingController _contactAddressController =
+      TextEditingController();
+
+  // Sick Leave specific fields
+  final TextEditingController _houseNoController = TextEditingController();
+  final TextEditingController _streetController =
+      TextEditingController(); // Represents Soi/Road
+  String? _selectedProvince;
+
+  static const List<String> _provinces = [
+    'กรุงเทพมหานคร',
+    'กระบี่',
+    'กาญจนบุรี',
+    'กาฬสินธุ์',
+    'กำแพงเพชร',
+    'ขอนแก่น',
+    'จันทบุรี',
+    'ฉะเชิงเทรา',
+    'ชลบุรี',
+    'ชัยนาท',
+    'ชัยภูมิ',
+    'ชุมพร',
+    'เชียงราย',
+    'เชียงใหม่',
+    'ตรัง',
+    'ตราด',
+    'ตาก',
+    'นครนายก',
+    'นครปฐม',
+    'นครพนม',
+    'นครราชสีมา',
+    'นครศรีธรรมราช',
+    'นครสวรรค์',
+    'นนทบุรี',
+    'นราธิวาส',
+    'น่าน',
+    'บึงกาฬ',
+    'บุรีรัมย์',
+    'ปทุมธานี',
+    'ประจวบคีรีขันธ์',
+    'ปราจีนบุรี',
+    'ปัตตานี',
+    'พระนครศรีอยุธยา',
+    'พะเยา',
+    'พังงา',
+    'พัทลุง',
+    'พิจิตร',
+    'พิษณุโลก',
+    'เพชรบุรี',
+    'เพชรบูรณ์',
+    'แพร่',
+    'ภูเก็ต',
+    'มหาสารคาม',
+    'มุกดาหาร',
+    'แม่ฮ่องสอน',
+    'ยโสธร',
+    'ยะลา',
+    'ร้อยเอ็ด',
+    'ระนอง',
+    'ระยอง',
+    'ราชบุรี',
+    'ลพบุรี',
+    'ลำปาง',
+    'ลำพูน',
+    'เลย',
+    'ศรีสะเกษ',
+    'สกลนคร',
+    'สงขลา',
+    'สตูล',
+    'สมุทรปราการ',
+    'สมุทรสงคราม',
+    'สมุทรสาคร',
+    'สระแก้ว',
+    'สระบุรี',
+    'สิงห์บุรี',
+    'สุโขทัย',
+    'สุพรรณบุรี',
+    'สุราษฎร์ธานี',
+    'สุรินทร์',
+    'หนองคาย',
+    'หนองบัวลำภู',
+    'อ่างทอง',
+    'อำนาจเจริญ',
+    'อุดรธานี',
+    'อุตรดิตถ์',
+    'อุทัยธานี',
+    'อุบลราชธานี',
+  ];
 
   // File upload
   XFile? _selectedFile;
@@ -40,6 +129,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   @override
   void dispose() {
     _reasonController.dispose();
+    _contactAddressController.dispose();
+    _houseNoController.dispose();
+    _streetController.dispose();
     super.dispose();
   }
 
@@ -99,9 +191,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_startDate == null || _endDate == null) {
+    if (_startDate == null || (_endDate == null && !_isTemporaryLeave)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('กรุณาเลือกวันทั้งเริ่มต้นและสิ้นสุด')),
+        const SnackBar(content: Text('กรุณาเลือกวันที่ต้องการลา')),
       );
       return;
     }
@@ -109,15 +201,36 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     setState(() => _isLoading = true);
     FocusScope.of(context).unfocus();
 
+    List<String> contactAddress = [];
+    if (_useDetailedAddress) {
+      contactAddress = [
+        _houseNoController.text,
+        _streetController.text,
+        _selectedProvince ?? '',
+      ];
+    } else if (_contactAddressController.text.isNotEmpty) {
+      contactAddress = [_contactAddressController.text];
+    } else {
+      contactAddress = ['-'];
+    }
+
+    // Prepare data
+    DateTime start = _startDate!;
+    DateTime end = _isTemporaryLeave ? _startDate! : _endDate!;
+    String reason = _reasonController.text;
+
+    if (_isTemporaryLeave && _temporarySlot != null) {
+      reason = '$reason ($_temporarySlot)';
+    }
+
     final provider = Provider.of<LeaveProvider>(context, listen: false);
 
-    // Note: contact_address is not in the UI design, sending default value.
     final data = {
       'leave_type_id': _selectedType!.id,
-      'start_date': DateFormat('yyyy-MM-dd').format(_startDate!),
-      'end_date': DateFormat('yyyy-MM-dd').format(_endDate!),
-      'reason': _reasonController.text,
-      'contact_address': '-', // Default value as field is removed
+      'start_date': DateFormat('yyyy-MM-dd').format(start),
+      'end_date': DateFormat('yyyy-MM-dd').format(end),
+      'reason': reason,
+      'contact_address': contactAddress,
     };
 
     // Todo: Handle file upload if backend supports it. Currently just UI.
@@ -140,10 +253,51 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       );
 
       if (isSuccess) {
-        Navigator.pop(context, true);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LeaveSuccessScreen(
+              leaveType: _selectedType!,
+              startDate: start,
+              endDate: end,
+            ),
+          ),
+        );
       }
     }
   }
+
+  bool get _isSickLeave {
+    if (_selectedType == null) return false;
+    final name = _selectedType!.name.toLowerCase();
+    final slug = _selectedType!.slug.toLowerCase();
+    return slug.contains('sick') || name.contains('ป่วย');
+  }
+
+  bool get _isPersonalLeave {
+    if (_selectedType == null) return false;
+    final name = _selectedType!.name.toLowerCase();
+    final slug = _selectedType!.slug.toLowerCase();
+    // Check for Personal Business Leave keywords
+    return slug.contains('personal') ||
+        slug.contains('business') ||
+        name.contains('กิจ');
+  }
+
+  bool get _isTemporaryLeave {
+    if (_selectedType == null) return false;
+    final name = _selectedType!.name.toLowerCase();
+    final slug = _selectedType!.slug.toLowerCase();
+    return slug.contains('temporary') || name.contains('ชั่วกาล');
+  }
+
+  bool get _useDetailedAddress => _isSickLeave || _isPersonalLeave;
+
+  String? _temporarySlot;
+  final List<String> _temporarySlots = [
+    'ช่วงเช้า (ก่อน 07.30)',
+    'ช่วงบ่าย (ก่อน 11.00)',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +306,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       appBar: AppBar(
         title: Text(
           'ยื่นใบลา',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.kanit(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Colors.black,
@@ -181,45 +335,71 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               const SizedBox(height: 8),
               _buildLeaveTypeDropdown(),
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('วันที่เริ่มลา'),
-                        const SizedBox(height: 8),
-                        _buildDatePicker(
-                          _startDate,
-                          'เลือกวันที่',
-                          () => _selectDate(true),
-                        ),
-                      ],
+              if (_isTemporaryLeave) ...[
+                _buildLabel('วันที่ลา'),
+                const SizedBox(height: 8),
+                _buildDatePicker(
+                  _startDate,
+                  'เลือกวันที่',
+                  () => _selectDate(true),
+                ),
+                const SizedBox(height: 24),
+                _buildLabel('ช่วงเวลา'),
+                const SizedBox(height: 8),
+                _buildTemporarySlotDropdown(),
+              ] else
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel('วันที่เริ่มลา'),
+                          const SizedBox(height: 8),
+                          _buildDatePicker(
+                            _startDate,
+                            'เลือกวันที่',
+                            () => _selectDate(true),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('ถึงวันที่'),
-                        const SizedBox(height: 8),
-                        _buildDatePicker(
-                          _endDate,
-                          'เลือกวันที่',
-                          () => _selectDate(false),
-                        ),
-                      ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel('ถึงวันที่'),
+                          const SizedBox(height: 8),
+                          _buildDatePicker(
+                            _endDate,
+                            'เลือกวันที่',
+                            () => _selectDate(false),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               const SizedBox(height: 24),
-              _buildLabel('เหตุผล'),
+              _buildLabel('เหตุผล/ความจำเป็น'),
               const SizedBox(height: 8),
               _buildReasonField(),
+
+              if (_selectedType != null) ...[
+                const SizedBox(height: 24),
+                _buildLabel('ที่อยู่ที่ติดต่อได้ระหว่างลา'),
+                const SizedBox(height: 8),
+                if (_useDetailedAddress)
+                  _buildDetailedAddressFields()
+                else
+                  _buildContactAddressField(),
+              ],
+
               const SizedBox(height: 24),
-              _buildLabel('แนบไฟล์ (ไม่บังคับ)'),
+              _buildLabel(
+                _isSickLeave ? 'ใบรับรองแพทย์ (ถ้ามี)' : 'แนบไฟล์ (ไม่บังคับ)',
+              ),
               const SizedBox(height: 8),
               _buildAttachmentArea(),
               const SizedBox(height: 32),
@@ -231,10 +411,209 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     );
   }
 
+  Widget _buildTemporarySlotDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButtonFormField<String>(
+          isExpanded: true,
+          value: _temporarySlot,
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFF64748B),
+          ),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(vertical: 16),
+          ),
+          hint: Text(
+            'เลือกช่วงเวลา...',
+            style: GoogleFonts.sarabun(color: const Color(0xFF94A3B8)),
+          ),
+          items: _temporarySlots.map((slot) {
+            return DropdownMenuItem(
+              value: slot,
+              child: Text(
+                slot,
+                style: GoogleFonts.sarabun(
+                  fontSize: 14,
+                  color: const Color(0xFF334155),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+          }).toList(),
+          onChanged: (val) => setState(() => _temporarySlot = val),
+          validator: (val) {
+            if (_isTemporaryLeave && val == null) {
+              return 'กรุณาเลือกช่วงเวลา';
+            }
+            return null;
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailedAddressFields() {
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: TextFormField(
+                controller: _houseNoController,
+                enabled: !_isLoading,
+                style: GoogleFonts.sarabun(
+                  fontSize: 14,
+                  color: const Color(0xFF334155),
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'บ้านเลขที่...',
+                  hintStyle: GoogleFonts.sarabun(
+                    color: const Color(0xFF94A3B8),
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF6366F1),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+                validator: (val) {
+                  if (_useDetailedAddress && (val == null || val.isEmpty)) {
+                    return 'ระบุ';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 3,
+              child: TextFormField(
+                controller: _streetController,
+                enabled: !_isLoading,
+                style: GoogleFonts.sarabun(
+                  fontSize: 14,
+                  color: const Color(0xFF334155),
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'ถนน / ซอย...',
+                  hintStyle: GoogleFonts.sarabun(
+                    color: const Color(0xFF94A3B8),
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF6366F1),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+                validator: (val) {
+                  if (_useDetailedAddress && (val == null || val.isEmpty)) {
+                    return 'ระบุถนน/ซอย';
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              value: _selectedProvince,
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF64748B),
+              ),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 16),
+              ),
+              hint: Text(
+                'เลือกจังหวัด...',
+                style: GoogleFonts.sarabun(color: const Color(0xFF94A3B8)),
+              ),
+              items: _provinces.map((province) {
+                return DropdownMenuItem(
+                  value: province,
+                  child: Text(
+                    province,
+                    style: GoogleFonts.sarabun(
+                      fontSize: 14,
+                      color: const Color(0xFF334155),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) => setState(() => _selectedProvince = val),
+              validator: (val) {
+                if (_useDetailedAddress && val == null) {
+                  return 'กรุณาเลือกจังหวัด';
+                }
+                return null;
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.kanit(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF1E293B),
@@ -245,6 +624,13 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   Widget _buildLeaveTypeDropdown() {
     return Consumer<LeaveProvider>(
       builder: (context, provider, child) {
+        // Filter out Official Business (name contains 'ราชการ' or slug 'official')
+        final types = provider.leaveTypes.where((t) {
+          final name = t.name.toLowerCase();
+          final slug = t.slug.toLowerCase();
+          return !name.contains('ราชการ') && !slug.contains('official');
+        }).toList();
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -254,6 +640,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButtonFormField<LeaveType>(
+              isExpanded: true,
               value: _selectedType,
               icon: const Icon(
                 Icons.keyboard_arrow_down_rounded,
@@ -261,25 +648,32 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               ),
               decoration: const InputDecoration(
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 16),
               ),
               hint: Text(
                 'เลือกประเภท...',
-                style: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
+                style: GoogleFonts.sarabun(color: const Color(0xFF94A3B8)),
               ),
-              items: provider.leaveTypes.map((type) {
+              items: types.map((type) {
                 return DropdownMenuItem(
                   value: type,
                   child: Text(
                     type.name,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.sarabun(
                       fontSize: 14,
                       color: const Color(0xFF334155),
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 );
               }).toList(),
-              onChanged: (val) => setState(() => _selectedType = val),
+              onChanged: (val) {
+                setState(() => _selectedType = val);
+              },
               validator: (val) => val == null ? 'กรุณาเลือกประเภทการลา' : null,
             ),
           ),
@@ -303,7 +697,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           children: [
             Text(
               date != null ? DateFormat('dd/MM/yyyy').format(date) : hint,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.sarabun(
                 fontSize: 14,
                 color: date != null
                     ? const Color(0xFF334155)
@@ -322,24 +716,67 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   }
 
   Widget _buildReasonField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: TextFormField(
-        controller: _reasonController,
-        maxLines: 4,
-        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF334155)),
-        decoration: InputDecoration(
-          hintText: 'ระบุเหตุผลการลา...',
-          hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+    return TextFormField(
+      controller: _reasonController,
+      enabled: !_isLoading,
+      maxLines: 4,
+      keyboardType: TextInputType.multiline,
+      style: GoogleFonts.sarabun(fontSize: 14, color: const Color(0xFF334155)),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        hintText: 'ระบุเหตุผลการลา...',
+        hintStyle: GoogleFonts.sarabun(color: const Color(0xFF94A3B8)),
+        contentPadding: const EdgeInsets.all(16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
-        validator: (val) => val!.isEmpty ? 'กรุณาระบุเหตุผล' : null,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+        ),
       ),
+      validator: (val) => val!.isEmpty ? 'กรุณาระบุเหตุผล' : null,
+    );
+  }
+
+  Widget _buildContactAddressField() {
+    return TextFormField(
+      controller: _contactAddressController,
+      enabled: !_isLoading,
+      maxLines: 2,
+      keyboardType: TextInputType.streetAddress,
+      style: GoogleFonts.sarabun(fontSize: 14, color: const Color(0xFF334155)),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        hintText: 'ระบุที่อยู่...',
+        hintStyle: GoogleFonts.sarabun(color: const Color(0xFF94A3B8)),
+        contentPadding: const EdgeInsets.all(16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+        ),
+      ),
+      validator: (val) {
+        if (!_isSickLeave && (val == null || val.isEmpty)) {
+          return 'กรุณาระบุที่อยู่';
+        }
+        return null;
+      },
     );
   }
 
@@ -354,6 +791,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            // border is handled by painter
           ),
           child: Column(
             children: [
@@ -362,7 +800,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'เลือกไฟล์แล้ว',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.sarabun(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                     color: const Color(0xFF334155),
@@ -370,7 +808,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 ),
                 Text(
                   _selectedFile!.name,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.sarabun(
                     fontSize: 12,
                     color: const Color(0xFF64748B),
                   ),
@@ -392,8 +830,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'อัปโหลดเอกสารรับรอง',
-                  style: GoogleFonts.inter(
+                  _isSickLeave ? 'อัปโหลดใบรับรองแพทย์' : 'อัปโหลดเอกสารแนบ',
+                  style: GoogleFonts.kanit(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                     color: const Color(0xFF1E293B),
@@ -402,7 +840,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'PDF หรือ JPG, ขนาดไม่เกิน 5MB',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.sarabun(
                     fontSize: 12,
                     color: const Color(0xFF94A3B8),
                   ),
@@ -432,7 +870,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
             ? const CircularProgressIndicator(color: Colors.white)
             : Text(
                 'ส่งใบลา',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.kanit(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,

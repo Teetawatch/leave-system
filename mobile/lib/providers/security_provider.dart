@@ -88,7 +88,10 @@ class SecurityProvider with ChangeNotifier {
       if (canCheckBiometrics) {
         bool authenticated = await _localAuth.authenticate(
           localizedReason: 'โปรดยืนยันตัวตนเพื่อเปิดใช้งาน Biometric',
-          biometricOnly: true,
+          options: const AuthenticationOptions(
+            biometricOnly: true,
+            stickyAuth: true,
+          ),
         );
         if (authenticated) {
           await prefs.setBool(keyBiometricEnabled, true);
@@ -112,7 +115,10 @@ class SecurityProvider with ChangeNotifier {
     try {
       bool authenticated = await _localAuth.authenticate(
         localizedReason: 'โปรดยืนยันตัวตนเพื่อเข้าใช้งาน',
-        biometricOnly: true,
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
       );
       if (authenticated) {
         _isAuthenticated = true;
