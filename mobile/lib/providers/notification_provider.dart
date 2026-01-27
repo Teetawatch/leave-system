@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/app_notification.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
 
 class NotificationProvider with ChangeNotifier {
   List<AppNotification> _notifications = [];
@@ -10,17 +11,43 @@ class NotificationProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
+  NotificationProvider() {
+    _initRealTimeUpdates();
+  }
+
+  void _initRealTimeUpdates() {
+    NotificationService().messageStream.listen((message) {
+      if (message.notification != null) {
+        final notification = AppNotification(
+          id: message.messageId ?? DateTime.now().toIso8601String(),
+          title: message.notification!.title ?? 'การแจ้งเตือน',
+          body: message.notification!.body ?? '',
+          timestamp: message.sentTime ?? DateTime.now(),
+          isRead: false,
+          type: message.data['type'] ?? 'info',
+        );
+        addNotification(notification);
+      }
+    });
+  }
+
   Future<void> fetchNotifications() async {
     _isLoading = true;
     notifyListeners();
     try {
       final response = await ApiService().client.get('/notifications');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
-        _notifications = data
-            .map((json) => AppNotification.fromJson(json))
-            .toList();
+      debugPrint('Notification Response: ${response.data}'); // Debug print
+
+      List<dynamic> listData = [];
+      if (response.data is List) {
+        listData = response.data;
+      } else if (response.data is Map && response.data['data'] is List) {
+        listData = response.data['data'];
       }
+
+      _notifications = listData
+          .map((json) => AppNotification.fromJson(json))
+          .toList();
     } catch (e) {
       debugPrint('Error fetching notifications: $e');
     } finally {

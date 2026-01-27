@@ -10,6 +10,8 @@ import '../providers/auth_provider.dart';
 import '../widgets/signature_dialog.dart';
 import 'leave_report_screen.dart';
 import 'guard_report_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../widgets/animated_background.dart';
 
 class ApprovalsScreen extends StatefulWidget {
   const ApprovalsScreen({super.key});
@@ -53,80 +55,85 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
   Widget build(BuildContext context) {
     final leaveProvider = Provider.of<LeaveProvider>(context);
     final guardProvider = Provider.of<GuardChangeProvider>(context);
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: Colors.white,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'การอนุมัติ & ยืนยัน',
-          style: TextStyle(fontWeight: FontWeight.w900),
+          style: GoogleFonts.kanit(
+            fontWeight: FontWeight.w700,
+            fontSize: 22,
+            color: AppTheme.textMain,
+          ),
         ),
         backgroundColor: Colors.transparent,
-        foregroundColor: AppTheme.textMain,
         elevation: 0,
+        centerTitle: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(70),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 28),
+            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.white.withOpacity(0.8),
               borderRadius: BorderRadius.circular(20),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              labelColor: AppTheme.primary,
-              unselectedLabelColor: AppTheme.textSub,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 13,
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              tabs: [
-                Tab(text: 'การลา (${leaveProvider.pendingApprovals.length})'),
-                Tab(text: 'เปลี่ยนเวร (${guardProvider.approvals.length})'),
+              border: Border.all(color: Colors.white.withOpacity(0.5)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
               ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: TabBar(
+                  controller: _tabController,
+                  indicator: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primary.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: AppTheme.textSub,
+                  labelStyle: GoogleFonts.kanit(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  unselectedLabelStyle: GoogleFonts.kanit(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  dividerColor: Colors.transparent,
+                  overlayColor: MaterialStateProperty.all(Colors.transparent),
+                  tabs: [
+                    Tab(
+                      text: 'การลา (${leaveProvider.pendingApprovals.length})',
+                    ),
+                    Tab(text: 'เปลี่ยนเวร (${guardProvider.approvals.length})'),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
       ),
       body: Stack(
         children: [
-          Container(
-            height: size.height,
-            width: size.width,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFF8FAFC), Colors.white, Color(0xFFFFF1F2)],
-              ),
-            ),
-          ),
-          _buildFloatingCircle(
-            top: -40,
-            right: -40,
-            size: 220,
-            color: const Color(0xFFF43F5E).withOpacity(0.05),
-          ),
-          _buildFloatingCircle(
-            bottom: -50,
-            left: -50,
-            size: 280,
-            color: Colors.indigo.withOpacity(0.04),
-          ),
+          // Animated Background
+          const Positioned.fill(child: AnimatedBackground()),
 
           SafeArea(
             child: FadeTransition(
@@ -142,27 +149,6 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingCircle({
-    required double size,
-    required Color color,
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-  }) {
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
       ),
     );
   }
@@ -209,11 +195,11 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'รายงานระบบ',
-            style: TextStyle(
+            style: GoogleFonts.kanit(
               fontSize: 20,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppTheme.textMain,
             ),
           ),
@@ -285,10 +271,10 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
             const SizedBox(height: 8),
             Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.kanit(
                 color: color,
-                fontWeight: FontWeight.w800,
-                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
           ],
@@ -343,18 +329,18 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                         children: [
                           Text(
                             request.user?.name ?? 'ไม่ระบุชื่อ',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
+                            style: GoogleFonts.kanit(
+                              fontWeight: FontWeight.w700,
                               fontSize: 18,
                               color: AppTheme.textMain,
                             ),
                           ),
                           Text(
                             request.user?.position ?? 'ไม่ระบุตำแหน่ง',
-                            style: const TextStyle(
+                            style: GoogleFonts.sarabun(
                               color: AppTheme.textSub,
                               fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -405,11 +391,10 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                         ),
                         child: Text(
                           request.reason,
-                          style: const TextStyle(
+                          style: GoogleFonts.sarabun(
                             color: AppTheme.textSub,
-                            fontSize: 13,
-                            height: 1.4,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            height: 1.5,
                           ),
                         ),
                       ),
@@ -432,11 +417,11 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'ปฏิเสธ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 15,
+                          style: GoogleFonts.kanit(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -522,10 +507,10 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                       backgroundColor: Colors.orange.withOpacity(0.1),
                       child: Text(
                         request.user?.name.substring(0, 1) ?? '?',
-                        style: const TextStyle(
+                        style: GoogleFonts.kanit(
                           color: Colors.orange,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 20,
                         ),
                       ),
                     ),
@@ -536,18 +521,18 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                         children: [
                           Text(
                             request.user?.name ?? 'ไม่ระบุชื่อ',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 17,
+                            style: GoogleFonts.kanit(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
                               color: AppTheme.textMain,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'ต้องการให้ท่านปฏิบัติเวรแทน',
-                            style: TextStyle(
+                            style: GoogleFonts.sarabun(
                               color: AppTheme.textSub,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -586,11 +571,10 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                   const SizedBox(height: 16),
                   Text(
                     'หมายเหตุ: ${request.remarks}',
-                    style: TextStyle(
+                    style: GoogleFonts.sarabun(
                       color: AppTheme.textSub.withOpacity(0.8),
-                      fontSize: 13,
+                      fontSize: 14,
                       fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -607,11 +591,11 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'ปฏิเสธ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 15,
+                          style: GoogleFonts.kanit(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -658,10 +642,10 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
             const SizedBox(height: 24),
             Text(
               message,
-              style: TextStyle(
+              style: GoogleFonts.kanit(
                 color: AppTheme.textSub.withOpacity(0.5),
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -677,8 +661,8 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
         const SizedBox(width: 8),
         Text(
           text,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
+          style: GoogleFonts.sarabun(
+            fontWeight: FontWeight.w600,
             fontSize: 13,
             color: AppTheme.textMain,
           ),
@@ -694,19 +678,19 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
         const SizedBox(width: 12),
         Text(
           label,
-          style: const TextStyle(
+          style: GoogleFonts.sarabun(
             color: AppTheme.textSub,
             fontSize: 13,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(
+          style: GoogleFonts.kanit(
             color: AppTheme.textMain,
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -739,7 +723,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
         ),
         child: Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+          style: GoogleFonts.kanit(fontWeight: FontWeight.w700, fontSize: 16),
         ),
       ),
     );

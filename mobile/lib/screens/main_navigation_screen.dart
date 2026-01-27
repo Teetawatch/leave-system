@@ -31,6 +31,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+
+    // Fetch data immediately to determine if approval tab should appear
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Provider.of<GuardChangeProvider>(
+          context,
+          listen: false,
+        ).fetchApprovals();
+        Provider.of<LeaveProvider>(
+          context,
+          listen: false,
+        ).fetchPendingApprovals();
+      }
+    });
   }
 
   @override
@@ -52,9 +66,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         user?.role == 'director' ||
         user?.role == 'deputy_director' ||
         user?.role == 'department_head';
-    // Show Approvals tab if management role OR if has pending guard peer confirmations
+    // Show Approvals tab if management role OR if has pending guard peer confirmations OR pending leave approvals
     final bool showApprovalsTab =
-        isApprover || guardProvider.approvals.isNotEmpty;
+        isApprover ||
+        guardProvider.approvals.isNotEmpty ||
+        leaveProvider.pendingApprovals.isNotEmpty;
 
     // For stability, we keep the screens list consistent or handle index changes.
     // However, it's safer to just include all screens and hide the tab icon.

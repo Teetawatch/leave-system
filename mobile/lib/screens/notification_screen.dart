@@ -434,8 +434,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
       groups.add(_NotificationGroup('วันนี้', todayList));
     if (yesterdayList.isNotEmpty)
       groups.add(_NotificationGroup('เมื่อวาน', yesterdayList));
-    if (earlierList.isNotEmpty)
+    if (earlierList.isNotEmpty) {
+      // Maybe we want to group by date here? Or just keep it simple.
+      // The user request was about DATE FORMAT.
+      // If "Earlier" just lists them, we might not need to change this specific logic unless it shows dates.
+      // But wait, the notification item *only* shows time?
+      // `_formatTimeAndCategory` shows `HH:mm`.
+      // If it's an old notification, showing just proper time is weird without date.
+      // But typically notification lists shows relative time.
+      // Let's leave NotificationScreen grouping titles as is (Today/Yesterday) but maybe update `earlierList` to show date?
+      // Actually, standard UI is fine.
       groups.add(_NotificationGroup('ก่อนหน้านี้', earlierList));
+    }
 
     return groups;
   }

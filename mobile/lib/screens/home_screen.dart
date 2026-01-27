@@ -17,6 +17,8 @@ import 'package:intl/intl.dart';
 import '../providers/guard_change_provider.dart';
 import 'package:dio/dio.dart';
 
+import '../widgets/animated_background.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -157,356 +159,370 @@ class _HomeScreenState extends State<HomeScreen>
               statusBarColor: Colors.transparent,
             ),
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: FadeTransition(
-          opacity: _fadeController,
-          child: RefreshIndicator(
-            onRefresh: _refreshData,
-            color: AppTheme.primary,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverAppBar(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  elevation: 0,
-                  scrolledUnderElevation: 0,
-                  pinned: false,
-                  floating: true,
-                  snap: true,
-                  stretch: true,
-                  expandedHeight: 140,
-                  collapsedHeight: 140,
-                  automaticallyImplyLeading: false,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        24,
-                        MediaQuery.of(context).padding.top + 24,
-                        24,
-                        24,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Left: Avatar + Heading
-                          Row(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        body: Stack(
+          children: [
+            const Positioned.fill(child: AnimatedBackground()),
+            FadeTransition(
+              opacity: _fadeController,
+              child: RefreshIndicator(
+                onRefresh: _refreshData,
+                color: AppTheme.primary,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverAppBar(
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      elevation: 0,
+                      scrolledUnderElevation: 0,
+                      pinned: false,
+                      floating: true,
+                      snap: true,
+                      stretch: true,
+                      expandedHeight: 140,
+                      collapsedHeight: 140,
+                      automaticallyImplyLeading: false,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            24,
+                            MediaQuery.of(context).padding.top + 24,
+                            24,
+                            24,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildAvatar(user),
-                              const SizedBox(width: 16),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              // Left: Avatar + Heading
+                              Row(
                                 children: [
-                                  Row(
+                                  _buildAvatar(user),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        _getGreetingText(),
-                                        style: GoogleFonts.kanit(
-                                          fontSize: 16,
-                                          color: AppTheme.textSub,
-                                          fontWeight: FontWeight.w500,
+                                      Row(
+                                        children: [
+                                          Text(
+                                            _getGreetingText(),
+                                            style: GoogleFonts.kanit(
+                                              fontSize: 16,
+                                              color: AppTheme.textSub,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            _getGreetingIcon(),
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                            0.4,
+                                        child: Text(
+                                          user?.fullName ?? 'พนักงาน',
+                                          style: GoogleFonts.kanit(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark
+                                                ? Colors.white
+                                                : AppTheme.textMain,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        _getGreetingIcon(),
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
+                                      if (_weatherTemp != '--' ||
+                                          _pm25 != '--') ...[
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            // Weather
+                                            if (_weatherTemp != '--') ...[
+                                              const Icon(
+                                                Icons.cloud_outlined,
+                                                size: 14,
+                                                color: AppTheme.textSub,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '$_weatherTemp°C',
+                                                style: GoogleFonts.sarabun(
+                                                  fontSize: 12,
+                                                  color: AppTheme.textSub,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                            ],
+                                            // PM 2.5
+                                            if (_pm25 != '--') ...[
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 1,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: _getPm25Color(
+                                                    double.tryParse(_pm25) ?? 0,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  'PM 2.5',
+                                                  style: GoogleFonts.kanit(
+                                                    fontSize: 8,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                _pm25,
+                                                style: GoogleFonts.sarabun(
+                                                  fontSize: 12,
+                                                  color: AppTheme.textSub,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ],
                                     ],
                                   ),
-                                  const SizedBox(height: 2),
-                                  SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.4,
-                                    child: Text(
-                                      user?.fullName ?? 'พนักงาน',
-                                      style: GoogleFonts.kanit(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDark
-                                            ? Colors.white
-                                            : AppTheme.textMain,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  if (_weatherTemp != '--' ||
-                                      _pm25 != '--') ...[
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        // Weather
-                                        if (_weatherTemp != '--') ...[
-                                          const Icon(
-                                            Icons.cloud_outlined,
-                                            size: 14,
-                                            color: AppTheme.textSub,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '$_weatherTemp°C',
-                                            style: GoogleFonts.sarabun(
-                                              fontSize: 12,
-                                              color: AppTheme.textSub,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                        ],
-                                        // PM 2.5
-                                        if (_pm25 != '--') ...[
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 4,
-                                              vertical: 1,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: _getPm25Color(
-                                                double.tryParse(_pm25) ?? 0,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              'PM 2.5',
-                                              style: GoogleFonts.kanit(
-                                                fontSize: 8,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            _pm25,
-                                            style: GoogleFonts.sarabun(
-                                              fontSize: 12,
-                                              color: AppTheme.textSub,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ],
                                 ],
+                              ),
+
+                              // Right: Notification Bell
+                              _buildNotificationBell(context),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // 2. Main Stats Card (Gradient)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: SliverToBoxAdapter(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 32),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF6C63FF), Color(0xFF8B5CF6)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(32),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF6C63FF).withOpacity(0.4),
+                                blurRadius: 24,
+                                offset: const Offset(0, 12),
                               ),
                             ],
                           ),
-
-                          // Right: Notification Bell
-                          _buildNotificationBell(context),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 2. Main Stats Card (Gradient)
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6C63FF), Color(0xFF8B5CF6)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildStatItem(
+                                icon: Icons.calendar_today_rounded,
+                                value: _getTotalRemainingDays(leaveProvider),
+                                label: 'วันลาพักผ่อน',
+                              ),
+                              _buildDivider(),
+                              _buildStatItem(
+                                icon: Icons.pending_actions_rounded,
+                                value: leaveProvider.myRequests
+                                    .where((r) => r.status == 'pending')
+                                    .length
+                                    .toString(),
+                                label: 'รออนุมัติ',
+                              ),
+                              _buildDivider(),
+                              _buildStatItem(
+                                icon: Icons.check_circle_outline_rounded,
+                                value: leaveProvider.myRequests
+                                    .where((r) => r.status == 'approved')
+                                    .length
+                                    .toString(),
+                                label: 'อนุมัติแล้ว',
+                              ),
+                            ],
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6C63FF).withOpacity(0.4),
-                            blurRadius: 24,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildStatItem(
-                            icon: Icons.calendar_today_rounded,
-                            value: _getTotalRemainingDays(leaveProvider),
-                            label: 'วันลาคงเหลือ',
-                          ),
-                          _buildDivider(),
-                          _buildStatItem(
-                            icon: Icons.pending_actions_rounded,
-                            value: leaveProvider.myRequests
-                                .where((r) => r.status == 'pending')
-                                .length
-                                .toString(),
-                            label: 'รออนุมัติ',
-                          ),
-                          _buildDivider(),
-                          _buildStatItem(
-                            icon: Icons.check_circle_outline_rounded,
-                            value: leaveProvider.myRequests
-                                .where((r) => r.status == 'approved')
-                                .length
-                                .toString(),
-                            label: 'อนุมัติแล้ว',
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-                ),
 
-                // 3. Quick Menu Header
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(28, 32, 24, 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                    // 3. Quick Menu Header
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(28, 32, 24, 16),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              Icons.bolt_rounded,
-                              color: AppTheme.warning,
-                              size: 24,
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.bolt_rounded,
+                                  color: AppTheme.warning,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'เมนูด่วน',
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark
+                                        ? Colors.white
+                                        : AppTheme.textMain,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'เมนูด่วน',
-                              style: GoogleFonts.kanit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: isDark
-                                    ? Colors.white
-                                    : AppTheme.textMain,
+                            Padding(
+                              padding: const EdgeInsets.only(left: 32),
+                              child: Text(
+                                'เข้าถึงฟีเจอร์ที่ใช้บ่อย',
+                                style: GoogleFonts.sarabun(
+                                  fontSize: 14,
+                                  color: AppTheme.textSub,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 32),
-                          child: Text(
-                            'เข้าถึงฟีเจอร์ที่ใช้บ่อย',
-                            style: GoogleFonts.sarabun(
-                              fontSize: 14,
-                              color: AppTheme.textSub,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
 
-                // 4. Quick Menu Grid
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverGrid.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 1.1,
-                    children: [
-                      // Leave Request
-                      _buildMenuCard(
-                        context,
-                        title: 'ลางาน',
-                        subtitle: 'เขียนใบลา',
-                        icon: Icons.edit_calendar_rounded,
-                        color: AppTheme.primary,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const LeaveRequestScreen(),
-                          ),
-                        ),
-                      ),
-                      // History
-                      _buildMenuCard(
-                        context,
-                        title: 'ประวัติ',
-                        subtitle: 'ดูการลาย้อนหลัง',
-                        icon: Icons.history_rounded,
-                        color: AppTheme.secondary,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ActivityScreen(),
-                          ),
-                        ),
-                      ),
-                      // Shift Change
-                      _buildMenuCard(
-                        context,
-                        title: 'เปลี่ยนยาม',
-                        subtitle: 'ส่งคำขอใหม่',
-                        icon: Icons.swap_horiz_rounded,
-                        color: AppTheme.accent,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const GuardChangeRequestScreen(),
-                          ),
-                        ),
-                      ),
-                      // List/Approvals (Or simple List)
-                      _buildMenuCard(
-                        context,
-                        title: 'รายการ',
-                        subtitle: 'ประวัติการเปลี่ยน',
-                        icon: Icons.assignment_outlined,
-                        color: AppTheme.info,
-                        onTap: () {
-                          Navigator.push(
+                    // 4. Quick Menu Grid
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: SliverGrid.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 1.1,
+                        children: [
+                          // Leave Request
+                          _buildMenuCard(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => const ActivityScreen(),
+                            title: 'ลางาน',
+                            subtitle: 'เขียนใบลา',
+                            icon: Icons.edit_calendar_rounded,
+                            color: AppTheme.primary,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const LeaveRequestScreen(),
+                              ),
                             ),
-                          );
-                        },
+                          ),
+                          // History
+                          _buildMenuCard(
+                            context,
+                            title: 'ประวัติ',
+                            subtitle: 'ดูการลาย้อนหลัง',
+                            icon: Icons.history_rounded,
+                            color: AppTheme.secondary,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ActivityScreen(),
+                              ),
+                            ),
+                          ),
+                          // Shift Change
+                          _buildMenuCard(
+                            context,
+                            title: 'เปลี่ยนยาม',
+                            subtitle: 'ส่งคำขอใหม่',
+                            icon: Icons.swap_horiz_rounded,
+                            color: AppTheme.accent,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const GuardChangeRequestScreen(),
+                              ),
+                            ),
+                          ),
+                          // List/Approvals (Or simple List)
+                          _buildMenuCard(
+                            context,
+                            title: 'รายการ',
+                            subtitle: 'ประวัติการเปลี่ยน',
+                            icon: Icons.assignment_outlined,
+                            color: AppTheme.info,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ActivityScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-
-                // 4.1 Today's Duty Section (New)
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _buildDutyStatusCard(context),
-                  ),
-                ),
-
-                // 4.2 Recent Activity Section (New)
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                  sliver: SliverToBoxAdapter(
-                    child: _buildRecentActivitySection(
-                      context,
-                      leaveProvider,
-                      guardProvider,
                     ),
-                  ),
-                ),
 
-                // 5. Contact HR (Phonebook)
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: _buildContactHRCard(context),
-                  ),
-                ),
+                    // 4.1 Today's Duty Section (New)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildDutyStatusCard(context),
+                      ),
+                    ),
 
-                // 6. News Section
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
-                  sliver: SliverToBoxAdapter(child: _buildNewsSection(context)),
+                    // 4.2 Recent Activity Section (New)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildRecentActivitySection(
+                          context,
+                          leaveProvider,
+                          guardProvider,
+                        ),
+                      ),
+                    ),
+
+                    // 5. Contact HR (Phonebook)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildContactHRCard(context),
+                      ),
+                    ),
+
+                    // 6. News Section
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildNewsSection(context),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -957,80 +973,137 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildDutyStatusCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Mock logic for duty status - in real app, check schedule API
-    final isHoliday =
-        DateTime.now().weekday == DateTime.saturday ||
-        DateTime.now().weekday == DateTime.sunday;
-    final statusText = isHoliday ? 'วันหยุด' : 'เข้าเวรปกติ (กำลังพัฒนา)';
-    final statusIcon = isHoliday
-        ? Icons.weekend_rounded
-        : Icons.shield_moon_rounded;
-    final statusColor = isHoliday ? AppTheme.success : AppTheme.primary;
+    final now = DateTime.now();
+    final thaiMonths = [
+      'มกราคม',
+      'กุมภาพันธ์',
+      'มีนาคม',
+      'เมษายน',
+      'พฤษภาคม',
+      'มิถุนายน',
+      'กรกฎาคม',
+      'สิงหาคม',
+      'กันยายน',
+      'ตุลาคม',
+      'พฤศจิกายน',
+      'ธันวาคม',
+    ];
+    final dateStr = '${now.day} ${thaiMonths[now.month - 1]} ${now.year + 543}';
+
+    // Placeholder data for now
+    const seniorOfficer = '-';
+    const dutyOfficer = '-';
+    const assistantOfficer = '-';
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: statusColor.withOpacity(0.3), width: 1),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: statusColor.withOpacity(0.1),
+            color: AppTheme.primary.withOpacity(0.1),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(statusIcon, color: statusColor, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'สถานะเวรยามวันนี้',
-                  style: GoogleFonts.sarabun(
-                    fontSize: 14,
-                    color: AppTheme.textSub,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'เวรยามประจำวันที่',
+                style: GoogleFonts.kanit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textMain,
                 ),
-                Text(
-                  statusText,
-                  style: GoogleFonts.kanit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : AppTheme.textMain,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              DateFormat('d MMM').format(DateTime.now()),
-              style: GoogleFonts.kanit(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: statusColor,
               ),
-            ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  dateStr,
+                  style: GoogleFonts.kanit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildDutyRow(
+            context,
+            'นายทหารเวรอาวุโส',
+            seniorOfficer,
+            Icons.star_rounded,
+          ),
+          const SizedBox(height: 12),
+          _buildDutyRow(
+            context,
+            'นายทหารเวร',
+            dutyOfficer,
+            Icons.security_rounded,
+          ),
+          const SizedBox(height: 12),
+          _buildDutyRow(
+            context,
+            'ผู้ช่วยนายทหารเวร',
+            assistantOfficer,
+            Icons.shield_outlined,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDutyRow(
+    BuildContext context,
+    String label,
+    String name,
+    IconData icon,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.blue, size: 16),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.sarabun(fontSize: 12, color: AppTheme.textSub),
+            ),
+            Text(
+              name,
+              style: GoogleFonts.kanit(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.textMain,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -1216,8 +1289,16 @@ class _HomeScreenState extends State<HomeScreen>
     if (provider.balances.isEmpty) return '0';
     double total = 0;
     for (var bal in provider.balances) {
-      total += bal.remainingDays;
+      final slug = bal.leaveType?.slug.toLowerCase() ?? '';
+      final name = bal.leaveType?.name ?? '';
+
+      // Only count Vacation/Annual Leave
+      if (slug.contains('vacation') ||
+          slug.contains('annual') ||
+          name.contains('พักผ่อน')) {
+        total += bal.remainingDays;
+      }
     }
-    return total.toStringAsFixed(0);
+    return total.toStringAsFixed(total.truncateToDouble() == total ? 0 : 1);
   }
 }

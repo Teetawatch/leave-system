@@ -50,11 +50,15 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFF8FAFF), Color(0xFFFFFFFF), Color(0xFFF0F4FF)],
+              // Subtle Violet-Blue Tint Gradient
+              colors: [Color(0xFFF5F3FF), Color(0xFFFFFFFF), Color(0xFFF0F9FF)],
               stops: [0.0, 0.5, 1.0],
             ),
           ),
         ),
+
+        // Dot Pattern Overlay
+        Positioned.fill(child: CustomPaint(painter: DotPatternPainter())),
 
         // Animated blob 1
         AnimatedBuilder(
@@ -150,4 +154,27 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
       ],
     );
   }
+}
+
+class DotPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF6366F1).withOpacity(0.04) // Very subtle indigo
+      ..style = PaintingStyle.fill;
+
+    const double spacing = 32.0;
+    const double radius = 1.0;
+
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        // Offset every other row for hexagon-like appearance
+        final double xOffset = (y / spacing).round().isEven ? 0 : spacing / 2;
+        canvas.drawCircle(Offset(x + xOffset, y), radius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

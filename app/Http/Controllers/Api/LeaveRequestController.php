@@ -175,7 +175,7 @@ class LeaveRequestController extends Controller
                         $supervisor->fcm_token,
                         'มีใบลาเข้ามาใหม่ 🔔',
                         "{$user->name} ขอลา {$leaveType->name} ({$diffDays} วัน)",
-                        ['request_id' => $leaveRequest->id]
+                        ['type' => 'new_leave_request', 'request_id' => $leaveRequest->id]
                     );
                 }
             }

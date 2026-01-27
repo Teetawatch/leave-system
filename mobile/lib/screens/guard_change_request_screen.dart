@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'guard_change_success_screen.dart';
+import '../widgets/animated_background.dart';
 
 class GuardChangeRequestScreen extends StatefulWidget {
   const GuardChangeRequestScreen({super.key});
@@ -73,8 +74,42 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
     try {
       final response = await _apiService.getGuardChangeUsers();
       if (response.data['success']) {
+        final List<dynamic> allUsers = response.data['data'];
+
+        final filteredByDept = allUsers.where((user) {
+          final dept = (user['department'] ?? '').toString().toLowerCase();
+
+          // Check for Governance / Administration (General) / Department of Provincial Administration?
+          // Using keywords from DirectoryProvider to be safe
+          if (dept.contains('ปกครอง') || dept.contains('govern')) return true;
+
+          // Education
+          if (dept.contains('ศึกษา') ||
+              dept.contains('edu') ||
+              dept.contains('study') ||
+              dept.contains('train'))
+            return true;
+
+          // Support
+          if (dept.contains('สนับสนุน') ||
+              dept.contains('support') ||
+              dept.contains('supply'))
+            return true;
+
+          // Admin (Clerk/Office)
+          if (dept.contains('ธุรการ') || dept.contains('admin')) return true;
+
+          // Finance
+          if (dept.contains('การเงิน') ||
+              dept.contains('fin') ||
+              dept.contains('account'))
+            return true;
+
+          return false;
+        }).toList();
+
         setState(() {
-          _users = response.data['data'];
+          _users = filteredByDept;
           _filteredUsers = _users;
           _isLoadingUsers = false;
         });
@@ -90,107 +125,140 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
     final provider = Provider.of<GuardChangeProvider>(context);
 
     // Using AppTheme colors directly for consistency with the design request
-    const kBlueAccent = Color(0xFF3B82F6); // Bright blue
-    const kBgColor = Color(0xFFF8FAFC);
-    const kBlueDark = Color(0xFF1E293B);
+    const kBlueAccent = AppTheme.primary; // Use AppTheme primary
+    const kBlueDark = AppTheme.textMain; // Use AppTheme textMain
 
     return Scaffold(
-      backgroundColor: kBgColor,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'ขอเปลี่ยนเวรยาม',
-          style: TextStyle(
+          style: GoogleFonts.kanit(
             fontWeight: FontWeight.w700,
-            fontSize: 18,
+            fontSize: 22,
             color: kBlueDark,
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
+        centerTitle: false,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kBlueDark),
-          onPressed: () => Navigator.pop(context),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.5),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: kBlueDark,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
       ),
-      body: SafeArea(
-        child: _isLoadingUsers
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  Expanded(
-                    child: FadeTransition(
-                      opacity: _animationController,
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.all(20),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // SECTION 1: SELECT YOUR SHIFT (Card Style)
-                              Text(
-                                'ข้อมูลเวรยาม',
-                                style: GoogleFonts.kanit(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[600],
-                                  letterSpacing: 0.5,
-                                ),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: AnimatedBackground()),
+          SafeArea(
+            child: _isLoadingUsers
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                    children: [
+                      Expanded(
+                        child: FadeTransition(
+                          opacity: _animationController,
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.all(20),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // SECTION 1: SELECT YOUR SHIFT (Card Style)
+                                  Text(
+                                    'ข้อมูลเวรยาม',
+                                    style: GoogleFonts.kanit(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildShiftSelectionCard(kBlueAccent),
+
+                                  const SizedBox(height: 24),
+
+                                  // SECTION 2: SELECT COLLEAGUE
+                                  Text(
+                                    'เลือกผู้มาเปลี่ยนแทน',
+                                    style: GoogleFonts.kanit(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildSearchField(),
+                                  const SizedBox(height: 12),
+                                  _buildColleagueList(kBlueAccent),
+
+                                  const SizedBox(height: 24),
+
+                                  // SECTION 3: REASON
+                                  Text(
+                                    'เหตุผลการขอเปลี่ยน',
+                                    style: GoogleFonts.kanit(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildReasonField(),
+                                  const SizedBox(
+                                    height: 80,
+                                  ), // Space for bottom button
+                                ],
                               ),
-                              const SizedBox(height: 12),
-                              _buildShiftSelectionCard(kBlueAccent),
-
-                              const SizedBox(height: 24),
-
-                              // SECTION 2: SELECT COLLEAGUE
-                              Text(
-                                'เลือกผู้มาเปลี่ยนแทน',
-                                style: GoogleFonts.kanit(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[600],
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              _buildSearchField(),
-                              const SizedBox(height: 12),
-                              _buildColleagueList(kBlueAccent),
-
-                              const SizedBox(height: 24),
-
-                              // SECTION 3: REASON
-                              Text(
-                                'เหตุผลการขอเปลี่ยน',
-                                style: GoogleFonts.kanit(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[600],
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              _buildReasonField(),
-                              const SizedBox(
-                                height: 80,
-                              ), // Space for bottom button
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+          ),
+        ],
       ),
       bottomSheet: Container(
-        color: kBgColor,
+        color: Colors.white,
         padding: const EdgeInsets.all(20),
         child: _buildSubmitButton(provider, kBlueAccent),
       ),
     );
+  }
+
+  String _formatThaiDate(DateTime date) {
+    final thaiMonths = [
+      'ม.ค.',
+      'ก.พ.',
+      'มี.ค.',
+      'เม.ย.',
+      'พ.ค.',
+      'มิ.ย.',
+      'ก.ค.',
+      'ส.ค.',
+      'ก.ย.',
+      'ต.ค.',
+      'พ.ย.',
+      'ธ.ค.',
+    ];
+    return '${date.day} ${thaiMonths[date.month - 1]} ${date.year + 543}';
   }
 
   Widget _buildShiftSelectionCard(Color accentColor) {
@@ -262,9 +330,7 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
                           Text(
                             _selectedDate == null
                                 ? 'เลือกวันที่'
-                                : DateFormat(
-                                    'MMM dd, yyyy',
-                                  ).format(_selectedDate!),
+                                : _formatThaiDate(_selectedDate!),
                             style: GoogleFonts.kanit(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

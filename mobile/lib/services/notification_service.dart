@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -10,6 +11,9 @@ class NotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+
+  final _messageStreamController = StreamController<RemoteMessage>.broadcast();
+  Stream<RemoteMessage> get messageStream => _messageStreamController.stream;
 
   bool _isInitialized = false;
 
@@ -36,7 +40,7 @@ class NotificationService {
 
     // 2. Setup Local Notifications (for foreground display)
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
 
     // intricate iOS setup omitted for brevity in MVP, basic setup:
     const DarwinInitializationSettings initializationSettingsDarwin =
@@ -74,6 +78,7 @@ class NotificationService {
       // If `onMessage` is triggered with a notification, construct our own
       // local notification to show to users using the created channel.
       if (notification != null && android != null) {
+        _messageStreamController.add(message); // Broadcast
         _localNotifications.show(
           notification.hashCode,
           notification.title,
@@ -83,7 +88,7 @@ class NotificationService {
               channel.id,
               channel.name,
               channelDescription: channel.description,
-              icon: '@mipmap/ic_launcher',
+              icon: '@mipmap/launcher_icon',
               importance: Importance.max,
               priority: Priority.high,
               playSound: true,

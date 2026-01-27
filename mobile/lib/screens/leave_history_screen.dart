@@ -75,32 +75,32 @@ class _ActivityScreenState extends State<ActivityScreen>
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'รายการกิจกรรม',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF1E293B),
-            letterSpacing: -0.5,
+          style: GoogleFonts.kanit(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textMain,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         automaticallyImplyLeading: false, // Handle leading manually
         leading: canPop
-            ? IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
+            ? Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
                     Icons.arrow_back_ios_new_rounded,
                     size: 20,
-                    color: Color(0xFF1E293B),
+                    color: AppTheme.textMain,
                   ),
                 ),
               )
@@ -124,50 +124,55 @@ class _ActivityScreenState extends State<ActivityScreen>
                   ),
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.white.withOpacity(0.8),
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.5)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
+                        blurRadius: 20,
                         offset: const Offset(0, 4),
                       ),
                     ],
-                    border: Border.all(color: Colors.white),
                   ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicator: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF6366F1).withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: TabBar(
+                        controller: _tabController,
+                        indicator: BoxDecoration(
+                          color: AppTheme.primary,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primary.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
+                        labelColor: Colors.white,
+                        unselectedLabelColor: AppTheme.textSub,
+                        labelStyle: GoogleFonts.kanit(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        unselectedLabelStyle: GoogleFonts.kanit(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        dividerColor: Colors.transparent,
+                        overlayColor: MaterialStateProperty.all(
+                          Colors.transparent,
+                        ),
+                        tabs: const [
+                          Tab(text: 'ประวัติการลา'),
+                          Tab(text: 'ประวัติเปลี่ยนเวร'),
+                        ],
+                      ),
                     ),
-                    labelColor: Colors.white,
-                    unselectedLabelColor: const Color(0xFF64748B),
-                    labelStyle: GoogleFonts.kanit(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                    unselectedLabelStyle: GoogleFonts.kanit(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    dividerColor: Colors.transparent,
-                    tabs: const [
-                      Tab(text: 'ประวัติการลา'),
-                      Tab(text: 'ประวัติเปลี่ยนเวร'),
-                    ],
                   ),
                 ),
 
@@ -203,7 +208,7 @@ class _ActivityScreenState extends State<ActivityScreen>
             ).then((_) => _refreshData());
           }
         },
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: AppTheme.primary,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
@@ -478,27 +483,27 @@ class _ActivityScreenState extends State<ActivityScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.indigo.withOpacity(0.1),
+                  color: AppTheme.primary.withOpacity(0.1),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: Icon(icon, size: 48, color: const Color(0xFF6366F1)),
+            child: Icon(icon, size: 48, color: AppTheme.primary),
           ),
           const SizedBox(height: 24),
           Text(
             title,
-            style: const TextStyle(
+            style: GoogleFonts.kanit(
               fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF1E293B),
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textMain,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+            style: GoogleFonts.kanit(fontSize: 14, color: AppTheme.textSub),
           ),
         ],
       ),
@@ -511,14 +516,18 @@ class _ActivityScreenState extends State<ActivityScreen>
     final leaveIcon = _getLeaveTypeIcon(request.leaveType.slug);
     final leaveColor = _getLeaveTypeColor(request.leaveType.slug);
 
-    // Determine if cancellable (including approved for user convenience, backend might reject)
-    final bool canCancel = [
-      'pending',
-      'waiting_head',
-      'waiting_hr',
-      'waiting_director',
-      'approved', // Added to allow cancelling approved leave
-    ].contains(request.status);
+    // Determine if cancellable (not yet approved or rejected)
+    final s = request.status.toLowerCase().trim();
+    final bool canCancel =
+        [
+          'pending',
+          'pending_supervisor',
+          'waiting_head',
+          'waiting_hr',
+          'waiting_director',
+        ].contains(s) ||
+        s.contains('waiting') ||
+        s.contains('pending');
 
     return Container(
       decoration: BoxDecoration(
@@ -562,7 +571,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                         style: GoogleFonts.kanit(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1E293B),
+                          color: AppTheme.textMain,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -572,7 +581,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                             : 'ไม่มีเหตุผลระบุ',
                         style: GoogleFonts.sarabun(
                           fontSize: 13,
-                          color: const Color(0xFF94A3B8),
+                          color: AppTheme.textSub,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -619,7 +628,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                 Icon(
                   Icons.calendar_today_rounded,
                   size: 16,
-                  color: const Color(0xFF64748B),
+                  color: AppTheme.textSub,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -627,7 +636,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                   style: GoogleFonts.sarabun(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF475569),
+                    color: AppTheme.textSub,
                   ),
                 ),
                 const Spacer(),
@@ -636,7 +645,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                   style: GoogleFonts.kanit(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1E293B),
+                    color: AppTheme.textMain,
                   ),
                 ),
               ],
@@ -678,7 +687,7 @@ class _ActivityScreenState extends State<ActivityScreen>
               ),
             ],
 
-            // Cancel Button - displayed for pending and approved states (below download if approved)
+            // Cancel Button
             if (canCancel) ...[
               const SizedBox(height: 16),
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
@@ -687,12 +696,15 @@ class _ActivityScreenState extends State<ActivityScreen>
                   HapticFeedback.lightImpact();
                   _showCancelDialog(request.id);
                 },
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.circular(12),
                 child: Container(
                   width: double.infinity,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.error.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -784,17 +796,6 @@ class _ActivityScreenState extends State<ActivityScreen>
     );
   }
 
-  String _formatDateRange(DateTime start, DateTime end) {
-    final startStr = "${_mToMonth(start.month)} ${start.day}"; // e.g. Oct 24
-    if (start.year == end.year &&
-        start.month == end.month &&
-        start.day == end.day) {
-      return startStr;
-    }
-    final endStr = "${_mToMonth(end.month)} ${end.day}";
-    return "$startStr - $endStr";
-  }
-
   String _mToMonth(int m) {
     const months = [
       "ม.ค.",
@@ -828,10 +829,8 @@ class _ActivityScreenState extends State<ActivityScreen>
         ? "${createdDate.day} ${_mToMonth(createdDate.month)}".toUpperCase()
         : "";
 
-    // Show cancel button if NOT cancelled, even if completed (fully_approved)
-    // The previous logic was `!isCompleted && !isCancelled`.
-    // We now allow users to attempt cancel even if fully approved, as long as it's not already cancelled/rejected.
-    final bool showCancel = !isCancelled;
+    // Show cancel button only if pending/processing (not completed/approved and not cancelled)
+    final bool showCancel = !isCompleted && !isCancelled;
 
     return Container(
       decoration: BoxDecoration(
@@ -1136,7 +1135,7 @@ class _ActivityScreenState extends State<ActivityScreen>
             ),
             const SizedBox(width: 8),
             Text(
-              'ดาวน์โหลดใบสลับกะ',
+              'ดาวน์โหลดใบเปลี่ยนเวร',
               style: GoogleFonts.kanit(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -1285,6 +1284,7 @@ class _ActivityScreenState extends State<ActivityScreen>
       case 'approved':
         return const Color(0xFF10B981);
       case 'rejected':
+      case 'cancelled':
         return const Color(0xFFEF4444);
       default:
         return const Color(0xFFF59E0B);
@@ -1325,6 +1325,8 @@ class _ActivityScreenState extends State<ActivityScreen>
         return 'อนุมัติ';
       case 'rejected':
         return 'ปฏิเสธ';
+      case 'cancelled':
+        return 'ยกเลิก';
       default:
         return 'รออนุมัติ';
     }
@@ -1335,6 +1337,7 @@ class _ActivityScreenState extends State<ActivityScreen>
       case 'approved':
         return Icons.check_circle_rounded;
       case 'rejected':
+      case 'cancelled':
         return Icons.cancel_rounded;
       default:
         return Icons.access_time_filled_rounded;
@@ -1348,6 +1351,33 @@ class _ActivityScreenState extends State<ActivityScreen>
     }
     if (status == 'pending') return const Color(0xFFF59E0B);
     return const Color(0xFF3B82F6);
+  }
+
+  String _formatThaiDate(DateTime date) {
+    final thaiMonths = [
+      'มกราคม',
+      'กุมภาพันธ์',
+      'มีนาคม',
+      'เมษายน',
+      'พฤษภาคม',
+      'มิถุนายน',
+      'กรกฎาคม',
+      'สิงหาคม',
+      'กันยายน',
+      'ตุลาคม',
+      'พฤศจิกายน',
+      'ธันวาคม',
+    ];
+    return '${date.day} ${thaiMonths[date.month - 1]} ${date.year + 543}';
+  }
+
+  String _formatDateRange(DateTime start, DateTime end) {
+    if (start.year == end.year &&
+        start.month == end.month &&
+        start.day == end.day) {
+      return _formatThaiDate(start);
+    }
+    return '${_formatThaiDate(start)} - ${_formatThaiDate(end)}';
   }
 
   String _getGuardStatusText(String status) {

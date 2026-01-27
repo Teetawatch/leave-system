@@ -18,14 +18,16 @@ class AppNotification {
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     // Determine type based on data["type"] or similar if available, otherwise default
     String type = 'info';
-    if (json['data'] != null && json['data']['type'] != null) {
-      type = json['data']['type'];
+    final data = json['data'] ?? json;
+
+    if (data['type'] != null) {
+      type = data['type'];
     }
 
     return AppNotification(
-      id: json['id'] ?? '',
-      title: json['data']?['title'] ?? 'การแจ้งเตือน',
-      body: json['data']?['body'] ?? '',
+      id: (json['id'] ?? '').toString(),
+      title: data['title'] ?? 'การแจ้งเตือน',
+      body: data['body'] ?? data['message'] ?? '',
       timestamp: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),

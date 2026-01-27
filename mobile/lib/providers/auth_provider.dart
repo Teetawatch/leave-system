@@ -89,9 +89,15 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _apiService.logout();
-    _user = null;
-    notifyListeners();
+    try {
+      await _apiService.logout();
+    } catch (e) {
+      print('Logout Error: $e');
+    } finally {
+      // Always clear user and update UI
+      _user = null;
+      notifyListeners();
+    }
   }
 
   Future<bool> updateProfile({

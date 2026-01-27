@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/leave_type_model.dart';
 import '../providers/leave_provider.dart';
+import '../widgets/animated_background.dart';
+import '../config/app_theme.dart';
 import 'leave_success_screen.dart';
 
 class LeaveRequestScreen extends StatefulWidget {
@@ -149,15 +151,43 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     }
   }
 
+  DateTime _calculateFirstDate() {
+    final now = DateTime.now();
+    // Reset time to midnight for cleaner date comparison
+    final today = DateTime(now.year, now.month, now.day);
+
+    if (_isPersonalLeave) {
+      return today.add(const Duration(days: 1)); // At least 1 day in advance
+    } else if (_isVacationLeave) {
+      return today.add(const Duration(days: 3)); // At least 3 days in advance
+    } else if (_isTemporaryLeave) {
+      return today; // Only today
+    }
+
+    // Default: Allow backdating for 30 days (e.g. sick leave)
+    return today.subtract(const Duration(days: 30));
+  }
+
+  DateTime _calculateInitialDate() {
+    final firstAllowed = _calculateFirstDate();
+    final now = DateTime.now();
+    if (firstAllowed.isAfter(now)) {
+      return firstAllowed;
+    }
+    return now;
+  }
+
   Future<void> _selectDate(bool isStart) async {
     HapticFeedback.lightImpact();
     final picked = await showDatePicker(
       context: context,
       initialDate: isStart
-          ? (_startDate ?? DateTime.now())
-          : (_endDate ?? (_startDate ?? DateTime.now())),
-      firstDate: DateTime.now().subtract(const Duration(days: 30)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+          ? (_startDate ?? _calculateInitialDate())
+          : (_endDate ?? (_startDate ?? _calculateInitialDate())),
+      firstDate: _calculateFirstDate(),
+      lastDate: _isTemporaryLeave
+          ? DateTime.now()
+          : DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -200,6 +230,87 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
     setState(() => _isLoading = true);
     FocusScope.of(context).unfocus();
+
+    // Validation for advance notice rules
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // _startDate is verified not null above
+    final validationDate = DateTime(
+      _startDate!.year,
+      _startDate!.month,
+      _startDate!.day,
+    );
+    final difference = validationDate.difference(today).inDays;
+
+    if (_isPersonalLeave && difference < 1) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ลากิจต้องล่วงหน้าอย่างน้อย 1 วัน'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_isVacationLeave && difference < 3) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ลาพักผ่อนต้องล่วงหน้าอย่างน้อย 3 วัน'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_isTemporaryLeave) {
+      if (difference != 0) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ลาชั่วกาลสามารถลาได้เฉพาะวันที่ปัจจุบันเท่านั้น'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      if (_temporarySlot != null) {
+        final now = DateTime.now();
+        final double currentDouble = now.hour + (now.minute / 60.0);
+        final bool isMorning = _temporarySlot!.contains('เช้า');
+        final bool isAfternoon = _temporarySlot!.contains('บ่าย');
+
+        if (isMorning && currentDouble > 7.5) {
+          // 07:30
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'ลาชั่วกาลช่วงเช้า ต้องยื่นคำขอก่อน 07.30 น. (ขณะนี้ ${now.hour}:${now.minute.toString().padLeft(2, '0')} น.)',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        if (isAfternoon && currentDouble > 11.0) {
+          // 11:00
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'ลาชั่วกาลช่วงบ่าย ต้องยื่นคำขอก่อน 11.00 น. (ขณะนี้ ${now.hour}:${now.minute.toString().padLeft(2, '0')} น.)',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
+    }
 
     List<String> contactAddress = [];
     if (_useDetailedAddress) {
@@ -291,6 +402,15 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     return slug.contains('temporary') || name.contains('ชั่วกาล');
   }
 
+  bool get _isVacationLeave {
+    if (_selectedType == null) return false;
+    final name = _selectedType!.name.toLowerCase();
+    final slug = _selectedType!.slug.toLowerCase();
+    return slug.contains('vacation') ||
+        slug.contains('annual') ||
+        name.contains('พักผ่อน');
+  }
+
   bool get _useDetailedAddress => _isSickLeave || _isPersonalLeave;
 
   String? _temporarySlot;
@@ -302,111 +422,128 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA), // Light background
+      backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
           'ยื่นใบลา',
           style: GoogleFonts.kanit(
-            fontSize: 18,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: AppTheme.textMain,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            size: 20,
-            color: Colors.black,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.5),
+            shape: BoxShape.circle,
           ),
-          onPressed: () => Navigator.pop(context),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              size: 20,
+              color: AppTheme.textMain,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLabel('ประเภทการลา'),
-              const SizedBox(height: 8),
-              _buildLeaveTypeDropdown(),
-              const SizedBox(height: 24),
-              if (_isTemporaryLeave) ...[
-                _buildLabel('วันที่ลา'),
-                const SizedBox(height: 8),
-                _buildDatePicker(
-                  _startDate,
-                  'เลือกวันที่',
-                  () => _selectDate(true),
-                ),
-                const SizedBox(height: 24),
-                _buildLabel('ช่วงเวลา'),
-                const SizedBox(height: 8),
-                _buildTemporarySlotDropdown(),
-              ] else
-                Row(
+      body: Stack(
+        children: [
+          const Positioned.fill(child: AnimatedBackground()),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    _buildLabel('ประเภทการลา'),
+                    const SizedBox(height: 8),
+                    _buildLeaveTypeDropdown(),
+                    const SizedBox(height: 24),
+                    if (_isTemporaryLeave) ...[
+                      _buildLabel('วันที่ลา'),
+                      const SizedBox(height: 8),
+                      _buildDatePicker(
+                        _startDate,
+                        'เลือกวันที่',
+                        () => _selectDate(true),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildLabel('ช่วงเวลา'),
+                      const SizedBox(height: 8),
+                      _buildTemporarySlotDropdown(),
+                    ] else
+                      Row(
                         children: [
-                          _buildLabel('วันที่เริ่มลา'),
-                          const SizedBox(height: 8),
-                          _buildDatePicker(
-                            _startDate,
-                            'เลือกวันที่',
-                            () => _selectDate(true),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('วันที่เริ่มลา'),
+                                const SizedBox(height: 8),
+                                _buildDatePicker(
+                                  _startDate,
+                                  'เลือกวันที่',
+                                  () => _selectDate(true),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('ถึงวันที่'),
+                                const SizedBox(height: 8),
+                                _buildDatePicker(
+                                  _endDate,
+                                  'เลือกวันที่',
+                                  () => _selectDate(false),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
+                    const SizedBox(height: 24),
+                    _buildLabel('เหตุผล/ความจำเป็น'),
+                    const SizedBox(height: 8),
+                    _buildReasonField(),
+
+                    if (_selectedType != null) ...[
+                      const SizedBox(height: 24),
+                      _buildLabel('ที่อยู่ที่ติดต่อได้ระหว่างลา'),
+                      const SizedBox(height: 8),
+                      if (_useDetailedAddress)
+                        _buildDetailedAddressFields()
+                      else
+                        _buildContactAddressField(),
+                    ],
+
+                    const SizedBox(height: 24),
+                    _buildLabel(
+                      _isSickLeave
+                          ? 'ใบรับรองแพทย์ (ถ้ามี)'
+                          : 'แนบไฟล์ (ไม่บังคับ)',
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLabel('ถึงวันที่'),
-                          const SizedBox(height: 8),
-                          _buildDatePicker(
-                            _endDate,
-                            'เลือกวันที่',
-                            () => _selectDate(false),
-                          ),
-                        ],
-                      ),
-                    ),
+                    const SizedBox(height: 8),
+                    _buildAttachmentArea(),
+                    const SizedBox(height: 32),
+                    _buildSubmitButton(),
                   ],
                 ),
-              const SizedBox(height: 24),
-              _buildLabel('เหตุผล/ความจำเป็น'),
-              const SizedBox(height: 8),
-              _buildReasonField(),
-
-              if (_selectedType != null) ...[
-                const SizedBox(height: 24),
-                _buildLabel('ที่อยู่ที่ติดต่อได้ระหว่างลา'),
-                const SizedBox(height: 8),
-                if (_useDetailedAddress)
-                  _buildDetailedAddressFields()
-                else
-                  _buildContactAddressField(),
-              ],
-
-              const SizedBox(height: 24),
-              _buildLabel(
-                _isSickLeave ? 'ใบรับรองแพทย์ (ถ้ามี)' : 'แนบไฟล์ (ไม่บังคับ)',
               ),
-              const SizedBox(height: 8),
-              _buildAttachmentArea(),
-              const SizedBox(height: 32),
-              _buildSubmitButton(),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -682,6 +819,24 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     );
   }
 
+  String _formatThaiDate(DateTime date) {
+    final thaiMonths = [
+      'มกราคม',
+      'กุมภาพันธ์',
+      'มีนาคม',
+      'เมษายน',
+      'พฤษภาคม',
+      'มิถุนายน',
+      'กรกฎาคม',
+      'สิงหาคม',
+      'กันยายน',
+      'ตุลาคม',
+      'พฤศจิกายน',
+      'ธันวาคม',
+    ];
+    return '${date.day} ${thaiMonths[date.month - 1]} ${date.year + 543}';
+  }
+
   Widget _buildDatePicker(DateTime? date, String hint, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -696,7 +851,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              date != null ? DateFormat('dd/MM/yyyy').format(date) : hint,
+              date != null ? _formatThaiDate(date) : hint,
               style: GoogleFonts.sarabun(
                 fontSize: 14,
                 color: date != null

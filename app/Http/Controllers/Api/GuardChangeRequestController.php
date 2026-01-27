@@ -244,7 +244,7 @@ class GuardChangeRequestController extends Controller
     {
         $users = User::where('id', '!=', Auth::id())
             ->where('registration_status', 'approved')
-            ->select('id', 'name', 'rank', 'position')
+            ->select('id', 'name', 'rank', 'position', 'department')
             ->orderBy('name')
             ->get();
 
