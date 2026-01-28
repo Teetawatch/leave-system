@@ -15,36 +15,94 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final ImagePicker _picker = ImagePicker();
-
   Future<void> _pickAvatar() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final ImagePicker picker = ImagePicker();
     try {
-      final XFile? image = await _picker.pickImage(
+      final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 80,
-        maxWidth: 1000,
+        imageQuality: 50,
+        maxWidth: 500,
       );
 
       if (image != null) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final success = await authProvider.updateProfile(
           avatarPath: image.path,
         );
 
-        if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'อัปโหลดรูปโปรไฟล์สำเร็จ',
-                style: GoogleFonts.kanit(),
+        if (mounted) {
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'อัปเดตรูปโปรไฟล์สำเร็จ',
+                  style: GoogleFonts.kanit(),
+                ),
+                backgroundColor: Colors.green,
               ),
-              backgroundColor: AppTheme.success,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'เกิดข้อผิดพลาดในการอัปเดตรูปโปรไฟล์',
+                  style: GoogleFonts.kanit(),
+                ),
+                backgroundColor: Colors.red,
               ),
-            ),
-          );
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('เกิดข้อผิดพลาด: $e', style: GoogleFonts.kanit()),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickSignature() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 800,
+      );
+
+      if (image != null) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final success = await authProvider.updateProfile(
+          signaturePath: image.path,
+        );
+
+        if (mounted) {
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'อัปเดตลายเซ็นสำเร็จ',
+                  style: GoogleFonts.kanit(),
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'เกิดข้อผิดพลาดในการอัปเดตลายเซ็น',
+                  style: GoogleFonts.kanit(),
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       }
     } catch (e) {
@@ -260,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           _buildListTile(
                             icon: Icons.badge_outlined,
-                            title: 'รหัสพนักงาน',
+                            title: 'รหัส ID',
                             subtitle: '#${user?.id ?? '-'}',
                           ),
                           _buildDivider(),
@@ -275,7 +333,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     const SizedBox(height: 24),
 
-                    // 4. Account Settings Section
+                    // 4. Digital Signature Section
+                    _buildSectionHeader('ลายเซ็นดิจิทัล'),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          if (user?.signatureUrl != null)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 20),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFFF1F5F9),
+                                ),
+                              ),
+                              child: Image.network(
+                                user!.signatureUrl!,
+                                height: 100,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                      Icons.error_outline_rounded,
+                                      color: Colors.red,
+                                    ),
+                              ),
+                            )
+                          else
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 20),
+                              padding: const EdgeInsets.all(32),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFFF1F5F9),
+                                  style: BorderStyle.solid,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.draw_rounded,
+                                size: 48,
+                                color: Colors.blue.withOpacity(0.3),
+                              ),
+                            ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: authProvider.isLoading
+                                  ? null
+                                  : _pickSignature,
+                              icon: const Icon(Icons.upload_rounded, size: 20),
+                              label: Text(
+                                'อัปโหลดลายเซ็นใหม่',
+                                style: GoogleFonts.kanit(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 5. Account Settings Section
                     _buildSectionHeader('ตั้งค่าบัญชี'),
                     Container(
                       decoration: BoxDecoration(

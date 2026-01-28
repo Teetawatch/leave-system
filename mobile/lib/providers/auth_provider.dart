@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
@@ -52,7 +53,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<String?> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();
 
@@ -77,15 +78,38 @@ class AuthProvider with ChangeNotifier {
 
         _isLoading = false;
         notifyListeners();
-        return true;
+        return null; // Success
       }
     } catch (e) {
-      print('Login Error: $e');
+      String errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+      if (e is dio.DioException) {
+        print('Login Status Code: ${e.response?.statusCode}');
+        print('Login Response Data: ${e.response?.data}');
+
+        if (e.response?.statusCode == 422) {
+          final data = e.response?.data;
+          if (data != null && data['message'] != null) {
+            errorMessage = data['message'];
+          } else if (data != null && data['errors'] != null) {
+            // Extract first error
+            final errors = data['errors'] as Map<String, dynamic>;
+            errorMessage = errors.values.first[0];
+          }
+        } else {
+          errorMessage = 'Server Error: ${e.response?.statusCode}';
+        }
+      } else {
+        errorMessage = 'Connection Error: $e';
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return errorMessage;
     }
 
     _isLoading = false;
     notifyListeners();
-    return false;
+    return 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
   }
 
   Future<void> logout() async {

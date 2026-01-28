@@ -16,6 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../providers/guard_change_provider.dart';
 import 'package:dio/dio.dart';
+import '../models/user_model.dart';
 
 import '../widgets/animated_background.dart';
 
@@ -176,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen>
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       elevation: 0,
                       scrolledUnderElevation: 0,
-                      pinned: false,
+                      pinned: true,
                       floating: true,
                       snap: true,
                       stretch: true,
@@ -480,27 +481,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
 
-                    // 4.1 Today's Duty Section (New)
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                      sliver: SliverToBoxAdapter(
-                        child: _buildDutyStatusCard(context),
-                      ),
-                    ),
-
-                    // 4.2 Recent Activity Section (New)
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                      sliver: SliverToBoxAdapter(
-                        child: _buildRecentActivitySection(
-                          context,
-                          leaveProvider,
-                          guardProvider,
-                        ),
-                      ),
-                    ),
-
-                    // 5. Contact HR (Phonebook)
+                    // 4.1 Contact HR (Phonebook)
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
@@ -511,9 +492,29 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
 
+                    // 4.2 Today's Duty Section
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildDutyStatusCard(context),
+                      ),
+                    ),
+
+                    // 4.3 Recent Activity Section
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildRecentActivitySection(
+                          context,
+                          leaveProvider,
+                          guardProvider,
+                        ),
+                      ),
+                    ),
+
                     // 6. News Section
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
                       sliver: SliverToBoxAdapter(
                         child: _buildNewsSection(context),
                       ),
@@ -530,7 +531,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   // --- Widgets ---
 
-  Widget _buildAvatar(dynamic user) {
+  Widget _buildAvatar(User? user) {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
@@ -540,14 +541,21 @@ class _HomeScreenState extends State<HomeScreen>
       child: CircleAvatar(
         radius: 26,
         backgroundColor: Colors.white,
-        child: Text(
-          (user?.name ?? 'S')[0].toUpperCase(),
-          style: GoogleFonts.kanit(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF6C63FF), // Match primary purple explicitly
-          ),
-        ),
+        backgroundImage: (user?.avatarUrl != null)
+            ? NetworkImage(user!.avatarUrl!)
+            : null,
+        child: (user?.avatarUrl == null)
+            ? Text(
+                (user?.name ?? 'S')[0].toUpperCase(),
+                style: GoogleFonts.kanit(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(
+                    0xFF6C63FF,
+                  ), // Match primary purple explicitly
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -1144,8 +1152,8 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (allActivities.isEmpty) return const SizedBox.shrink();
 
-    // Show only top 1 most recent item to keep it compact, or list a few
-    final recent = allActivities.first;
+    // Show top 3 most recent items
+    final recentItems = allActivities.take(3).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1175,72 +1183,82 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+        const SizedBox(height: 8),
+        ListView.separated(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: recentItems.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final item = recentItems[index];
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color:
-                      (recent['type'] == 'leave'
-                              ? AppTheme.primary
-                              : AppTheme.accent)
-                          .withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  recent['type'] == 'leave'
-                      ? Icons.event_note_rounded
-                      : Icons.swap_horiz_rounded,
-                  color: recent['type'] == 'leave'
-                      ? AppTheme.primary
-                      : AppTheme.accent,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      recent['title'] as String,
-                      style: GoogleFonts.kanit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : AppTheme.textMain,
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color:
+                          (item['type'] == 'leave'
+                                  ? AppTheme.primary
+                                  : AppTheme.accent)
+                              .withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      DateFormat(
-                        'd MMM yyyy, HH:mm',
-                      ).format(recent['date'] as DateTime),
-                      style: GoogleFonts.sarabun(
-                        fontSize: 12,
-                        color: AppTheme.textSub,
-                      ),
+                    child: Icon(
+                      item['type'] == 'leave'
+                          ? Icons.event_note_rounded
+                          : Icons.swap_horiz_rounded,
+                      color: item['type'] == 'leave'
+                          ? AppTheme.primary
+                          : AppTheme.accent,
+                      size: 24,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['title'] as String,
+                          style: GoogleFonts.kanit(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : AppTheme.textMain,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormat(
+                            'd MMM yyyy, HH:mm',
+                          ).format(item['date'] as DateTime),
+                          style: GoogleFonts.sarabun(
+                            fontSize: 12,
+                            color: AppTheme.textSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildStatusBadge(item['status'] as String),
+                ],
               ),
-              _buildStatusBadge(recent['status'] as String),
-            ],
-          ),
+            );
+          },
         ),
       ],
     );

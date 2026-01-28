@@ -43,22 +43,22 @@ class _LoginScreenState extends State<LoginScreen>
     FocusScope.of(context).unfocus();
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.login(
+    final error = await auth.login(
       _emailController.text,
       _passwordController.text,
     );
 
-    if (!success && mounted) {
+    if (error != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
-            children: const [
-              Icon(Icons.error_outline_rounded, color: Colors.white),
-              SizedBox(width: 12),
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  error,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],

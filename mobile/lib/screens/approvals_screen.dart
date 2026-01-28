@@ -493,126 +493,266 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status Tag Overlay
+            Stack(
               children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.orange.withOpacity(0.1),
-                      child: Text(
-                        request.user?.name.substring(0, 1) ?? '?',
-                        style: GoogleFonts.kanit(
-                          color: Colors.orange,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Colors.white,
+                          backgroundImage: request.user?.avatarUrl != null
+                              ? NetworkImage(request.user!.avatarUrl!)
+                              : null,
+                          child: request.user?.avatarUrl == null
+                              ? Text(
+                                  request.user?.name.substring(0, 1) ?? '?',
+                                  style: GoogleFonts.kanit(
+                                    color: const Color(0xFFD97706),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 24,
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              request.user?.fullName ?? 'ไม่ระบุชื่อ',
+                              style: GoogleFonts.kanit(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 18,
+                                color: AppTheme.textMain,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF7ED),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(0xFFFFEDD5),
+                                ),
+                              ),
+                              child: Text(
+                                request.user?.position ?? 'ไม่ระบุตำแหน่ง',
+                                style: GoogleFonts.sarabun(
+                                  color: const Color(0xFF9A3412),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
+                    child: const Icon(
+                      Icons.swap_horiz_rounded,
+                      color: Color(0xFFD97706),
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 1, indent: 24, endIndent: 24),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'รายละเอียดการเปลี่ยนเวร',
+                    style: GoogleFonts.kanit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textSub,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: AppTheme.border.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildDetailRow(
+                          'ตำแหน่งเวร',
+                          request.dutyPositionThai,
+                          Icons.security_rounded,
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(height: 1, color: Color(0xFFE2E8F0)),
+                        ),
+                        _buildDetailRow(
+                          'วันที่ปฏิบัติ',
+                          request.formattedDutyDate,
+                          Icons.calendar_today_rounded,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (request.remarks != null &&
+                      request.remarks!.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                      ),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            request.user?.name ?? 'ไม่ระบุชื่อ',
-                            style: GoogleFonts.kanit(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
-                              color: AppTheme.textMain,
-                            ),
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: Colors.blue,
                           ),
-                          Text(
-                            'ต้องการให้ท่านปฏิบัติเวรแทน',
-                            style: GoogleFonts.sarabun(
-                              color: AppTheme.textSub,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'หมายเหตุจากผู้ขอ',
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.blue[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  request.remarks!,
+                                  style: GoogleFonts.sarabun(
+                                    color: AppTheme.textSub,
+                                    fontSize: 14,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppTheme.border.withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildDetailRow(
-                        'ตำแหน่งเวร',
-                        request.dutyPositionThai,
-                        Icons.security_rounded,
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => _showGuardRejectDialog(request.id),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.error,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Divider(height: 1),
+                      child: Text(
+                        'ปฏิเสธ',
+                        style: GoogleFonts.kanit(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
                       ),
-                      _buildDetailRow(
-                        'วันที่ปฏิบัติ',
-                        request.formattedDutyDate,
-                        Icons.calendar_today_rounded,
-                      ),
-                    ],
-                  ),
-                ),
-                if (request.remarks != null && request.remarks!.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    'หมายเหตุ: ${request.remarks}',
-                    style: GoogleFonts.sarabun(
-                      color: AppTheme.textSub.withOpacity(0.8),
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
                     ),
                   ),
-                ],
-                const SizedBox(height: 28),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => _showGuardRejectDialog(request.id),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.error,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () => _showGuardApproveDialog(request.id),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                         child: Text(
-                          'ปฏิเสธ',
+                          'ยืนยันรับเวร',
                           style: GoogleFonts.kanit(
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                             fontSize: 16,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildActionButton(
-                        'ยืนยันรับเวร',
-                        Colors.orange,
-                        () => _showGuardApproveDialog(request.id),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

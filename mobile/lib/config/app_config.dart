@@ -1,8 +1,23 @@
+import 'package:flutter/foundation.dart'; // ต้อง import ตัวนี้ก่อน
+
 class AppConfig {
-  // สำหรับ Android Emulator (AVD) ให้ใช้ 10.0.2.2
-  // สำหรับ iOS Simulator ให้ใช้ 127.0.0.1
-  // สำหรับเครื่องจริง ให้ใช้ IP ของเครื่องคอมพิวเตอร์คุณ
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  // Configs
+  //static const String _localUrl = 'http://10.0.2.2:8000/api'; // สำหรับ Emulator
+  // static const String _localUrl = 'http://192.168.1.xxx:8000/api'; // สำหรับเครื่องจริง (Wifi เดียวกัน)
+
+  static const String _productionUrl = 'https://nass.ac.th/leave/index.php/api';
+
+  // Logic: ถ้าเป็น Release Mode (ตอน Build APK) ให้ใช้ลิงก์จริงอัตโนมัติ
+  // แต่ถ้า Debug Mode ให้ใช้ลิงก์ Local
+  static String get baseUrl {
+    if (kReleaseMode) {
+      return _productionUrl;
+    }
+    // อยากใช้อันไหนตอนแก้โค้ด ก็เลือกคืนค่านั้นครับ
+    // return _localUrl;
+    return _productionUrl; // ตอนนี้คุณอยากเทสกับ Server จริง ก็เปิดบรรทัดนี้ไว้
+  }
+
   static const String appName =
       'ระบบบริหารจัดการงานธุรการด้านกำลังพล โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ';
 }

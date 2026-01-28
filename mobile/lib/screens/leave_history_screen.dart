@@ -7,9 +7,11 @@ import '../models/leave_request_model.dart';
 import '../models/guard_change_model.dart';
 import '../providers/leave_provider.dart';
 import '../providers/guard_change_provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/pdf_service.dart';
 import '../widgets/animated_background.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'leave_request_screen.dart';
 import 'guard_change_request_screen.dart';
 
@@ -512,7 +514,6 @@ class _ActivityScreenState extends State<ActivityScreen>
 
   Widget _buildLeaveCard(LeaveRequest request) {
     final statusColor = _getLeaveStatusColor(request.status);
-    final statusIcon = _getLeaveStatusIcon(request.status);
     final leaveIcon = _getLeaveTypeIcon(request.leaveType.slug);
     final leaveColor = _getLeaveTypeColor(request.leaveType.slug);
 
@@ -532,202 +533,259 @@ class _ActivityScreenState extends State<ActivityScreen>
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
         child: Column(
           children: [
-            // Top Row: Icon + Title + Status
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Icon
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: leaveColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(leaveIcon, color: leaveColor, size: 24),
-                ),
-                const SizedBox(width: 16),
-
-                // Title & Duration
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        request.leaveType.name,
-                        style: GoogleFonts.kanit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textMain,
-                        ),
+            // Side Indicator & Main Info
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Status Color Bar
+                  Container(width: 6, color: statusColor),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: leaveColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        leaveIcon,
+                                        color: leaveColor,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      request.leaveType.name,
+                                      style: GoogleFonts.kanit(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.textMain,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              _buildStatusBadgeUI(request.status),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'ช่วงเวลาที่ลา',
+                                      style: GoogleFonts.kanit(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.textSub,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _formatDateRange(
+                                        request.startDate,
+                                        request.endDate,
+                                      ),
+                                      style: GoogleFonts.sarabun(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.textMain,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'จำนวน',
+                                      style: GoogleFonts.kanit(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.textSub,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${request.totalDays} วัน',
+                                      style: GoogleFonts.kanit(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (request.reason.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFF1F5F9),
+                                ),
+                              ),
+                              child: Text(
+                                request.reason,
+                                style: GoogleFonts.sarabun(
+                                  fontSize: 12,
+                                  color: AppTheme.textSub,
+                                  height: 1.4,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        request.reason.isNotEmpty
-                            ? request.reason
-                            : 'ไม่มีเหตุผลระบุ',
-                        style: GoogleFonts.sarabun(
-                          fontSize: 13,
-                          color: AppTheme.textSub,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-
-                // Status Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(statusIcon, size: 14, color: statusColor),
-                      const SizedBox(width: 4),
-                      Text(
-                        _getLeaveStatusSimpleText(request.status).toUpperCase(),
-                        style: GoogleFonts.kanit(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            const Divider(height: 1, color: Color(0xFFF1F5F9)),
-            const SizedBox(height: 16),
 
-            // Bottom Row: Date & Days
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_rounded,
-                  size: 16,
-                  color: AppTheme.textSub,
+            // Footer Actions
+            if (request.status == 'approved' || canCancel)
+              Container(
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  _formatDateRange(request.startDate, request.endDate),
-                  style: GoogleFonts.sarabun(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.textSub,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '${request.totalDays} วัน',
-                  style: GoogleFonts.kanit(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textMain,
-                  ),
-                ),
-              ],
-            ),
-            if (request.status == 'approved') ...[
-              const SizedBox(height: 16),
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              InkWell(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _downloadLeavePdf(request.id);
-                },
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(20),
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.download_rounded,
-                        size: 18,
-                        color: Color(0xFF3B82F6),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'ดาวน์โหลดใบลา',
-                        style: GoogleFonts.kanit(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF3B82F6),
+                child: Row(
+                  children: [
+                    if (request.status == 'approved')
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _downloadLeavePdf(request.id);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.file_download_outlined,
+                                  size: 18,
+                                  color: Color(0xFF3B82F6),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'PDF',
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF3B82F6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    if (request.status == 'approved' && canCancel)
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: const Color(0xFFF1F5F9),
+                      ),
+                    if (canCancel)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _showCancelDialog(request.id);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 18,
+                                  color: AppTheme.error,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'ยกเลิก',
+                                  style: GoogleFonts.kanit(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.error,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ],
-
-            // Cancel Button
-            if (canCancel) ...[
-              const SizedBox(height: 16),
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              InkWell(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showCancelDialog(request.id);
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.error.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.cancel_outlined,
-                        size: 18,
-                        color: AppTheme.error,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'ยกเลิกคำขอ',
-                        style: GoogleFonts.kanit(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadgeUI(String status) {
+    final statusColor = _getLeaveStatusColor(status);
+    final statusText = _getLeaveStatusSimpleText(status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: statusColor.withOpacity(0.2)),
+      ),
+      child: Text(
+        statusText,
+        style: GoogleFonts.kanit(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: statusColor,
         ),
       ),
     );
@@ -796,24 +854,6 @@ class _ActivityScreenState extends State<ActivityScreen>
     );
   }
 
-  String _mToMonth(int m) {
-    const months = [
-      "ม.ค.",
-      "ก.พ.",
-      "มี.ค.",
-      "เม.ย.",
-      "พ.ค.",
-      "มิ.ย.",
-      "ก.ค.",
-      "ส.ค.",
-      "ก.ย.",
-      "ต.ค.",
-      "พ.ย.",
-      "ธ.ค.",
-    ];
-    return months[m - 1];
-  }
-
   Widget _buildGuardCard(GuardChangeRequest request) {
     final statusColor = _getGuardStatusColor(request.status);
     final statusLabel = _getGuardStatusText(request.status);
@@ -826,7 +866,7 @@ class _ActivityScreenState extends State<ActivityScreen>
     } catch (_) {}
 
     final dateHeader = createdDate != null
-        ? "${createdDate.day} ${_mToMonth(createdDate.month)}".toUpperCase()
+        ? DateFormat('d MMM yyyy').format(createdDate)
         : "";
 
     // Show cancel button only if pending/processing (not completed/approved and not cancelled)
@@ -838,313 +878,255 @@ class _ActivityScreenState extends State<ActivityScreen>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 15,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Header: Date & Status
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-            child: Row(
-              children: [
-                Text(
-                  (isCompleted
-                          ? 'เสร็จสิ้น $dateHeader'
-                          : isCancelled
-                          ? 'ยกเลิก $dateHeader'
-                          : 'ยื่นคำขอ $dateHeader')
-                      .toUpperCase(),
-                  style: GoogleFonts.kanit(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF94A3B8),
-                    letterSpacing: 1.2,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Column(
+          children: [
+            // Status Header Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              color: statusColor.withOpacity(0.08),
+              child: Row(
+                children: [
+                  Icon(
+                    isCompleted
+                        ? Icons.check_circle_outline_rounded
+                        : isCancelled
+                        ? Icons.cancel_outlined
+                        : Icons.pending_actions_rounded,
+                    size: 16,
+                    color: statusColor,
                   ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                  const SizedBox(width: 8),
+                  Text(
+                    statusLabel.toUpperCase(),
+                    style: GoogleFonts.kanit(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: statusColor,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
+                  const Spacer(),
+                  Text(
+                    dateHeader,
+                    style: GoogleFonts.sarabun(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSub,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+            // Timeline Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              child: Stack(
+                children: [
+                  // Connector Line
+                  Positioned(
+                    left: 23,
+                    top: 24,
+                    bottom: 24,
+                    child: Container(width: 2, color: const Color(0xFFF1F5F9)),
+                  ),
+                  Column(
                     children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: statusColor,
-                          shape: BoxShape.circle,
+                      _buildGuardStepRow(
+                        label: 'ผู้ขอเปลี่ยนเวร',
+                        title:
+                            request.user?.fullName ??
+                            Provider.of<AuthProvider>(
+                              context,
+                              listen: false,
+                            ).user?.fullName ??
+                            'ไม่ระบุชื่อ',
+                        subtitle:
+                            '${request.dutyPositionThai} • ${request.formattedDutyDate}',
+                        avatarUrl:
+                            request.user?.avatarUrl ??
+                            Provider.of<AuthProvider>(
+                              context,
+                              listen: false,
+                            ).user?.avatarUrl,
+                        isTop: true,
+                      ),
+                      const SizedBox(height: 16),
+                      // Arrow indicator in the middle
+                      Center(
+                        child: Container(
+                          width: 48,
+                          alignment: Alignment.center,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.keyboard_double_arrow_down_rounded,
+                              size: 16,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        statusLabel,
-                        style: GoogleFonts.kanit(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
-                        ),
+                      const SizedBox(height: 16),
+                      _buildGuardStepRow(
+                        label: 'ผู้ปฏิบัติแทน',
+                        title:
+                            request.replacementUser?.fullName ?? 'ไม่ระบุชื่อ',
+                        subtitle: 'ทำหน้าที่แทนในเวรดังกล่าว',
+                        avatarUrl: request.replacementUser?.avatarUrl,
+                        isTop: false,
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 20),
-
-          // Timeline Content
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Stack(
-              children: [
-                // Connector Line (Background)
-                Positioned(
-                  left: 23, // Center of width 48 (24) - half line width (1)
-                  top: 36, // Center of top item (72/2)
-                  bottom: 36, // Center of bottom item (72/2)
-                  child: Container(width: 2, color: const Color(0xFFE2E8F0)),
+            // Footer Actions
+            if (isCompleted || showCancel)
+              Container(
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
                 ),
-
-                // Content
-                Column(
+                child: Row(
                   children: [
-                    // Top Item
-                    SizedBox(
-                      height: 72,
-                      child: Row(
-                        children: [
-                          // Avatar
-                          SizedBox(
-                            width: 48,
-                            child: Center(
-                              child: _buildAvatar(request.user?.avatarUrl),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Text
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    if (isCompleted)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _downloadGuardPdf(request.id);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  'MY SHIFT',
-                                  style: GoogleFonts.kanit(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF94A3B8),
-                                    letterSpacing: 0.5,
-                                  ),
+                                const Icon(
+                                  Icons.file_download_outlined,
+                                  size: 18,
+                                  color: Color(0xFF3B82F6),
                                 ),
+                                const SizedBox(width: 8),
                                 Text(
-                                  request.dutyPositionThai,
+                                  'ใบเปลี่ยนเวร',
                                   style: GoogleFonts.kanit(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF1E293B),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  request.formattedDutyDate,
-                                  style: GoogleFonts.sarabun(
                                     fontSize: 13,
-                                    color: const Color(0xFF64748B),
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF3B82F6),
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Spacer / Icon
-                    Container(
-                      height: 32, // Gap between items
-                      alignment: Alignment.centerLeft,
-                      child: SizedBox(
-                        width: 48,
-                        child: Center(
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFFE2E8F0),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.03),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.arrow_downward_rounded,
-                              size: 14,
-                              color: Color(0xFF64748B),
                             ),
                           ),
                         ),
                       ),
-                    ), // Close Spacer
-                    // Bottom Item
-                    SizedBox(
-                      height: 72,
-                      child: Row(
-                        children: [
-                          // Avatar
-                          SizedBox(
-                            width: 48,
-                            child: Center(
-                              child: _buildAvatar(
-                                request.replacementUser?.avatarUrl,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Text
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    if (isCompleted && showCancel)
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: const Color(0xFFF1F5F9),
+                      ),
+                    if (showCancel)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _showCancelGuardDialog(request.id);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  (request.replacementUser?.fullName ?? '-')
-                                      .toUpperCase(),
-                                  style: GoogleFonts.kanit(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF94A3B8),
-                                    letterSpacing: 0.5,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                const Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 18,
+                                  color: AppTheme.error,
                                 ),
+                                const SizedBox(width: 8),
                                 Text(
-                                  request.dutyPositionThai,
+                                  'ยกเลิก',
                                   style: GoogleFonts.kanit(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF1E293B),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  request.formattedDutyDate,
-                                  style: GoogleFonts.sarabun(
                                     fontSize: 13,
-                                    color: const Color(0xFF64748B),
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.error,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          if (isCompleted) ...[
-            const Divider(height: 1, color: Color(0xFFF1F5F9)),
-            _buildDownloadButton(request.id),
-          ],
-
-          if (showCancel) ...[
-            const Divider(height: 1, color: Color(0xFFF1F5F9)),
-            InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                _showCancelGuardDialog(request.id);
-              },
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(24),
-              ),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.cancel_outlined,
-                      size: 18,
-                      color: AppTheme.error,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'ยกเลิกคำขอ',
-                      style: GoogleFonts.kanit(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.error,
-                      ),
-                    ),
                   ],
                 ),
               ),
-            ),
-          ] else ...[
-            const SizedBox(height: 8),
           ],
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildDownloadButton(int id) {
-    return InkWell(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        _downloadGuardPdf(id);
-      },
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.download_rounded,
-              size: 18,
-              color: Color(0xFF3B82F6),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'ดาวน์โหลดใบเปลี่ยนเวร',
-              style: GoogleFonts.kanit(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF3B82F6),
+  Widget _buildGuardStepRow({
+    required String label,
+    required String title,
+    required String subtitle,
+    String? avatarUrl,
+    bool isTop = true,
+  }) {
+    return Row(
+      children: [
+        _buildAvatar(avatarUrl),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label.toUpperCase(),
+                style: GoogleFonts.kanit(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF94A3B8),
+                  letterSpacing: 1.0,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                title,
+                style: GoogleFonts.kanit(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textMain,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.sarabun(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.textSub,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 

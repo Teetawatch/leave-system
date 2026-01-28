@@ -170,11 +170,11 @@ class ApprovalController extends Controller
                 return $this->successResponse('อนุญาตขั้นที่ 1 เรียบร้อยแล้ว รอผู้บังคับบัญชาอนุมัติขั้นสุดท้าย', $leaveRequest);
             }
 
-            $leaveRequest->status = 'pending_deputy_director';
+            $leaveRequest->status = 'pending_director';
             $leaveRequest->save();
             $this->logApproval($leaveRequest, $user, 'supervisor', 'approved', $request->comment, $signaturePath, $request->ip());
-            $this->notifyRole('deputy_director', $leaveRequest, $requester);
-            return $this->successResponse('อนุญาตและลงลายมือชื่อเรียบร้อยแล้ว รอ รอง ผอ. รับทราบ', $leaveRequest);
+            $this->notifyRole('director', $leaveRequest, $requester);
+            return $this->successResponse('อนุญาตและลงลายมือชื่อเรียบร้อยแล้ว รอ ผอ. อนุมัติ', $leaveRequest);
         }
 
         // --- STEP 2 (Student): Manager ---
