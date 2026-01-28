@@ -91,9 +91,15 @@ class LeaveProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map<String, dynamic>> submitRequest(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> submitRequest(
+    Map<String, dynamic> data, {
+    String? attachmentPath,
+  }) async {
     try {
-      final response = await _apiService.submitLeaveRequest(data);
+      final response = await _apiService.submitLeaveRequest(
+        data,
+        attachmentPath: attachmentPath,
+      );
       if (response.data['success']) {
         await fetchMyRequests();
         await fetchLeaveBalances();

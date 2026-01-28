@@ -11,6 +11,7 @@ import 'notification_screen.dart';
 import 'employee_directory_screen.dart';
 import '../providers/news_provider.dart';
 import '../models/news_model.dart';
+import '../models/leave_balance_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +20,7 @@ import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 
 import '../widgets/animated_background.dart';
+import '../widgets/skeleton.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -314,62 +316,21 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
 
-                    // 2. Main Stats Card (Gradient)
+                    // 2. Leave Balance Dashboard
                     SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                       sliver: SliverToBoxAdapter(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 32),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF6C63FF), Color(0xFF8B5CF6)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(32),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF6C63FF).withOpacity(0.4),
-                                blurRadius: 24,
-                                offset: const Offset(0, 12),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildStatItem(
-                                icon: Icons.calendar_today_rounded,
-                                value: _getTotalRemainingDays(leaveProvider),
-                                label: 'วันลาพักผ่อน',
-                              ),
-                              _buildDivider(),
-                              _buildStatItem(
-                                icon: Icons.pending_actions_rounded,
-                                value: leaveProvider.myRequests
-                                    .where((r) => r.status == 'pending')
-                                    .length
-                                    .toString(),
-                                label: 'รออนุมัติ',
-                              ),
-                              _buildDivider(),
-                              _buildStatItem(
-                                icon: Icons.check_circle_outline_rounded,
-                                value: leaveProvider.myRequests
-                                    .where((r) => r.status == 'approved')
-                                    .length
-                                    .toString(),
-                                label: 'อนุมัติแล้ว',
-                              ),
-                            ],
-                          ),
+                        child: _buildLeaveDashboard(
+                          context,
+                          leaveProvider,
+                          isDark,
                         ),
                       ),
                     ),
 
                     // 3. Quick Menu Header
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(28, 32, 24, 16),
+                      padding: const EdgeInsets.fromLTRB(28, 40, 24, 16),
                       sliver: SliverToBoxAdapter(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -586,35 +547,245 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required String value,
+  Widget _buildLeaveDashboard(
+    BuildContext context,
+    LeaveProvider leaveProvider,
+    bool isDark,
+  ) {
+    if (leaveProvider.isLoading && leaveProvider.balances.isEmpty) {
+      return _buildLeaveDashboardSkeleton();
+    }
+    LeaveBalance? findBalance(List<String> keywords) {
+      if (leaveProvider.balances.isEmpty) return null;
+      for (var bal in leaveProvider.balances) {
+        final slug = bal.leaveType?.slug.toLowerCase() ?? '';
+        final name = bal.leaveType?.name ?? '';
+        for (var kw in keywords) {
+          if (slug.contains(kw) || name.contains(kw)) return bal;
+        }
+      }
+      return null;
+    }
+
+    final vacation = findBalance(['vacation', 'annual', 'พักผ่อน']);
+    final sick = findBalance(['sick', 'ป่วย']);
+    final personal = findBalance(['personal', 'กิจ']);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildModernGauge(
+                label: 'ลาพักผ่อน',
+                balance: vacation,
+                color: const Color(0xFF3B82F6),
+                isDark: isDark,
+              ),
+              _buildModernGauge(
+                label: 'ลาป่วย',
+                balance: sick,
+                color: const Color(0xFFEF4444),
+                isDark: isDark,
+              ),
+              _buildModernGauge(
+                label: 'ลากิจ',
+                balance: personal,
+                color: const Color(0xFFF59E0B),
+                isDark: isDark,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSmallStat(
+                  label: 'รออนุมัติ',
+                  value: leaveProvider.myRequests
+                      .where((r) => r.status == 'pending')
+                      .length
+                      .toString(),
+                  icon: Icons.timer_outlined,
+                  color: const Color(0xFF64748B),
+                ),
+                Container(width: 1, height: 20, color: const Color(0xFFE2E8F0)),
+                _buildSmallStat(
+                  label: 'อนุมัติแล้ว',
+                  value: leaveProvider.myRequests
+                      .where((r) => r.status == 'approved')
+                      .length
+                      .toString(),
+                  icon: Icons.check_circle_outline,
+                  color: const Color(0xFF10B981),
+                ),
+                Container(width: 1, height: 20, color: const Color(0xFFE2E8F0)),
+                _buildSmallStat(
+                  label: 'ไม่อนุมัติ',
+                  value: leaveProvider.myRequests
+                      .where(
+                        (r) => ['rejected', 'cancelled'].contains(r.status),
+                      )
+                      .length
+                      .toString(),
+                  icon: Icons.cancel_outlined,
+                  color: const Color(0xFFEF4444),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaveDashboardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(
+              3,
+              (index) => Column(
+                children: [
+                  const Skeleton(height: 76, width: 76, borderRadius: 38),
+                  const SizedBox(height: 12),
+                  const Skeleton(height: 14, width: 60),
+                  const SizedBox(height: 4),
+                  const Skeleton(height: 10, width: 40),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(
+                3,
+                (index) => Column(
+                  children: [
+                    const Skeleton(height: 16, width: 40),
+                    const SizedBox(height: 4),
+                    const Skeleton(height: 10, width: 30),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernGauge({
     required String label,
+    required LeaveBalance? balance,
+    required Color color,
+    required bool isDark,
   }) {
+    final double total = balance?.totalDays ?? 0;
+    final double remaining = balance?.remainingDays ?? 0;
+    double progress = total > 0 ? (total - remaining) / total : 0;
+    if (progress > 1) progress = 1;
+
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: Colors.white, size: 20),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 76,
+              height: 76,
+              child: CircularProgressIndicator(
+                value: 1.0,
+                strokeWidth: 6,
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  color.withOpacity(0.08),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 76,
+              height: 76,
+              child: CircularProgressIndicator(
+                value: progress,
+                strokeWidth: 6,
+                strokeCap: StrokeCap.round,
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  remaining.toInt().toString(),
+                  style: GoogleFonts.kanit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textMain,
+                  ),
+                ),
+                Text(
+                  'คงเหลือ',
+                  style: GoogleFonts.sarabun(
+                    fontSize: 9,
+                    color: AppTheme.textSub,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Text(
-          value,
+          label,
           style: GoogleFonts.kanit(
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textMain,
           ),
         ),
         Text(
-          label,
+          'จาก $total วัน',
           style: GoogleFonts.sarabun(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.8),
+            fontSize: 10,
+            color: AppTheme.textSub,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -622,11 +793,39 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildDivider() {
-    return Container(
-      width: 1,
-      height: 40,
-      color: Colors.white.withOpacity(0.2),
+  Widget _buildSmallStat({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: GoogleFonts.kanit(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textMain,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: GoogleFonts.sarabun(
+            fontSize: 10,
+            color: AppTheme.textSub,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1184,82 +1383,85 @@ class _HomeScreenState extends State<HomeScreen>
           ],
         ),
         const SizedBox(height: 8),
-        ListView.separated(
-          padding: EdgeInsets.zero,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: recentItems.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final item = recentItems[index];
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color:
-                          (item['type'] == 'leave'
-                                  ? AppTheme.primary
-                                  : AppTheme.accent)
-                              .withOpacity(0.1),
-                      shape: BoxShape.circle,
+        if (leaveProvider.isLoading && recentItems.isEmpty)
+          _buildRecentActivitySkeleton(isDark)
+        else
+          ListView.separated(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: recentItems.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final item = recentItems[index];
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    child: Icon(
-                      item['type'] == 'leave'
-                          ? Icons.event_note_rounded
-                          : Icons.swap_horiz_rounded,
-                      color: item['type'] == 'leave'
-                          ? AppTheme.primary
-                          : AppTheme.accent,
-                      size: 24,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color:
+                            (item['type'] == 'leave'
+                                    ? AppTheme.primary
+                                    : AppTheme.accent)
+                                .withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        item['type'] == 'leave'
+                            ? Icons.event_note_rounded
+                            : Icons.swap_horiz_rounded,
+                        color: item['type'] == 'leave'
+                            ? AppTheme.primary
+                            : AppTheme.accent,
+                        size: 24,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item['title'] as String,
-                          style: GoogleFonts.kanit(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white : AppTheme.textMain,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['title'] as String,
+                            style: GoogleFonts.kanit(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white : AppTheme.textMain,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          DateFormat(
-                            'd MMM yyyy, HH:mm',
-                          ).format(item['date'] as DateTime),
-                          style: GoogleFonts.sarabun(
-                            fontSize: 12,
-                            color: AppTheme.textSub,
+                          const SizedBox(height: 2),
+                          Text(
+                            DateFormat(
+                              'd MMM yyyy, HH:mm',
+                            ).format(item['date'] as DateTime),
+                            style: GoogleFonts.sarabun(
+                              fontSize: 12,
+                              color: AppTheme.textSub,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  _buildStatusBadge(item['status'] as String),
-                ],
-              ),
-            );
-          },
-        ),
+                    _buildStatusBadge(item['status'] as String),
+                  ],
+                ),
+              );
+            },
+          ),
       ],
     );
   }
@@ -1303,20 +1505,36 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  String _getTotalRemainingDays(LeaveProvider provider) {
-    if (provider.balances.isEmpty) return '0';
-    double total = 0;
-    for (var bal in provider.balances) {
-      final slug = bal.leaveType?.slug.toLowerCase() ?? '';
-      final name = bal.leaveType?.name ?? '';
-
-      // Only count Vacation/Annual Leave
-      if (slug.contains('vacation') ||
-          slug.contains('annual') ||
-          name.contains('พักผ่อน')) {
-        total += bal.remainingDays;
-      }
-    }
-    return total.toStringAsFixed(total.truncateToDouble() == total ? 0 : 1);
+  Widget _buildRecentActivitySkeleton(bool isDark) {
+    return Column(
+      children: List.generate(
+        3,
+        (index) => Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              const Skeleton(height: 48, width: 48, borderRadius: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Skeleton(height: 14, width: 120),
+                    const SizedBox(height: 6),
+                    const Skeleton(height: 10, width: 80),
+                  ],
+                ),
+              ),
+              const Skeleton(height: 24, width: 60, borderRadius: 12),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

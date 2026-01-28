@@ -12,8 +12,10 @@ import '../services/pdf_service.dart';
 import '../widgets/animated_background.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../widgets/skeleton.dart';
 import 'leave_request_screen.dart';
 import 'guard_change_request_screen.dart';
+import '../widgets/leave_calendar_view.dart';
 
 class ActivityScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -29,6 +31,7 @@ class _ActivityScreenState extends State<ActivityScreen>
   late AnimationController _animationController;
   String _leaveFilter = 'all'; // all, pending, approved, rejected
   String _guardFilter = 'all'; // all, pending, completed, cancelled
+  bool _isCalendarView = false;
 
   @override
   void initState() {
@@ -107,6 +110,31 @@ class _ActivityScreenState extends State<ActivityScreen>
                 ),
               )
             : null,
+        actions: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: () {
+                setState(() {
+                  _isCalendarView = !_isCalendarView;
+                });
+                HapticFeedback.lightImpact();
+              },
+              icon: Icon(
+                _isCalendarView
+                    ? Icons.list_alt_rounded
+                    : Icons.calendar_month_rounded,
+                color: AppTheme.textMain,
+                size: 20,
+              ),
+              tooltip: _isCalendarView ? 'มุมมองรายการ' : 'มุมมองปฏิทิน',
+            ),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -115,82 +143,89 @@ class _ActivityScreenState extends State<ActivityScreen>
 
           // Content
           SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                // Custom Tab Bar
-                Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.5)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          color: AppTheme.primary,
-                          borderRadius: BorderRadius.circular(16),
+            child: _isCalendarView
+                ? LeaveCalendarView(
+                    leaveRequests: leaveProvider.myRequests,
+                    guardRequests: guardProvider.myRequests,
+                  )
+                : Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      // Custom Tab Bar
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.5),
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primary.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        labelColor: Colors.white,
-                        unselectedLabelColor: AppTheme.textSub,
-                        labelStyle: GoogleFonts.kanit(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: TabBar(
+                              controller: _tabController,
+                              indicator: BoxDecoration(
+                                color: AppTheme.primary,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primary.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              labelColor: Colors.white,
+                              unselectedLabelColor: AppTheme.textSub,
+                              labelStyle: GoogleFonts.kanit(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                              unselectedLabelStyle: GoogleFonts.kanit(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              dividerColor: Colors.transparent,
+                              overlayColor: MaterialStateProperty.all(
+                                Colors.transparent,
+                              ),
+                              tabs: const [
+                                Tab(text: 'ประวัติการลา'),
+                                Tab(text: 'ประวัติเปลี่ยนเวร'),
+                              ],
+                            ),
+                          ),
                         ),
-                        unselectedLabelStyle: GoogleFonts.kanit(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        dividerColor: Colors.transparent,
-                        overlayColor: MaterialStateProperty.all(
-                          Colors.transparent,
-                        ),
-                        tabs: const [
-                          Tab(text: 'ประวัติการลา'),
-                          Tab(text: 'ประวัติเปลี่ยนเวร'),
-                        ],
                       ),
-                    ),
-                  ),
-                ),
 
-                // Tab Views
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    physics: const BouncingScrollPhysics(),
-                    children: [
-                      _buildLeaveHistory(leaveProvider),
-                      _buildGuardHistory(guardProvider),
+                      // Tab Views
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          physics: const BouncingScrollPhysics(),
+                          children: [
+                            _buildLeaveHistory(leaveProvider),
+                            _buildGuardHistory(guardProvider),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -220,7 +255,7 @@ class _ActivityScreenState extends State<ActivityScreen>
 
   Widget _buildLeaveHistory(LeaveProvider provider) {
     if (provider.isLoading && provider.myRequests.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return _buildHistorySkeleton();
     }
 
     // Filter requests
@@ -337,7 +372,7 @@ class _ActivityScreenState extends State<ActivityScreen>
 
   Widget _buildGuardHistory(GuardChangeProvider provider) {
     if (provider.isLoading && provider.myRequests.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return _buildHistorySkeleton();
     }
 
     final filteredRequests = provider.myRequests.where((request) {
@@ -1432,5 +1467,39 @@ class _ActivityScreenState extends State<ActivityScreen>
         );
       }
     }
+  }
+
+  Widget _buildHistorySkeleton() {
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
+      itemCount: 6,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(
+            children: [
+              const Skeleton(height: 50, width: 50, borderRadius: 16),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Skeleton(height: 16, width: 140),
+                    const SizedBox(height: 8),
+                    const Skeleton(height: 12, width: 100),
+                  ],
+                ),
+              ),
+              const Skeleton(height: 24, width: 60, borderRadius: 12),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

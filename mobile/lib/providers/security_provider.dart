@@ -46,6 +46,13 @@ class SecurityProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void lockApp() {
+    if (_isPinEnabled || _isBiometricEnabled) {
+      _isAuthenticated = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> checkHasPin() async {
     String? pin = await _storage.read(key: keyPinCode);
     return pin != null && pin.isNotEmpty;

@@ -220,9 +220,7 @@ class _EmployeeDirectoryScreenState extends State<EmployeeDirectoryScreen> {
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    ...contacts
-                        .map((contact) => _buildContactCard(contact))
-                        ,
+                    ...contacts.map((contact) => _buildContactCard(contact)),
                     const SizedBox(height: 24),
                     Center(
                       child: Text(

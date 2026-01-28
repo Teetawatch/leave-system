@@ -508,7 +508,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 8),
         Text(
-          '© 2024 Leave Management System v2.0',
+          '© 2024 ระบบบริหารจัดการงานธุรการด้านกำลังพล v1.0 ทดลองระบบ',
           style: TextStyle(
             color: AppTheme.textSub.withOpacity(0.5),
             fontSize: 10,

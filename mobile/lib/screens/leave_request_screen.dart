@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui'; // Required for PathMetric
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -344,9 +345,10 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       'contact_address': contactAddress,
     };
 
-    // Todo: Handle file upload if backend supports it. Currently just UI.
-
-    final Map<String, dynamic> response = await provider.submitRequest(data);
+    final Map<String, dynamic> response = await provider.submitRequest(
+      data,
+      attachmentPath: _selectedFile?.path,
+    );
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -951,24 +953,55 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           child: Column(
             children: [
               if (_selectedFile != null) ...[
-                const Icon(Icons.check_circle, size: 40, color: Colors.green),
-                const SizedBox(height: 12),
-                Text(
-                  'เลือกไฟล์แล้ว',
-                  style: GoogleFonts.sarabun(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: const Color(0xFF334155),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File(_selectedFile!.path),
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                Text(
-                  _selectedFile!.name,
-                  style: GoogleFonts.sarabun(
-                    fontSize: 12,
-                    color: const Color(0xFF64748B),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: Colors.green,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'เลือกไฟล์แล้ว: ${_selectedFile!.name}',
+                        style: GoogleFonts.sarabun(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          color: const Color(0xFF334155),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () => setState(() => _selectedFile = null),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'เปลี่ยน',
+                        style: GoogleFonts.kanit(
+                          color: AppTheme.error,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ] else ...[
                 Container(

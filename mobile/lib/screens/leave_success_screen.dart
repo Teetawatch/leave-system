@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lottie/lottie.dart';
 import '../models/leave_type_model.dart';
 
 import 'main_navigation_screen.dart';
@@ -49,19 +50,27 @@ class LeaveSuccessScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(),
-              // Success Icon
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3E8FF), // Light purple
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.check_rounded,
-                    color: Color(0xFF9333EA), // Purple
-                    size: 64,
+              // Success Animation
+              SizedBox(
+                width: 200,
+                height: 200,
+                child: Lottie.network(
+                  'https://assets10.lottiefiles.com/packages/lf20_vwfyl9m2.json',
+                  repeat: false,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 120,
+                    height: 120,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF3E8FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.check_rounded,
+                        color: Color(0xFF9333EA),
+                        size: 64,
+                      ),
+                    ),
                   ),
                 ),
               ),

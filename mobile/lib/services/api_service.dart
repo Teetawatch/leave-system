@@ -84,7 +84,16 @@ class ApiService {
     return await _dio.get('/leave-requests', queryParameters: query);
   }
 
-  Future<Response> submitLeaveRequest(Map<String, dynamic> data) async {
+  Future<Response> submitLeaveRequest(
+    Map<String, dynamic> data, {
+    String? attachmentPath,
+  }) async {
+    if (attachmentPath != null) {
+      final Map<String, dynamic> formDataMap = Map.from(data);
+      formDataMap['attachment'] = await MultipartFile.fromFile(attachmentPath);
+      final formData = FormData.fromMap(formDataMap);
+      return await _dio.post('/leave-requests', data: formData);
+    }
     return await _dio.post('/leave-requests', data: data);
   }
 

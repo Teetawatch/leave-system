@@ -13,10 +13,14 @@ class NotificationScreen extends StatefulWidget {
   State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
+class _NotificationScreenState extends State<NotificationScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<NotificationProvider>(
         context,
@@ -26,29 +30,35 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          color: Colors.black,
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
           'การแจ้งเตือน',
           style: GoogleFonts.kanit(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: AppTheme.textMain,
           ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          color: AppTheme.textMain,
+          onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.done_all, color: Colors.blue),
+            icon: const Icon(Icons.done_all_rounded, color: AppTheme.primary),
             tooltip: 'อ่านทั้งหมด',
             onPressed: () {
               Provider.of<NotificationProvider>(
@@ -58,6 +68,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
             },
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppTheme.primary,
+          unselectedLabelColor: AppTheme.textSub,
+          labelStyle: GoogleFonts.kanit(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+          unselectedLabelStyle: GoogleFonts.kanit(fontSize: 14),
+          indicatorColor: AppTheme.primary,
+          indicatorWeight: 3,
+          indicatorSize: TabBarIndicatorSize.label,
+          tabs: const [
+            Tab(text: 'ทั้งหมด'),
+            Tab(text: 'การอนุมัติ'),
+            Tab(text: 'ข่าวสารองค์กร'),
+          ],
+        ),
       ),
       body: Consumer<NotificationProvider>(
         builder: (context, provider, child) {
@@ -65,60 +93,113 @@ class _NotificationScreenState extends State<NotificationScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final notifications = provider.notifications;
-          if (notifications.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.notifications_off_outlined,
-                    size: 64,
-                    color: AppTheme.textSub.withOpacity(0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'ไม่มีการแจ้งเตือน',
-                    style: GoogleFonts.kanit(
-                      fontSize: 18,
-                      color: AppTheme.textSub,
-                    ),
-                  ),
-                ],
-              ),
-            );
+          if (provider.notifications.isEmpty) {
+            return _buildEmptyState();
           }
 
-          final grouped = _groupNotifications(notifications);
+          final allNotifications = provider.notifications;
+          final approvalNotifications = allNotifications.where((n) {
+            final titleLower = n.title.toLowerCase();
+            return titleLower.contains('approved') ||
+                titleLower.contains('rejected') ||
+                titleLower.contains('อนุมัติ') ||
+                titleLower.contains('ปฏิเสธ') ||
+                titleLower.contains('leave') ||
+                titleLower.contains('ลา');
+          }).toList();
 
-          return Column(
+          final newsNotifications = allNotifications.where((n) {
+            final titleLower = n.title.toLowerCase();
+            return !titleLower.contains('approved') &&
+                !titleLower.contains('rejected') &&
+                !titleLower.contains('อนุมัติ') &&
+                !titleLower.contains('ปฏิเสธ') &&
+                !titleLower.contains('leave') &&
+                !titleLower.contains('ลา');
+          }).toList();
+
+          return TabBarView(
+            controller: _tabController,
             children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  itemCount: grouped.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == grouped.length) {
-                      return _buildClearAllButton(provider);
-                    }
-                    final group = grouped[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionHeader(group.title),
-                        ...group.notifications.map(
-                          (n) => _buildNotificationItem(context, n),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    );
-                  },
-                ),
+              _buildNotificationList(context, allNotifications, provider),
+              _buildNotificationList(
+                context,
+                approvalNotifications,
+                provider,
+                emptyMessage: 'ไม่มีรายการอนุมัติ',
+              ),
+              _buildNotificationList(
+                context,
+                newsNotifications,
+                provider,
+                emptyMessage: 'ไม่มีข่าวสารใหม่',
               ),
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _buildEmptyState({String message = 'ไม่มีการแจ้งเตือน'}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.notifications_off_outlined,
+              size: 48,
+              color: AppTheme.textSub.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: GoogleFonts.kanit(
+              fontSize: 16,
+              color: AppTheme.textSub,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationList(
+    BuildContext context,
+    List<AppNotification> notifications,
+    NotificationProvider provider, {
+    String? emptyMessage,
+  }) {
+    if (notifications.isEmpty) {
+      return _buildEmptyState(message: emptyMessage ?? 'ไม่มีการแจ้งเตือน');
+    }
+
+    final grouped = _groupNotifications(notifications);
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: grouped.length,
+      itemBuilder: (context, index) {
+        final group = grouped[index];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader(group.title),
+            ...group.notifications.map(
+              (n) => _buildNotificationItem(context, n),
+            ),
+            const SizedBox(height: 12),
+          ],
+        );
+      },
     );
   }
 
@@ -162,6 +243,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             context,
             listen: false,
           ).markAsRead(notification.id);
+
+          _handleNotificationTap(context, notification);
         },
         child: Container(
           color: notification.isRead
@@ -306,64 +389,120 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildClearAllButton(NotificationProvider provider) {
-    if (provider.notifications.isEmpty) return const SizedBox.shrink();
+  void _handleNotificationTap(
+    BuildContext context,
+    AppNotification notification,
+  ) {
+    // Basic navigation logic based on title/content
+    final titleLower = notification.title.toLowerCase();
 
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: () {
-            // Confirm dialog
-            showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('ล้างการแจ้งเตือน?'),
-                content: const Text(
-                  'คุณต้องการลบการแจ้งเตือนทั้งหมดใช่หรือไม่?',
+    if (titleLower.contains('leave') ||
+        titleLower.contains('ลา') ||
+        titleLower.contains('approve') ||
+        titleLower.contains('อนุมัติ')) {
+      // Navigate to History or relevant screen
+      // ideally we would have a specific route or id in notification data
+      // For now, we can pop back to main nav (index 1 is history)
+      // But simply popping might not be enough if we are deep.
+      // Assuming this screen is pushed on top of MainNavigation
+      // We can't easily switch the tab of the underlying MainNavigation without context access or provider.
+      // But wait, NotificationScreen is likely pushed.
+      // Actually, let's just show a bottom sheet with full details for now as a "Smart" interaction
+      _showNotificationDetail(context, notification);
+    } else {
+      _showNotificationDetail(context, notification);
+    }
+  }
+
+  void _showNotificationDetail(
+    BuildContext context,
+    AppNotification notification,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('ยกเลิก'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      final ids = provider.notifications
-                          .map((n) => n.id)
-                          .toList();
-                      for (var id in ids) {
-                        provider.removeNotification(id);
-                      }
-                    },
-                    child: const Text(
-                      'ลบทั้งหมด',
-                      style: TextStyle(color: Colors.red),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                _buildIcon(notification),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    notification.title,
+                    style: GoogleFonts.kanit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textMain,
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              DateFormat(
+                'd MMMM yyyy HH:mm',
+                'th',
+              ).format(notification.timestamp),
+              style: GoogleFonts.sarabun(fontSize: 14, color: AppTheme.textSub),
+            ),
+            const Divider(height: 32),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  notification.body,
+                  style: GoogleFonts.sarabun(
+                    fontSize: 16,
+                    color: AppTheme.textMain,
+                    height: 1.6,
+                  ),
+                ),
               ),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.grey[300]!),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
             ),
-            backgroundColor: Colors.transparent,
-            foregroundColor: AppTheme.textSub,
-          ),
-          child: Text(
-            'ล้างการแจ้งเตือนทั้งหมด',
-            style: GoogleFonts.kanit(
-              fontSize: 16,
-              color: AppTheme.textSub,
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'ปิด',
+                  style: GoogleFonts.kanit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
