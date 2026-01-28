@@ -381,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen>
                         children: [
                           // Leave Request
                           _buildMenuCard(
-                            context,
+                            context: context,
                             title: 'ลางาน',
                             subtitle: 'เขียนใบลา',
                             icon: Icons.edit_calendar_rounded,
@@ -395,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           // History
                           _buildMenuCard(
-                            context,
+                            context: context,
                             title: 'ประวัติ',
                             subtitle: 'ดูการลาย้อนหลัง',
                             icon: Icons.history_rounded,
@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           // Shift Change
                           _buildMenuCard(
-                            context,
+                            context: context,
                             title: 'เปลี่ยนยาม',
                             subtitle: 'ส่งคำขอใหม่',
                             icon: Icons.swap_horiz_rounded,
@@ -424,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           // List/Approvals (Or simple List)
                           _buildMenuCard(
-                            context,
+                            context: context,
                             title: 'รายการ',
                             subtitle: 'ประวัติการเปลี่ยน',
                             icon: Icons.assignment_outlined,
@@ -571,85 +571,150 @@ class _HomeScreenState extends State<HomeScreen>
     final sick = findBalance(['sick', 'ป่วย']);
     final personal = findBalance(['personal', 'กิจ']);
 
+    // Use a premium gradient card for the dashboard
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+              : [
+                  const Color(0xFF6C63FF),
+                  const Color(0xFF5A52D5),
+                ], // Primary gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: (isDark ? Colors.black : AppTheme.primary).withOpacity(0.3),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-      child: Column(
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildModernGauge(
-                label: 'ลาพักผ่อน',
-                balance: vacation,
-                color: const Color(0xFF3B82F6),
-                isDark: isDark,
+          // Decorative circles
+          Positioned(
+            top: -20,
+            right: -20,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
               ),
-              _buildModernGauge(
-                label: 'ลาป่วย',
-                balance: sick,
-                color: const Color(0xFFEF4444),
-                isDark: isDark,
-              ),
-              _buildModernGauge(
-                label: 'ลากิจ',
-                balance: personal,
-                color: const Color(0xFFF59E0B),
-                isDark: isDark,
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+          Positioned(
+            bottom: -40,
+            left: -20,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+            child: Column(
               children: [
-                _buildSmallStat(
-                  label: 'รออนุมัติ',
-                  value: leaveProvider.myRequests
-                      .where((r) => r.status == 'pending')
-                      .length
-                      .toString(),
-                  icon: Icons.timer_outlined,
-                  color: const Color(0xFF64748B),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildModernGauge(
+                      label: 'ลาพักผ่อน',
+                      balance: vacation,
+                      // On the gradient background, we use white/light colors
+                      color: Colors.white,
+                      isDark: isDark,
+                      isOnColoredCard: !isDark,
+                    ),
+                    _buildModernGauge(
+                      label: 'ลาป่วย',
+                      balance: sick,
+                      color: isDark ? const Color(0xFFEF4444) : Colors.white,
+                      isDark: isDark,
+                      isOnColoredCard: !isDark,
+                      overrideColor: isDark ? null : Colors.white,
+                    ),
+                    _buildModernGauge(
+                      label: 'ลากิจ',
+                      balance: personal,
+                      color: isDark ? const Color(0xFFF59E0B) : Colors.white,
+                      isDark: isDark,
+                      isOnColoredCard: !isDark,
+                      overrideColor: isDark ? null : Colors.white,
+                    ),
+                  ],
                 ),
-                Container(width: 1, height: 20, color: const Color(0xFFE2E8F0)),
-                _buildSmallStat(
-                  label: 'อนุมัติแล้ว',
-                  value: leaveProvider.myRequests
-                      .where((r) => r.status == 'approved')
-                      .length
-                      .toString(),
-                  icon: Icons.check_circle_outline,
-                  color: const Color(0xFF10B981),
-                ),
-                Container(width: 1, height: 20, color: const Color(0xFFE2E8F0)),
-                _buildSmallStat(
-                  label: 'ไม่อนุมัติ',
-                  value: leaveProvider.myRequests
-                      .where(
-                        (r) => ['rejected', 'cancelled'].contains(r.status),
-                      )
-                      .length
-                      .toString(),
-                  icon: Icons.cancel_outlined,
-                  color: const Color(0xFFEF4444),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSmallStat(
+                        label: 'รออนุมัติ',
+                        value: leaveProvider.myRequests
+                            .where((r) => r.status == 'pending')
+                            .length
+                            .toString(),
+                        icon: Icons.timer_outlined,
+                        color: Colors.white, // Always white on this card
+                      ),
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: Colors.white.withOpacity(0.2),
+                      ),
+                      _buildSmallStat(
+                        label: 'อนุมัติแล้ว',
+                        value: leaveProvider.myRequests
+                            .where((r) => r.status == 'approved')
+                            .length
+                            .toString(),
+                        icon: Icons.check_circle_outline,
+                        color: const Color(
+                          0xFF6EE7B7,
+                        ), // Light green for visibility
+                      ),
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: Colors.white.withOpacity(0.2),
+                      ),
+                      _buildSmallStat(
+                        label: 'ไม่อนุมัติ',
+                        value: leaveProvider.myRequests
+                            .where(
+                              (r) =>
+                                  ['rejected', 'cancelled'].contains(r.status),
+                            )
+                            .length
+                            .toString(),
+                        icon: Icons.cancel_outlined,
+                        color: const Color(
+                          0xFFFCA5A5,
+                        ), // Light red for visibility
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -715,11 +780,25 @@ class _HomeScreenState extends State<HomeScreen>
     required LeaveBalance? balance,
     required Color color,
     required bool isDark,
+    bool isOnColoredCard = false,
+    Color? overrideColor,
   }) {
     final double total = balance?.totalDays ?? 0;
     final double remaining = balance?.remainingDays ?? 0;
     double progress = total > 0 ? (total - remaining) / total : 0;
     if (progress > 1) progress = 1;
+
+    // Colors
+    final textColor = isOnColoredCard
+        ? Colors.white
+        : (isDark ? Colors.white : AppTheme.textMain);
+    final subTextColor = isOnColoredCard
+        ? Colors.white.withOpacity(0.8)
+        : AppTheme.textSub;
+    final trackColor = isOnColoredCard
+        ? Colors.white.withOpacity(0.2)
+        : color.withOpacity(0.08);
+    final progressColor = overrideColor ?? color;
 
     return Column(
       children: [
@@ -731,11 +810,9 @@ class _HomeScreenState extends State<HomeScreen>
               height: 76,
               child: CircularProgressIndicator(
                 value: 1.0,
-                strokeWidth: 6,
+                strokeWidth: 8, // Thicker for better look
                 backgroundColor: Colors.transparent,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  color.withOpacity(0.08),
-                ),
+                valueColor: AlwaysStoppedAnimation<Color>(trackColor),
               ),
             ),
             SizedBox(
@@ -743,29 +820,32 @@ class _HomeScreenState extends State<HomeScreen>
               height: 76,
               child: CircularProgressIndicator(
                 value: progress,
-                strokeWidth: 6,
+                strokeWidth: 8,
                 strokeCap: StrokeCap.round,
                 backgroundColor: Colors.transparent,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
+                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
               ),
             ),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  remaining.toInt().toString(),
+                  remaining.toStringAsFixed(
+                    remaining.truncateToDouble() == remaining ? 0 : 1,
+                  ),
                   style: GoogleFonts.kanit(
-                    fontSize: 20,
+                    fontSize: 22, // Larger
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.textMain,
+                    color: textColor,
+                    height: 1.0,
                   ),
                 ),
                 Text(
                   'คงเหลือ',
                   style: GoogleFonts.sarabun(
-                    fontSize: 9,
-                    color: AppTheme.textSub,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 10,
+                    color: subTextColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -776,16 +856,16 @@ class _HomeScreenState extends State<HomeScreen>
         Text(
           label,
           style: GoogleFonts.kanit(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppTheme.textMain,
+            color: textColor,
           ),
         ),
         Text(
           'จาก $total วัน',
           style: GoogleFonts.sarabun(
-            fontSize: 10,
-            color: AppTheme.textSub,
+            fontSize: 11,
+            color: subTextColor,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -803,34 +883,42 @@ class _HomeScreenState extends State<HomeScreen>
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 12, color: color),
+            ),
+            const SizedBox(width: 8),
             Text(
               value,
               style: GoogleFonts.kanit(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.textMain,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white, // Always white since it's on the card
               ),
             ),
           ],
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           label,
           style: GoogleFonts.sarabun(
-            fontSize: 10,
-            color: AppTheme.textSub,
-            fontWeight: FontWeight.w600,
+            fontSize: 11,
+            color: Colors.white.withOpacity(0.8),
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMenuCard(
-    BuildContext context, {
+  Widget _buildMenuCard({
+    required BuildContext context,
     required String title,
     required String subtitle,
     required IconData icon,
@@ -842,11 +930,11 @@ class _HomeScreenState extends State<HomeScreen>
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 16,
+            color: color.withOpacity(0.15),
+            blurRadius: 20,
             offset: const Offset(0, 8),
           ),
         ],
@@ -855,40 +943,74 @@ class _HomeScreenState extends State<HomeScreen>
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(28),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, color: color, size: 28),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Icon(icon, color: color, size: 26),
+                    ),
+                    if (title == 'รายการ') _buildNotificationBadge(count: 0),
+                  ],
                 ),
-                const Spacer(),
-                Text(
-                  title,
-                  style: GoogleFonts.kanit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : AppTheme.textMain,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.sarabun(
-                    fontSize: 13,
-                    color: AppTheme.textSub,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.kanit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : AppTheme.textMain,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.sarabun(
+                        fontSize: 13,
+                        color: AppTheme.textSub,
+                        height: 1.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationBadge({required int count}) {
+    if (count == 0) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.error,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        count.toString(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -1197,79 +1319,105 @@ class _HomeScreenState extends State<HomeScreen>
     ];
     final dateStr = '${now.day} ${thaiMonths[now.month - 1]} ${now.year + 543}';
 
-    // Placeholder data for now
     const seniorOfficer = '-';
     const dutyOfficer = '-';
     const assistantOfficer = '-';
 
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 1),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.1),
-            blurRadius: 16,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
             offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'เวรยามประจำวันที่',
-                style: GoogleFonts.kanit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textMain,
-                ),
+          // Header of the Ticket
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.05),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
+              border: Border(
+                bottom: BorderSide(color: AppTheme.border.withOpacity(0.5)),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.shield_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'เวรยามประจำวัน',
+                      style: GoogleFonts.kanit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textMain,
+                      ),
+                    ),
+                  ],
                 ),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
+                Text(
                   dateStr,
                   style: GoogleFonts.kanit(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: AppTheme.primary,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          _buildDutyRow(
-            context,
-            'นายทหารเวรอาวุโส',
-            seniorOfficer,
-            Icons.star_rounded,
-          ),
-          const SizedBox(height: 12),
-          _buildDutyRow(
-            context,
-            'นายทหารเวร',
-            dutyOfficer,
-            Icons.security_rounded,
-          ),
-          const SizedBox(height: 12),
-          _buildDutyRow(
-            context,
-            'ผู้ช่วยนายทหารเวร',
-            assistantOfficer,
-            Icons.shield_outlined,
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _buildDutyRow(
+                  context,
+                  'นายทหารเวรอาวุโส',
+                  seniorOfficer,
+                  Icons.star_rounded,
+                  const Color(0xFFFFB74D),
+                ),
+                const SizedBox(height: 16),
+                _buildDutyRow(
+                  context,
+                  'นายทหารเวร',
+                  dutyOfficer,
+                  Icons.security_rounded,
+                  const Color(0xFF4DB6AC),
+                ),
+                const SizedBox(height: 16),
+                _buildDutyRow(
+                  context,
+                  'ผู้ช่วยนายทหารเวร',
+                  assistantOfficer,
+                  Icons.person_outline_rounded,
+                  const Color(0xFF90A4AE),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1281,30 +1429,35 @@ class _HomeScreenState extends State<HomeScreen>
     String label,
     String name,
     IconData icon,
+    Color color,
   ) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
-            shape: BoxShape.circle,
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: Colors.blue, size: 16),
+          child: Icon(icon, color: color, size: 20),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: GoogleFonts.sarabun(fontSize: 12, color: AppTheme.textSub),
+              style: GoogleFonts.sarabun(
+                fontSize: 12,
+                color: AppTheme.textSub,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             Text(
               name,
               style: GoogleFonts.kanit(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.textMain,
               ),
             ),

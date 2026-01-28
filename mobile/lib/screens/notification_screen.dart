@@ -100,22 +100,38 @@ class _NotificationScreenState extends State<NotificationScreen>
           final allNotifications = provider.notifications;
           final approvalNotifications = allNotifications.where((n) {
             final titleLower = n.title.toLowerCase();
+            final bodyLower = n.body.toLowerCase();
             return titleLower.contains('approved') ||
                 titleLower.contains('rejected') ||
                 titleLower.contains('อนุมัติ') ||
                 titleLower.contains('ปฏิเสธ') ||
                 titleLower.contains('leave') ||
-                titleLower.contains('ลา');
+                titleLower.contains('ลา') ||
+                titleLower.contains('เวร') ||
+                titleLower.contains('guard') ||
+                titleLower.contains('swap') ||
+                bodyLower.contains('อนุมัติ') ||
+                bodyLower.contains('ปฏิเสธ') ||
+                bodyLower.contains('เปลี่ยนเวร');
           }).toList();
 
           final newsNotifications = allNotifications.where((n) {
             final titleLower = n.title.toLowerCase();
-            return !titleLower.contains('approved') &&
-                !titleLower.contains('rejected') &&
-                !titleLower.contains('อนุมัติ') &&
-                !titleLower.contains('ปฏิเสธ') &&
-                !titleLower.contains('leave') &&
-                !titleLower.contains('ลา');
+            final bodyLower = n.body.toLowerCase();
+            final isApproval =
+                titleLower.contains('approved') ||
+                titleLower.contains('rejected') ||
+                titleLower.contains('อนุมัติ') ||
+                titleLower.contains('ปฏิเสธ') ||
+                titleLower.contains('leave') ||
+                titleLower.contains('ลา') ||
+                titleLower.contains('เวร') ||
+                titleLower.contains('guard') ||
+                titleLower.contains('swap') ||
+                bodyLower.contains('อนุมัติ') ||
+                bodyLower.contains('ปฏิเสธ') ||
+                bodyLower.contains('เปลี่ยนเวร');
+            return !isApproval;
           }).toList();
 
           return TabBarView(
@@ -334,7 +350,10 @@ class _NotificationScreenState extends State<NotificationScreen>
       bgColor = Colors.blue.withOpacity(0.1);
     } else if (titleLower.contains('swap') ||
         titleLower.contains('เปลี่ยนกะ') ||
-        titleLower.contains('shift')) {
+        titleLower.contains('เปลี่ยนเวร') ||
+        titleLower.contains('shift') ||
+        titleLower.contains('guard') ||
+        typeLower == 'guard_change') {
       iconData = Icons.swap_horiz_rounded;
       iconColor = Colors.blue.withOpacity(0.8);
       bgColor = Colors.blue.withOpacity(0.1);
@@ -521,8 +540,10 @@ class _NotificationScreenState extends State<NotificationScreen>
       category = 'การลา';
     else if (titleLower.contains('shift') ||
         titleLower.contains('กะ') ||
-        titleLower.contains('swap'))
-      category = 'ตารางงาน';
+        titleLower.contains('เวร') ||
+        titleLower.contains('swap') ||
+        titleLower.contains('guard'))
+      category = 'การเปลี่ยนเวร';
     else if (titleLower.contains('document') ||
         titleLower.contains('เอกสาร') ||
         titleLower.contains('contract'))

@@ -73,7 +73,14 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({super.key});
+  final int initialIndex;
+  final int initialHistoryTab;
+
+  const AuthWrapper({
+    super.key,
+    this.initialIndex = 0,
+    this.initialHistoryTab = 0,
+  });
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
@@ -123,7 +130,10 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
           );
         }
 
-        return const MainNavigationScreen();
+        return MainNavigationScreen(
+          initialIndex: widget.initialIndex,
+          initialHistoryTab: widget.initialHistoryTab,
+        );
       },
     );
   }

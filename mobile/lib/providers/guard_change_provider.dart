@@ -48,19 +48,28 @@ class GuardChangeProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> submitRequest(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> submitRequest(Map<String, dynamic> data) async {
     _isLoading = true;
     notifyListeners();
     try {
       final response = await _apiService.submitGuardChangeRequest(data);
       if (response.data['success']) {
         await fetchMyRequests();
-        return true;
+        return {'success': true, 'message': 'ส่งคำขอสำเร็จ'};
       }
-      return false;
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'ส่งคำขอไม่สำเร็จ',
+      };
     } catch (e) {
       debugPrint('Error submitting guard change request: $e');
-      return false;
+      String errorMessage = 'เกิดข้อผิดพลาดในการส่งคำขอ';
+      if (e is DioException) {
+        if (e.response?.data != null && e.response!.data['message'] != null) {
+          errorMessage = e.response!.data['message'];
+        }
+      }
+      return {'success': false, 'message': errorMessage};
     } finally {
       _isLoading = false;
       notifyListeners();

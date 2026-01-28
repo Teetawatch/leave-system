@@ -81,10 +81,22 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
-  void removeNotification(String id) {
-    _notifications.removeWhere((n) => n.id == id);
+  Future<void> removeNotification(String id) async {
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index == -1) return;
+
+    final deletedNotification = _notifications[index];
+    _notifications.removeAt(index);
     notifyListeners();
-    // API call to delete if supported
+
+    try {
+      await ApiService().client.delete('/notifications/$id');
+    } catch (e) {
+      debugPrint('Error deleting notification: $e');
+      // Restore if failed
+      _notifications.insert(index, deletedNotification);
+      notifyListeners();
+    }
   }
 
   void addNotification(AppNotification notification) {

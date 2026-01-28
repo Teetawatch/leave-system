@@ -64,8 +64,10 @@ class GuardChangeStatusUpdated extends Notification
             'guard_change_request_id' => $this->guardChangeRequest->id,
             'status' => $this->status,
             'approver_name' => $this->approver->name,
+            'title' => 'อัปเดตสถานะเปลี่ยนเวร',
             'message' => $message,
             'duty_date' => $this->guardChangeRequest->duty_date->format('d/m/Y'),
+            'type' => 'guard_change',
         ];
     }
 }

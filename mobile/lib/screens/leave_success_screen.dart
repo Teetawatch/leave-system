@@ -5,7 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:lottie/lottie.dart';
 import '../models/leave_type_model.dart';
 
-import 'main_navigation_screen.dart';
+import '../main.dart';
 
 class LeaveSuccessScreen extends StatelessWidget {
   final LeaveType leaveType;
@@ -140,7 +140,7 @@ class LeaveSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => const MainNavigationScreen(),
+                        builder: (context) => const AuthWrapper(),
                       ),
                       (route) => false,
                     );
@@ -173,8 +173,7 @@ class LeaveSuccessScreen extends StatelessWidget {
                   // User flow: Success -> History -> Back -> Home
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
-                      builder: (context) =>
-                          const MainNavigationScreen(initialIndex: 1),
+                      builder: (context) => const AuthWrapper(initialIndex: 1),
                     ),
                     (route) => false,
                   );

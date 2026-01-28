@@ -746,7 +746,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'PDF',
+                                  'ดาวน์โหลดใบลา',
                                   style: GoogleFonts.kanit(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
@@ -1311,27 +1311,30 @@ class _ActivityScreenState extends State<ActivityScreen>
   Color _getLeaveTypeColor(String slug) {
     switch (slug) {
       case 'vacation':
-        return const Color(0xFF3B82F6); // Blue
+        return const Color(0xFF0EA5E9); // Sky Blue
       case 'sick':
-        return const Color(0xFFF97316); // Orange
+        return const Color(0xFFEF4444); // Rose Red
       case 'personal':
-        return const Color(0xFF8B5CF6); // Purple
+        return const Color(0xFFF59E0B); // Amber
+      case 'temporary':
+        return const Color(0xFF10B981); // Emerald
       default:
-        return const Color(0xFF64748B); // Slate
+        return const Color(0xFF6366F1); // Indigo
     }
   }
 
   IconData _getLeaveTypeIcon(String slug) {
     switch (slug) {
       case 'vacation':
-        return Icons
-            .umbrella_rounded; // Assuming this fits "Annual Leave" better
+        return Icons.beach_access_rounded; // More "Vacation" vibe
       case 'sick':
-        return Icons.sick_rounded;
+        return Icons.medical_services_rounded; // Professional medical icon
       case 'personal':
-        return Icons.person_rounded;
+        return Icons.event_note_rounded; // Better for planning personal tasks
+      case 'temporary':
+        return Icons.timer_rounded; // For short/temporary leave
       default:
-        return Icons.work_off_rounded;
+        return Icons.other_houses_rounded;
     }
   }
 

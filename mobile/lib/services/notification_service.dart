@@ -70,13 +70,20 @@ class NotificationService {
         >()
         ?.createNotificationChannel(channel);
 
-    // 4. Listen to Foreground Messages
+    // 4. Request Permission (Android 13+ specific for Local Notifications)
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        _localNotifications
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+
+    await androidImplementation?.requestNotificationsPermission();
+
+    // 5. Listen to Foreground Messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
 
-      // If `onMessage` is triggered with a notification, construct our own
-      // local notification to show to users using the created channel.
       if (notification != null && android != null) {
         _messageStreamController.add(message); // Broadcast
         _localNotifications.show(
@@ -88,19 +95,26 @@ class NotificationService {
               channel.id,
               channel.name,
               channelDescription: channel.description,
-              icon: '@mipmap/launcher_icon',
+              icon: '@mipmap/launcher_icon', // Ensure this matches Manifest
               importance: Importance.max,
               priority: Priority.high,
               playSound: true,
-              // TODO: Add custom sound resource if needed
-              // sound: RawResourceAndroidNotificationSound('custom_sound'),
             ),
           ),
+          payload: message.data.toString(), // Pass data as payload
         );
       }
     });
 
     _isInitialized = true;
+  }
+
+  // Handle Local Notification Tap
+  void onDidReceiveNotificationResponse(NotificationResponse response) {
+    if (kDebugMode) {
+      print('Notification Tapped: ${response.payload}');
+    }
+    // Handle navigation logic here if needed, or broadcast
   }
 
   Future<String?> getToken() async {

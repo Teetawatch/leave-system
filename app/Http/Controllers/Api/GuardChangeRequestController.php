@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class GuardChangeRequestController extends Controller
 {
@@ -31,9 +32,6 @@ class GuardChangeRequestController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created guard change request.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -57,14 +55,21 @@ class GuardChangeRequestController extends Controller
         if ($replacementUser) {
             $replacementUser->notify(new NewGuardChangeNotification($guardChangeRequest, Auth::user()));
 
+            Log::info("Guard Change Request: Checking replacement user {$replacementUser->id} ({$replacementUser->name}) for FCM token.");
+
             if ($replacementUser->fcm_token) {
+                Log::info("Replacement user has token: " . substr($replacementUser->fcm_token, 0, 10) . "... Sending notification.");
                 (new FCMService())->sendNotification(
                     $replacementUser->fcm_token,
                     'มีคำขอเปลี่ยนเวรใหม่ 🔔',
                     Auth::user()->rank . ' ' . Auth::user()->name . " ขอเปลี่ยนเวรกับคุณวันที่ " . \Carbon\Carbon::parse($guardChangeRequest->duty_date)->format('d/m/Y'),
                     ['type' => 'new_guard_change', 'request_id' => $guardChangeRequest->id]
                 );
+            } else {
+                Log::warning("Replacement user {$replacementUser->id} has NO FCM token. Notification skipped.");
             }
+        } else {
+            Log::error("Guard Change Request: Replacement user ID {$validated['replacement_user_id']} not found.");
         }
 
         return response()->json([

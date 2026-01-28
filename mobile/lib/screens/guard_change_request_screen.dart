@@ -723,14 +723,14 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
 
     HapticFeedback.mediumImpact();
     final provider = Provider.of<GuardChangeProvider>(context, listen: false);
-    final success = await provider.submitRequest({
+    final result = await provider.submitRequest({
       'duty_position': _selectedPosition,
       'replacement_user_id': _selectedReplacementId,
       'duty_date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
       'remarks': _remarksController.text,
     });
 
-    if (success && mounted) {
+    if (result['success'] == true && mounted) {
       // Find replacement user details
       final user = _users.firstWhere(
         (u) => u['id'] == _selectedReplacementId,
@@ -751,7 +751,7 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
         ),
       );
     } else if (mounted) {
-      _showSnackBar('เกิดข้อผิดพลาด', AppTheme.error);
+      _showSnackBar(result['message'] ?? 'เกิดข้อผิดพลาด', AppTheme.error);
     }
   }
 

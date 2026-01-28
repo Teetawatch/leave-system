@@ -298,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'ยินดีต้อนรับกลับมา',
+                    'ยินดีต้อนรับ',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,

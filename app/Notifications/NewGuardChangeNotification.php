@@ -50,8 +50,10 @@ class NewGuardChangeNotification extends Notification
             'status' => 'pending',
             'requester_name' => $requesterName,
             'requester_id' => $this->requester->id,
+            'title' => 'คำขอเปลี่ยนเวรใหม่',
             'message' => $message,
             'duty_date' => $dutyDate,
+            'type' => 'guard_change',
         ];
     }
 }

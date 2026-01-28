@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'main_navigation_screen.dart';
+import '../main.dart';
 
 class GuardChangeSuccessScreen extends StatelessWidget {
   final DateTime dutyDate;
@@ -118,7 +118,7 @@ class GuardChangeSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => const MainNavigationScreen(),
+                        builder: (context) => const AuthWrapper(),
                       ),
                       (route) => false,
                     );
@@ -147,7 +147,7 @@ class GuardChangeSuccessScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
-                      builder: (context) => const MainNavigationScreen(
+                      builder: (context) => const AuthWrapper(
                         initialIndex: 1,
                         initialHistoryTab: 1,
                       ),

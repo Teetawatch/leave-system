@@ -43,7 +43,7 @@ class NewLeaveRequestNotification extends Notification
         $requesterName = $this->requester->rank . ' ' . $this->requester->name;
         $leaveTypeName = $this->leaveRequest->leaveType->name;
         $totalDays = $this->leaveRequest->total_days;
-        
+
         $message = "{$requesterName} ยื่นคำขอ{$leaveTypeName} จำนวน {$totalDays} วัน รอการอนุมัติจากคุณ";
 
         return [
@@ -51,9 +51,11 @@ class NewLeaveRequestNotification extends Notification
             'status' => 'pending',
             'requester_name' => $requesterName,
             'requester_id' => $this->requester->id,
+            'title' => 'มีคำขอลาใหม่',
             'message' => $message,
             'leave_type' => $leaveTypeName,
             'total_days' => $totalDays,
+            'type' => 'leave',
         ];
     }
 }

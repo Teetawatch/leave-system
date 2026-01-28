@@ -119,6 +119,7 @@ class AuthProvider with ChangeNotifier {
       print('Logout Error: $e');
     } finally {
       // Always clear user and update UI
+      await _storage.delete(key: 'token');
       _user = null;
       notifyListeners();
     }
