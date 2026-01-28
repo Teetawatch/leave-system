@@ -25,7 +25,7 @@
             <div class="login-card">
                 <!-- Decorative Top Bar -->
                 <div class="card-top-bar"></div>
-                
+
                 <!-- Card Content -->
                 <div class="card-content">
                     <!-- Logo Section -->
@@ -52,22 +52,15 @@
                         <div class="form-group">
                             <div class="input-wrapper">
                                 <span class="input-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect width="20" height="16" x="2" y="4" rx="2"/>
-                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                                     </svg>
                                 </span>
-                                <input 
-                                    id="email" 
-                                    type="email" 
-                                    name="email" 
-                                    value="{{ old('email') }}"
-                                    class="form-input" 
-                                    placeholder=" "
-                                    required 
-                                    autofocus 
-                                    autocomplete="username"
-                                >
+                                <input id="email" type="email" name="email" value="{{ old('email') }}"
+                                    class="form-input" placeholder=" " required autofocus autocomplete="username">
                                 <label for="email" class="floating-label">อีเมลของคุณ</label>
                                 <div class="input-highlight"></div>
                             </div>
@@ -78,31 +71,32 @@
                         <div class="form-group">
                             <div class="input-wrapper">
                                 <span class="input-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                     </svg>
                                 </span>
-                                <input 
-                                    id="password" 
-                                    type="password" 
-                                    name="password" 
-                                    class="form-input" 
-                                    placeholder=" "
-                                    required 
-                                    autocomplete="current-password"
-                                >
+                                <input id="password" type="password" name="password" class="form-input" placeholder=" "
+                                    required autocomplete="current-password">
                                 <label for="password" class="floating-label">รหัสผ่าน</label>
                                 <button type="button" class="password-toggle" onclick="togglePassword()">
-                                    <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                                        <circle cx="12" cy="12" r="3"/>
+                                    <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
                                     </svg>
-                                    <svg id="eye-off-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
-                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
-                                        <line x1="2" x2="22" y1="2" y2="22"/>
+                                    <svg id="eye-off-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20"
+                                        height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                        <path
+                                            d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                        <path
+                                            d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                        <line x1="2" x2="22" y1="2" y2="22" />
                                     </svg>
                                 </button>
                                 <div class="input-highlight"></div>
@@ -128,10 +122,12 @@
                         <button type="submit" class="submit-btn">
                             <span class="btn-text">เข้าสู่ระบบ</span>
                             <span class="btn-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                                    <polyline points="10 17 15 12 10 7"/>
-                                    <line x1="15" x2="3" y1="12" y2="12"/>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                                    <polyline points="10 17 15 12 10 7" />
+                                    <line x1="15" x2="3" y1="12" y2="12" />
                                 </svg>
                             </span>
                             <div class="btn-shine"></div>
@@ -144,9 +140,10 @@
                     <span class="footer-text">เป็นข้าราชการใหม่?</span>
                     <a href="{{ route('employee.register') }}" class="register-link">
                         ลงทะเบียนที่นี่
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14"/>
-                            <path d="m12 5 7 7-7 7"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
                         </svg>
                     </a>
                 </div>
@@ -186,7 +183,9 @@
         }
 
         /* ========== Reset & Base ========== */
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -199,7 +198,7 @@
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 50%, #fdf4ff 100%);
-            font-family: 'Kanit', 'Inter', sans-serif;
+            font-family: 'Sarabun', 'Inter', sans-serif;
             position: relative;
             overflow: hidden;
             padding: 1rem;
@@ -260,15 +259,20 @@
         }
 
         @keyframes float {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translate(0, 0) scale(1);
             }
+
             25% {
                 transform: translate(40px, -40px) scale(1.05);
             }
+
             50% {
                 transform: translate(-25px, 25px) scale(0.98);
             }
+
             75% {
                 transform: translate(-35px, -15px) scale(1.02);
             }
@@ -278,7 +282,7 @@
         .grid-pattern {
             position: absolute;
             inset: 0;
-            background-image: 
+            background-image:
                 linear-gradient(rgba(79, 70, 229, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(79, 70, 229, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
@@ -303,23 +307,50 @@
             animation: rise 12s infinite ease-in;
         }
 
-        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 14s; }
-        .particle:nth-child(2) { left: 25%; animation-delay: -2s; animation-duration: 12s; }
-        .particle:nth-child(3) { left: 50%; animation-delay: -4s; animation-duration: 16s; }
-        .particle:nth-child(4) { left: 75%; animation-delay: -6s; animation-duration: 13s; }
-        .particle:nth-child(5) { left: 90%; animation-delay: -8s; animation-duration: 15s; }
+        .particle:nth-child(1) {
+            left: 10%;
+            animation-delay: 0s;
+            animation-duration: 14s;
+        }
+
+        .particle:nth-child(2) {
+            left: 25%;
+            animation-delay: -2s;
+            animation-duration: 12s;
+        }
+
+        .particle:nth-child(3) {
+            left: 50%;
+            animation-delay: -4s;
+            animation-duration: 16s;
+        }
+
+        .particle:nth-child(4) {
+            left: 75%;
+            animation-delay: -6s;
+            animation-duration: 13s;
+        }
+
+        .particle:nth-child(5) {
+            left: 90%;
+            animation-delay: -8s;
+            animation-duration: 15s;
+        }
 
         @keyframes rise {
             0% {
                 transform: translateY(100vh) scale(0);
                 opacity: 0;
             }
+
             10% {
                 opacity: 0.5;
             }
+
             90% {
                 opacity: 0.5;
             }
+
             100% {
                 transform: translateY(-100px) scale(1);
                 opacity: 0;
@@ -351,6 +382,7 @@
                 opacity: 0;
                 transform: translateY(30px) scale(0.95);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -365,8 +397,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
+            0% {
+                background-position: 100% 0;
+            }
+
+            100% {
+                background-position: -100% 0;
+            }
         }
 
         .card-content {
@@ -394,8 +431,17 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.2; transform: translate(-50%, -60%) scale(1); }
-            50% { opacity: 0.35; transform: translate(-50%, -60%) scale(1.1); }
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: translate(-50%, -60%) scale(1);
+            }
+
+            50% {
+                opacity: 0.35;
+                transform: translate(-50%, -60%) scale(1.1);
+            }
         }
 
         .logo-container {
@@ -494,15 +540,15 @@
             box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
 
-        .form-input:focus + .floating-label,
-        .form-input:not(:placeholder-shown) + .floating-label {
+        .form-input:focus+.floating-label,
+        .form-input:not(:placeholder-shown)+.floating-label {
             transform: translateY(-2.6rem) translateX(-0.5rem) scale(0.85);
             color: var(--primary);
             background: var(--bg-white);
             padding: 0 0.5rem;
         }
 
-        .form-input:focus ~ .input-icon,
+        .form-input:focus~.input-icon,
         .input-wrapper:focus-within .input-icon {
             color: var(--primary);
         }
@@ -530,7 +576,7 @@
             border-radius: 2px;
         }
 
-        .form-input:focus ~ .input-highlight {
+        .form-input:focus~.input-highlight {
             left: 0;
             width: 100%;
         }
@@ -618,12 +664,12 @@
             top: 3px;
         }
 
-        .remember-checkbox:checked + .checkbox-custom {
+        .remember-checkbox:checked+.checkbox-custom {
             background: var(--primary);
             border-color: var(--primary);
         }
 
-        .remember-checkbox:checked + .checkbox-custom::after {
+        .remember-checkbox:checked+.checkbox-custom::after {
             transform: rotate(-45deg) scale(1);
         }
 
@@ -696,12 +742,10 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.3),
-                transparent
-            );
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.3),
+                    transparent);
             transition: left 0.5s ease;
         }
 
@@ -836,6 +880,7 @@
 
         /* ========== Prefers Reduced Motion ========== */
         @media (prefers-reduced-motion: reduce) {
+
             .gradient-orb,
             .particle,
             .logo-glow,
@@ -871,7 +916,7 @@
         }
 
         // Add ripple effect on button click
-        document.querySelector('.submit-btn').addEventListener('click', function(e) {
+        document.querySelector('.submit-btn').addEventListener('click', function (e) {
             const ripple = document.createElement('span');
             const rect = this.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);

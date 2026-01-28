@@ -29,17 +29,38 @@ class AttendanceReportController extends Controller
         // Get courses for filter dropdown
         $courses = FaCourse::orderBy('created_at', 'desc')->get();
 
-        // Build query
-        $query = FaStudentAttendanceLog::with(['student.course'])
-            ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        // Group student logs by student and date for a more comprehensive report view
+        $studentLogsQuery = FaStudentAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
         if ($courseId) {
-            $query->whereHas('student', function ($q) use ($courseId) {
+            $studentLogsQuery->whereHas('student', function ($q) use ($courseId) {
                 $q->where('course_id', $courseId);
             });
         }
 
-        $logs = $query->orderBy('scan_time', 'desc')->paginate(20);
+        $logs = $studentLogsQuery->select('student_id', \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'))
+            ->groupBy('student_id', 'scan_date')
+            ->orderBy('scan_date', 'desc')
+            ->paginate(20);
+
+        // Map grouped items to include morning and afternoon scan details
+        $logs->getCollection()->transform(function ($item) {
+            $dayLogs = FaStudentAttendanceLog::with(['student.course'])
+                ->where('student_id', $item->student_id)
+                ->whereDate('scan_time', $item->scan_date)
+                ->get();
+
+            // Support both period and scan_type (for compatibility)
+            $item->morning = $dayLogs->where('period', 'morning')->sortBy('scan_time')->first()
+                ?? $dayLogs->where('scan_type', 'in')->where('scan_time', '<', $item->scan_date . ' 12:00:00')->sortBy('scan_time')->first();
+
+            $item->afternoon = $dayLogs->where('period', 'afternoon')->sortByDesc('scan_time')->first()
+                ?? $dayLogs->where('scan_type', 'in')->where('scan_time', '>=', $item->scan_date . ' 12:00:00')->sortByDesc('scan_time')->first();
+
+            // Fallback for student data
+            $item->student = $dayLogs->first()?->student ?? FaStudent::with('course')->find($item->student_id);
+            return $item;
+        });
 
         // Get summary statistics
         $totalScans = FaStudentAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -198,7 +219,9 @@ class AttendanceReportController extends Controller
 
         // 3. Split Absent into 'Actually Absent' vs 'Official Duty'
         // actuallyAbsentEmployees should exclude those who are on official duty
-        $actuallyAbsentEmployees = $absentEmployees->where('on_official_duty', false);
+        $actuallyAbsentEmployees = $absentEmployees->filter(function ($emp) {
+            return !($emp->on_official_duty ?? false);
+        });
 
         // Update counts
         $absentEmployeeCount = $actuallyAbsentEmployees->count();
@@ -216,9 +239,11 @@ class AttendanceReportController extends Controller
             ->where('is_late', true);
         $lateEmployees = $lateEmployeesQuery->orderBy('scan_time', 'desc')->get();
 
-        // Count employee statistics
-        $absentEmployeeCount = $absentEmployees->count();
+        // Update final counts for view
         $lateEmployeeCount = $lateEmployees->unique('employee_id')->count();
+        $absentEmployees = $actuallyAbsentEmployees; // Only pass actually absent to the alert section
+        // Final absent count for the dashboard
+        $absentEmployeeCount = $actuallyAbsentEmployees->count();
 
         return view('attendance-reports.index', compact(
             'logs',

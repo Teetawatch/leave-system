@@ -4,17 +4,14 @@
     <div class="min-h-screen pb-20">
 
         <!-- Premium Hero Header -->
-        <div class="relative overflow-hidden bg-slate-900 -mt-8 pt-16 pb-32 px-4 shadow-2xl">
+        <div class="relative overflow-hidden bg-white -mt-8 pt-16 pb-32 px-4 border-b border-slate-100">
             <!-- Dynamic Background Effects -->
             <div class="absolute inset-0 z-0">
                 <div
-                    class="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-600/20 rounded-full blur-[120px] -mr-48 -mt-48 animate-pulse">
+                    class="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-500/10 rounded-full blur-[120px] -mr-48 -mt-48 animate-pulse">
                 </div>
                 <div
-                    class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px] -ml-32 -mb-32">
-                </div>
-                <div
-                    class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]">
+                    class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px] -ml-32 -mb-32">
                 </div>
             </div>
 
@@ -22,24 +19,23 @@
                 class="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-10">
                 <div class="flex-1 space-y-4">
                     <div
-                        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-sm font-bold text-brand-300 uppercase tracking-widest animate-fade-in">
+                        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 border border-brand-100 text-sm font-bold text-brand-600 uppercase tracking-widest animate-fade-in">
                         <span class="relative flex h-2 w-2">
                             <span
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
-                        ระบบพร้อมปฏิบัติการ
+                        ระบบพร้อมใช้งาน
                     </div>
-                    <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight leading-tight">
+                    <h1 class="text-4xl md:text-6xl font-bold text-slate-900 tracking-tight leading-tight">
                         สวัสดีครับ, <br class="sm:hidden">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/50">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
                             {{ Auth::user()->rank }}{{ Auth::user()->name }}
                         </span>
                     </h1>
-                    <p class="text-slate-400 text-lg md:text-xl font-semibold max-w-2xl leading-relaxed">
-                        ยินดีต้อนรับสู่ระบบบริหารจัดการการลาและเวรยาม <span
-                            class="text-brand-400 font-bold">โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ</span>
-                        พร้อมสนับสนุนการทำงานของคุณในวันนี้
+                    <p class="text-slate-500 text-lg md:text-xl font-semibold max-w-2xl leading-relaxed">
+                        ยินดีต้อนรับสู่ระบบบริหารจัดการการลาและเวรยาม <br><span
+                            class="text-brand-600 font-bold">โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ</span>
                     </p>
                 </div>
 
@@ -58,9 +54,9 @@
                     </a>
 
                     <a href="{{ route('guard-change.create') }}"
-                        class="group inline-flex items-center justify-center gap-4 px-8 py-5 bg-white/5 hover:bg-white/10 text-white backdrop-blur-xl border border-white/10 font-bold rounded-[2rem] shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 active:scale-95">
+                        class="group inline-flex items-center justify-center gap-4 px-8 py-5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-bold rounded-[2rem] shadow-sm hover:shadow-md hover:-translate-y-1.5 transition-all duration-300 active:scale-95">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                            class="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform group-hover:text-brand-600">
                             <i data-lucide="shield-half" class="w-6 h-6"></i>
                         </div>
                         <span class="text-xl">ขอเปลี่ยนยาม</span>

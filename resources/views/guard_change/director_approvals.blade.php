@@ -3,37 +3,37 @@
 
     <div class="min-h-screen bg-[#f8fafc]">
         <!-- Cinematic Executive Header -->
-        <div class="relative bg-[#0f172a] pt-16 pb-28 overflow-hidden">
+        <div class="relative bg-white pt-16 pb-28 overflow-hidden border-b border-slate-100">
             <!-- Background Decoration -->
             <div class="absolute inset-0">
-                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
-                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -ml-24 -mb-24"></div>
+                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[100px] -ml-24 -mb-24"></div>
             </div>
 
             <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                     <div>
-                        <nav class="flex items-center gap-2 text-purple-300/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
+                        <nav class="flex items-center gap-2 text-purple-600/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
                             <i data-lucide="shield-check" class="w-4 h-4"></i>
-                            <span>Executive Approval</span>
-                            <span class="w-1 h-1 rounded-full bg-purple-500/40"></span>
-                            <span class="text-purple-400">Deputy Director Review</span>
+                            <span>การอนุมัติระดับบริหาร</span>
+                            <span class="w-1 h-1 rounded-full bg-purple-500/20"></span>
+                            <span class="text-purple-600">การพิจารณาของ รอง ผอ.</span>
                         </nav>
-                        <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+                        <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
                             คำขอเปลี่ยนยามรอ รอง ผอ. อนุมัติ
                         </h1>
-                        <p class="text-indigo-100/60 max-w-xl text-lg font-medium leading-relaxed">
+                        <p class="text-slate-500 max-w-xl text-lg font-medium leading-relaxed">
                             พิจารณาอนุมัติคำขอเปลี่ยนเวรยามที่ผ่านการยินยอมจากผู้ปฏิบัติหน้าที่แทนเรียบร้อยแล้ว 
                             เพื่อดำเนินการตามขั้นตอนสุดท้ายต่อไป
                         </p>
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <div class="glass-card bg-white/5 border-white/10 rounded-2xl px-6 py-4 backdrop-blur-md">
-                            <p class="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] mb-1">DEPUTY REVIEW</p>
+                        <div class="bg-purple-50 border border-purple-100 rounded-2xl px-6 py-4 shadow-sm">
+                            <p class="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-1">รอการพิจารณา</p>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-3xl font-black text-white">{{ $requests->count() }}</span>
-                                <span class="text-sm font-bold text-indigo-300/40 uppercase">Awaiting</span>
+                                <span class="text-3xl font-black text-slate-900">{{ $requests->count() }}</span>
+                                <span class="text-sm font-bold text-slate-400 uppercase">รายการ</span>
                             </div>
                         </div>
                     </div>

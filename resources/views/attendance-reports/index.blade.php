@@ -327,13 +327,13 @@
                                         <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">สังกัด/หลักสูตร</span>
                                     </th>
                                     <th class="px-10 py-6 text-center">
-                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">เวลาสแกน</span>
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">ช่วงเช้า (In)</span>
                                     </th>
                                     <th class="px-10 py-6 text-center">
-                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">สถานะ</span>
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">ช่วงบ่าย (Out)</span>
                                     </th>
                                     <th class="px-10 py-6 text-center">
-                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">รอบเวลา</span>
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">สถานะสรุป</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -344,7 +344,7 @@
                                             <div class="flex items-center gap-5">
                                                 <div
                                                     class="w-14 h-14 rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-lg overflow-hidden transition-transform group-hover:scale-110">
-                                                    @if($log->student->photo_path)
+                                                    @if($log->student && $log->student->photo_path)
                                                         <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->student->photo_path) }}"
                                                             class="w-full h-full object-cover">
                                                     @else
@@ -353,10 +353,13 @@
                                                     @endif
                                                 </div>
                                                 <div>
+                                                    <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">
+                                                        วันที่: {{ \Carbon\Carbon::parse($log->scan_date)->format('d/m/Y') }}
+                                                    </p>
                                                     <p class="text-sm font-bold text-slate-900 uppercase">
-                                                        {{ $log->student->first_name }} {{ $log->student->last_name }}</p>
-                                                    <p class="text-xs font-bold text-indigo-500 mt-1">รหัส:
-                                                        {{ $log->student->student_code }}</p>
+                                                        {{ $log->student->first_name ?? 'ไม่พบข้อมูล' }} {{ $log->student->last_name ?? '' }}</p>
+                                                    <p class="text-[10px] font-bold text-slate-400 mt-1">รหัส:
+                                                        {{ $log->student->student_code ?? '-' }}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -366,36 +369,94 @@
                                                 {{ $log->student->course->name ?? 'ไม่ระบุหลักสูตร' }}
                                             </span>
                                         </td>
-                                        <td class="px-10 py-6 text-center">
-                                            <div class="flex flex-col items-center">
-                                                <span
-                                                    class="text-base font-bold text-slate-900 tabular-nums">{{ $log->scan_time->format('H:i:s') }}</span>
-                                                <span
-                                                    class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">วันที่:
-                                                    {{ $log->scan_time->format('d/m/Y') }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-10 py-6 text-center">
-                                            @if($log->is_late)
-                                                <span
-                                                    class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest">มาสาย</span>
+                                        <td class="px-6 py-6 text-center">
+                                            @if($log->morning)
+                                                <div class="flex flex-col items-center gap-3">
+                                                    <div class="relative group/photo">
+                                                        <div class="w-20 h-24 rounded-xl bg-slate-100 border-2 border-white shadow-md overflow-hidden transition-transform group-hover/photo:scale-110">
+                                                            @if($log->morning->snapshot_path)
+                                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->morning->snapshot_path) }}"
+                                                                    class="w-full h-full object-cover">
+                                                            @else
+                                                                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                                                    <i data-lucide="camera-off" class="w-6 h-6"></i>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                        <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
+                                                            <i data-lucide="sun" class="w-4 h-4"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-col items-center">
+                                                        <span class="text-sm font-bold text-slate-900 tabular-nums">
+                                                            {{ $log->morning->scan_time->format('H:i:s') }}
+                                                        </span>
+                                                        @if($log->morning->is_late)
+                                                            <span class="text-[9px] font-bold text-rose-500 uppercase">มาสาย</span>
+                                                        @else
+                                                            <span class="text-[9px] font-bold text-emerald-500 uppercase">ปกติ</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             @else
-                                                <span
-                                                    class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest">ปกติ</span>
+                                                <div class="flex flex-col items-center opacity-30">
+                                                    <div class="w-20 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center mb-2">
+                                                        <i data-lucide="user-minus" class="w-6 h-6 text-slate-400"></i>
+                                                    </div>
+                                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">ไม่มีข้อมูล</span>
+                                                </div>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-6 text-center">
+                                            @if($log->afternoon)
+                                                <div class="flex flex-col items-center gap-3">
+                                                    <div class="relative group/photo">
+                                                        <div class="w-20 h-24 rounded-xl bg-slate-100 border-2 border-white shadow-md overflow-hidden transition-transform group-hover/photo:scale-110">
+                                                            @if($log->afternoon->snapshot_path)
+                                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->afternoon->snapshot_path) }}"
+                                                                    class="w-full h-full object-cover">
+                                                            @else
+                                                                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                                                    <i data-lucide="camera-off" class="w-6 h-6"></i>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                        <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-600 text-white rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
+                                                            <i data-lucide="moon" class="w-4 h-4"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-col items-center">
+                                                        <span class="text-sm font-bold text-slate-900 tabular-nums">
+                                                            {{ $log->afternoon->scan_time->format('H:i:s') }}
+                                                        </span>
+                                                        @if($log->afternoon->is_late)
+                                                            <span class="text-[9px] font-bold text-rose-500 uppercase">เกินเวลา</span>
+                                                        @else
+                                                            <span class="text-[9px] font-bold text-emerald-500 uppercase">ปกติ</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="flex flex-col items-center opacity-30">
+                                                    <div class="w-20 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center mb-2">
+                                                        <i data-lucide="user-minus" class="w-6 h-6 text-slate-400"></i>
+                                                    </div>
+                                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">ไม่มีข้อมูล</span>
+                                                </div>
                                             @endif
                                         </td>
                                         <td class="px-10 py-6 text-center">
-                                             @if($log->scan_type === 'in')
-                                                <span
-                                                    class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-xl text-[9px] font-bold shadow-lg shadow-indigo-600/20 uppercase tracking-[0.2em]">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                                                    ขาเข้า
-                                                </span>
+                                            @php
+                                                $isLate = ($log->morning && $log->morning->is_late) || ($log->afternoon && $log->afternoon->is_late);
+                                                $isPresent = $log->morning || $log->afternoon;
+                                            @endphp
+
+                                            @if(!$isPresent)
+                                                <span class="px-5 py-2 bg-rose-500 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-rose-500/20 uppercase tracking-widest">ขาดเรียน</span>
+                                            @elseif($isLate)
+                                                <span class="px-5 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-amber-500/20 uppercase tracking-widest">มาสาย</span>
                                             @else
-                                                <span
-                                                    class="inline-flex items-center gap-2 px-5 py-2 bg-slate-800 text-white rounded-xl text-[9px] font-bold shadow-lg shadow-slate-800/20 uppercase tracking-[0.2em]">
-                                                    ขาออก
-                                                </span>
+                                                <span class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-indigo-600/20 uppercase tracking-widest">มาเรียนปกติ</span>
                                             @endif
                                         </td>
                                     </tr>

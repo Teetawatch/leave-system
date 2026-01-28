@@ -13,7 +13,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Kanit', ...defaultTheme.fontFamily.sans],
+                sans: ['Sarabun', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 // Brand Colors

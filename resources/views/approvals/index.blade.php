@@ -4,29 +4,29 @@
     <div class="min-h-screen bg-slate-50/50 pb-32">
         
         <!-- Premium Executive Header -->
-        <div class="bg-slate-900 pt-16 pb-32 px-4 shadow-2xl relative overflow-hidden">
-            <div class="absolute inset-0 z-0 opacity-20">
-                <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500 rounded-full blur-[100px] -mr-20 -mt-20 animate-pulse"></div>
-                <div class="absolute bottom-0 left-0 w-80 h-80 bg-brand-500 rounded-full blur-[100px] -ml-20 -mb-20"></div>
+        <div class="bg-white pt-16 pb-32 px-4 relative overflow-hidden border-b border-slate-100">
+            <div class="absolute inset-0 z-0 opacity-10">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500/20 rounded-full blur-[100px] -mr-20 -mt-20 animate-pulse"></div>
+                <div class="absolute bottom-0 left-0 w-80 h-80 bg-brand-500/10 rounded-full blur-[100px] -ml-20 -mb-20"></div>
             </div>
 
             <div class="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-8">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-xs font-black text-amber-400 uppercase tracking-widest animate-fade-in">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-100 text-xs font-black text-amber-600 uppercase tracking-widest animate-fade-in">
                         <i data-lucide="shield-check" class="w-4 h-4"></i>
-                        Approver Dashboard
+                        แผงควบคุมผู้อนุมัติ
                     </div>
-                    <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight">รายการรอการตัดสินใจ</h1>
-                    <p class="text-slate-400 text-lg font-bold max-w-2xl leading-relaxed">มีคำขอรับการพิจารณาจำนวน <span class="text-white">{{ $requests->count() }}</span> รายการ รอให้ท่านดำเนินการตรวจสอบและอนุมัติในระบบ</p>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">รายการรอการตัดสินใจ</h1>
+                    <p class="text-slate-500 text-lg font-bold max-w-2xl leading-relaxed">มีคำขอรับการพิจารณาจำนวน <span class="text-brand-600">{{ $requests->count() }}</span> รายการ รอให้ท่านดำเนินการตรวจสอบและอนุมัติในระบบ</p>
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 flex flex-col items-center min-w-[120px]">
-                        <span class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">ค้างอนุมัติ</span>
-                        <span class="text-3xl font-black text-amber-400">{{ $requests->count() }}</span>
+                    <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 flex flex-col items-center min-w-[120px] shadow-sm">
+                        <span class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">ค้างอนุมัติ</span>
+                        <span class="text-3xl font-black text-amber-500">{{ $requests->count() }}</span>
                     </div>
-                    <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 flex flex-col items-center min-w-[120px]">
-                        <span class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">ด่วนที่สุด</span>
+                    <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 flex flex-col items-center min-w-[120px] shadow-sm">
+                        <span class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">ด่วนที่สุด</span>
                         <span class="text-3xl font-black text-rose-500">{{ $requests->where('leaveType.slug', 'sick')->count() }}</span>
                     </div>
                 </div>

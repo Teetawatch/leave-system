@@ -67,7 +67,7 @@
                 <div
                     class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-sm font-bold uppercase tracking-widest shadow-sm">
                     <i data-lucide="send" class="w-4 h-4"></i>
-                    E-Leave System
+                    Leave System
                 </div>
                 <h1 class="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight">แบบฟอร์มยื่นคำขอลา</h1>
                 <p class="text-slate-500 font-semibold text-lg max-w-2xl">กรุณาเลือกประเภทและระบุรายละเอียดการลา
@@ -128,7 +128,7 @@
                                         class="h-full p-6 rounded-[2.5rem] border-2 border-slate-50 bg-white/50 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active group-hover:border-brand-200">
                                         <div
                                             class="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center text-3xl mb-5 shadow-inner transition-transform group-hover:scale-110 group-active:scale-95
-                                                                                        {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
+                                                                                                    {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
                                             @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-8 h-8"></i>
@@ -315,7 +315,7 @@
                             <div class="space-y-8">
                                 <div class="relative">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">เหตุผลหรือความจำเป็นในการลา
+                                        class="block text-xs font-bold text-slate-400 uppercase  mb-3 ml-1">เหตุผลหรือความจำเป็นในการลา
                                         <span class="text-rose-500">*</span></label>
                                     <textarea name="reason" rows="4" required
                                         class="w-full px-8 py-6 bg-white/50 border border-slate-100 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-800 text-lg transition-all resize-none shadow-inner"
@@ -324,7 +324,7 @@
 
                                 <div class="relative group">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">เอกสารประกอบ
+                                        class="block text-xs font-bold text-slate-400 uppercase  mb-3 ml-1">เอกสารประกอบ
                                         (ถ้ามี)</label>
                                     <div class="file-drop relative rounded-[2rem] border-2 border-dashed border-slate-200 p-10 text-center hover:border-brand-500 hover:bg-brand-50/30 transition-all cursor-pointer group/upload"
                                         @dragover.prevent="$el.classList.add('bg-brand-50', 'border-brand-500')"

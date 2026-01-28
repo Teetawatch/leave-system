@@ -3,28 +3,29 @@
 
     <div class="min-h-screen bg-[#f8fafc] pb-20" x-data="guardChangeForm()">
         <!-- Cinematic Header -->
-        <div class="relative bg-[#0f172a] pt-16 pb-24 overflow-hidden">
+        <div class="relative bg-white pt-16 pb-24 overflow-hidden border-b border-slate-100">
             <!-- Background Decoration -->
             <div class="absolute inset-0">
                 <div
-                    class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -mr-48 -mt-48">
+                    class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] -mr-48 -mt-48">
                 </div>
-                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -ml-24 -mb-24">
+                <div
+                    class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[100px] -ml-24 -mb-24">
                 </div>
             </div>
 
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                 <nav
-                    class="flex justify-center items-center gap-2 text-emerald-300/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
+                    class="flex justify-center items-center gap-2 text-emerald-600/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
                     <i data-lucide="shield" class="w-4 h-4"></i>
                     <span>Duty Management</span>
-                    <span class="w-1 h-1 rounded-full bg-emerald-500/40"></span>
-                    <span class="text-emerald-400">Request New Change</span>
+                    <span class="w-1 h-1 rounded-full bg-emerald-500/20"></span>
+                    <span class="text-emerald-600">Request New Change</span>
                 </nav>
-                <h1 class="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
+                <h1 class="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-4">
                     แบบฟอร์มขออนุญาตเปลี่ยนยาม
                 </h1>
-                <p class="text-indigo-100/60 max-w-2xl mx-auto text-lg font-semibold">
+                <p class="text-slate-500 max-w-2xl mx-auto text-lg font-semibold">
                     กรุณากรอกข้อมูลการเปลี่ยนเวรยามให้ครบถ้วน เพื่อดำเนินการส่งขออนุมัติไปยังผู้บังคับบัญชาตามลำดับ
                 </p>
             </div>
@@ -40,7 +41,7 @@
 
                         <!-- Section 1: Replacement User Selection -->
                         <div
-                            class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative group">
+                            class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative z-30 group">
                             <!-- Background Decoration (Clipped) -->
                             <div class="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
                                 <div
@@ -57,7 +58,7 @@
                                     เลือกผู้ปฏิบัติหน้าที่แทน
                                 </h3>
 
-                                <div class="relative" x-data="userAutocomplete()">
+                                <div class="relative z-30" x-data="userAutocomplete()">
                                     <input type="hidden" name="replacement_user_id" x-model="replacementUserId">
 
                                     <!-- Search Input -->
@@ -119,7 +120,8 @@
                                                     <span x-text="user.name.substring(0, 1)"></span>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="font-bold text-slate-800 text-base" x-text="user.rank + user.name">
+                                                    <p class="font-bold text-slate-800 text-base"
+                                                        x-text="user.rank + user.name">
                                                     </p>
                                                     <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-0.5"
                                                         x-text="user.position || 'บุคลากร'"></p>
@@ -139,7 +141,8 @@
                                             <i data-lucide="user-x" class="w-8 h-8 text-slate-300"></i>
                                         </div>
                                         <p class="text-slate-500 font-bold text-base">ไม่พบข้อมูลรายชื่อที่ค้นหา</p>
-                                        <p class="text-slate-400 text-base mt-1">กรุณาลองพิมพ์ชื่อหรือตำแหน่งใหม่อีกครั้ง
+                                        <p class="text-slate-400 text-base mt-1">
+                                            กรุณาลองพิมพ์ชื่อหรือตำแหน่งใหม่อีกครั้ง
                                         </p>
                                     </div>
                                 </div>
@@ -156,7 +159,7 @@
 
                         <!-- Section 2: Duty Position Selection -->
                         <div
-                            class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative mt-8 overflow-hidden group">
+                            class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100 relative mt-8 overflow-hidden z-20 group">
                             <div
                                 class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-[4rem] -mr-10 -mt-10 opacity-50 group-hover:scale-110 transition-transform duration-500 pointer-events-none">
                             </div>
@@ -300,9 +303,9 @@
 
                 <!-- Right Column: Visual Summary -->
                 <div class="lg:col-span-4 lg:sticky lg:top-8">
-                    <div class="bg-[#0f172a] rounded-[2.5rem] p-8 shadow-2xl overflow-hidden relative group">
+                    <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative group">
                         <!-- Abstract Background -->
-                        <div class="absolute inset-0 opacity-20 pointer-events-none">
+                        <div class="absolute inset-0 opacity-10 pointer-events-none">
                             <div
                                 class="absolute top-0 right-0 w-40 h-40 bg-indigo-500 rounded-full blur-[60px] -mr-20 -mt-20">
                             </div>
@@ -313,33 +316,31 @@
 
                         <div class="relative z-10">
                             <h4
-                                class="text-xs font-black text-indigo-300/60 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
-                                <span class="w-8 h-px bg-indigo-500/30"></span>
-                                Live Preview
+                                class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                                <span class="w-8 h-px bg-slate-200"></span>
+                                ตัวอย่างข้อมูล
                             </h4>
 
                             <div class="space-y-10">
                                 <!-- Status Badge -->
                                 <div
-                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full">
+                                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-full">
                                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                    <span class="text-xs font-bold text-white uppercase tracking-widest">DRAFTING
-                                        STATUS</span>
+                                    <span class="text-xs font-bold text-slate-600 uppercase tracking-widest">กำลังกรอกข้อมูล</span>
                                 </div>
 
                                 <!-- Main Visual Card -->
                                 <div
-                                    class="bg-gradient-to-br from-white/10 to-white/5 rounded-3xl p-6 border border-white/10 backdrop-blur-sm">
+                                    class="bg-slate-50 rounded-3xl p-6 border border-slate-100">
                                     <div class="flex items-start justify-between mb-10">
                                         <div>
-                                            <p
-                                                class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">
-                                                Position Duty</p>
-                                            <p class="text-xl font-bold text-white leading-tight"
+                                            <p class="text-xs font-bold text-brand-600 uppercase tracking-widest mb-1">
+                                                ตำแหน่งเวรยาม</p>
+                                            <p class="text-xl font-bold text-slate-900 leading-tight"
                                                 x-text="getDutyPositionName() || 'โปรดเลือกตำแหน่ง...'"></p>
                                         </div>
                                         <div
-                                            class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center border border-indigo-500/30">
+                                            class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm border border-indigo-100">
                                             <i data-lucide="shield" class="w-6 h-6"></i>
                                         </div>
                                     </div>
@@ -347,52 +348,52 @@
                                     <div class="space-y-6">
                                         <div class="flex items-center gap-4">
                                             <div
-                                                class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                                                <i data-lucide="calendar" class="w-5 h-5 text-indigo-300"></i>
+                                                class="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+                                                <i data-lucide="calendar" class="w-5 h-5 text-indigo-500"></i>
                                             </div>
                                             <div>
                                                 <p
-                                                    class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest">
-                                                    Target Date</p>
-                                                <p class="text-sm font-bold text-white mt-0.5"
+                                                    class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                                    วันที่เข้าเวร</p>
+                                                <p class="text-sm font-bold text-slate-700 mt-0.5"
                                                     x-text="formatDate(dutyDate) || 'ยังไม่กำหนด'"></p>
                                             </div>
                                         </div>
 
                                         <div class="flex items-center gap-4">
                                             <div
-                                                class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                                                <i data-lucide="repeat" class="w-5 h-5 text-emerald-400"></i>
+                                                class="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+                                                <i data-lucide="repeat" class="w-5 h-5 text-emerald-500"></i>
                                             </div>
                                             <div>
                                                 <p
-                                                    class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest">
-                                                    Replacement</p>
-                                                <p class="text-sm font-bold text-white mt-0.5"
+                                                    class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                                    ผู้ปฏิบัติหน้าที่แทน</p>
+                                                <p class="text-sm font-bold text-slate-700 mt-0.5"
                                                     x-text="searchQuery || 'รอระบุรายชื่อ...'"></p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Dash Line -->
-                                    <div class="my-6 border-t border-dashed border-white/10"></div>
+                                    <div class="my-6 border-t border-dashed border-slate-200"></div>
 
                                     <div>
                                         <p
-                                            class="text-xs font-bold text-indigo-300/40 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                            class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
                                             <i data-lucide="message-square" class="w-3 h-3"></i>
-                                            Remarks
+                                            หมายเหตุ
                                         </p>
-                                        <p class="text-sm text-white/60 font-semibold italic break-words"
+                                        <p class="text-sm text-slate-600 font-semibold italic break-words"
                                             x-text="remarks || '- ไม่ระบุหมายเหตุ -'"></p>
                                     </div>
                                 </div>
 
                                 <!-- Security Tip -->
-                                <div class="bg-indigo-500/10 rounded-2xl p-5 border border-indigo-500/20">
+                                <div class="bg-brand-50 rounded-2xl p-5 border border-brand-100">
                                     <div class="flex gap-4">
-                                        <i data-lucide="shield-alert" class="w-6 h-6 text-indigo-400 flex-shrink-0"></i>
-                                        <p class="text-sm font-bold text-indigo-100/60 leading-relaxed italic">
+                                        <i data-lucide="shield-alert" class="w-6 h-6 text-brand-600 flex-shrink-0"></i>
+                                        <p class="text-sm font-bold text-slate-600 leading-relaxed italic">
                                             "กรุณาตรวจสอบข้อมูลและปรึกษาผู้รับหน้าที่แทนก่อนส่งคำขอ
                                             เพื่อความถูกต้องในการปฏิบัติหน้าที่เวรยาม"
                                         </p>
@@ -440,7 +441,7 @@
                 replacementUserId: '{{ old("replacement_user_id") }}',
                 users: [
                     @foreach($users as $user)
-                            {
+                                    {
                             id: {{ $user->id }},
                             rank: "{{ $user->rank }}",
                             name: "{{ $user->name }}",

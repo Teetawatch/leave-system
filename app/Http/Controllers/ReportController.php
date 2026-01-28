@@ -25,7 +25,7 @@ class ReportController extends Controller
 
         // Default Filter for Non-Commanders
         if (!$isCommander) {
-            $query->whereHas('user', function($q) use ($user) {
+            $query->whereHas('user', function ($q) use ($user) {
                 $q->where('department', $user->department);
             });
         }
@@ -33,9 +33,9 @@ class ReportController extends Controller
         // Filter Logic - Use overlapping date range to find all leave requests within the period
         if ($request->filled('start_date') && $request->filled('end_date')) {
             // Find all leave requests that overlap with the selected date range
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->whereDate('start_date', '<=', $request->end_date)
-                  ->whereDate('end_date', '>=', $request->start_date);
+                    ->whereDate('end_date', '>=', $request->start_date);
             });
         } elseif ($request->filled('start_date')) {
             // Only start_date specified: find leaves that end on or after this date
@@ -46,7 +46,7 @@ class ReportController extends Controller
         }
         if ($request->filled('department')) {
             // Allow filtering by specific department if they have access (Commanders) or if it's their own
-            $query->whereHas('user', function($q) use ($request) {
+            $query->whereHas('user', function ($q) use ($request) {
                 $q->where('department', $request->department);
             });
         }
@@ -57,7 +57,7 @@ class ReportController extends Controller
             $query->where('status', $request->status);
         }
 
-        $requests = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $requests = $query->orderBy('start_date', 'desc')->paginate(15)->withQueryString();
 
         // Data for Filters
         if ($isCommander) {
@@ -65,22 +65,25 @@ class ReportController extends Controller
         } else {
             $departments = \App\Models\Department::where('name', $user->department)->get();
         }
-        
+
         $leaveTypes = LeaveType::all();
 
-        // Statistics: Top Leave Takers (all leaves)
+        // Statistics: Top Leave Takers (all leaves except official-duty)
         $topLeaversQuery = LeaveRequest::selectRaw('user_id, SUM(total_days) as total_leave_days, COUNT(*) as leave_count')
             ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->whereHas('leaveType', function ($q) {
+                $q->where('slug', '!=', 'official-duty');
+            })
             ->groupBy('user_id')
             ->orderByDesc('total_leave_days')
             ->limit(5);
-        
+
         if (!$isCommander) {
-            $topLeaversQuery->whereHas('user', function($q) use ($user) {
+            $topLeaversQuery->whereHas('user', function ($q) use ($user) {
                 $q->where('department', $user->department);
             });
         }
-        
+
         $topLeavers = $topLeaversQuery->with('user')->get();
 
         // Statistics: Most Popular Leave Types (all leaves)
@@ -88,19 +91,19 @@ class ReportController extends Controller
             ->whereNotIn('status', ['cancelled', 'rejected'])
             ->groupBy('leave_type_id')
             ->orderByDesc('usage_count');
-        
+
         if (!$isCommander) {
-            $popularLeaveTypesQuery->whereHas('user', function($q) use ($user) {
+            $popularLeaveTypesQuery->whereHas('user', function ($q) use ($user) {
                 $q->where('department', $user->department);
             });
         }
-        
+
         $popularLeaveTypes = $popularLeaveTypesQuery->with('leaveType')->get();
 
         // Total statistics
         $totalApprovedLeaves = LeaveRequest::whereNotIn('status', ['cancelled', 'rejected']);
         if (!$isCommander) {
-            $totalApprovedLeaves->whereHas('user', function($q) use ($user) {
+            $totalApprovedLeaves->whereHas('user', function ($q) use ($user) {
                 $q->where('department', $user->department);
             });
         }

@@ -34,6 +34,7 @@ class GuardChangeRequestController extends Controller
         $users = User::where('id', '!=', Auth::id())
             ->whereNotNull('registration_status')
             ->where('registration_status', 'approved')
+            ->whereIn('department', ['แผนกปกครอง', 'แผนกศึกษา', 'แผนกสนับสนุน', 'ฝ่ายธุรการ', 'ฝ่ายการเงิน'])
             ->orderBy('name')
             ->get();
 

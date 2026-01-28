@@ -3,33 +3,33 @@
 
     <div class="min-h-screen bg-[#f8fafc]">
         <!-- Cinematic Executive Header -->
-        <div class="relative bg-[#0f172a] pt-16 pb-28 overflow-hidden">
+        <div class="relative bg-white pt-16 pb-28 overflow-hidden border-b border-slate-100">
             <!-- Background Decoration -->
             <div class="absolute inset-0">
-                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
-                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px] -ml-24 -mb-24"></div>
+                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+                <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-500/5 rounded-full blur-[100px] -ml-24 -mb-24"></div>
             </div>
 
             <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                     <div>
-                        <nav class="flex items-center gap-2 text-indigo-300/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
+                        <nav class="flex items-center gap-2 text-indigo-600/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
                             <i data-lucide="shield" class="w-4 h-4"></i>
                             <span>System Duty</span>
-                            <span class="w-1 h-1 rounded-full bg-indigo-500/40"></span>
-                            <span class="text-indigo-400">Guard Change</span>
+                            <span class="w-1 h-1 rounded-full bg-indigo-500/20"></span>
+                            <span class="text-indigo-600">Guard Change</span>
                         </nav>
-                        <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+                        <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
                             รายการขอเปลี่ยนยาม
                         </h1>
-                        <p class="text-indigo-100/60 max-w-xl text-lg font-medium leading-relaxed">
+                        <p class="text-slate-500 max-w-xl text-lg font-medium leading-relaxed">
                             ระบบบันทึกและติดตามสถานะการขออนุมัติเปลี่ยนเวรยาม 
                             เพื่อความถูกต้องและโปร่งใสในการปฏิบัติหน้าที่
                         </p>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-4">
-                        <a href="{{ route('guard-change.create') }}" class="inline-flex items-center px-8 py-4 bg-indigo-500 hover:bg-indigo-400 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/20 transition-all hover:-translate-y-1 active:scale-95">
+                        <a href="{{ route('guard-change.create') }}" class="inline-flex items-center px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/20 transition-all hover:-translate-y-1 active:scale-95">
                             <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i>
                             ขอเปลี่ยนยามใหม่
                         </a>
@@ -38,38 +38,38 @@
 
                 <!-- Stats Dashboard Overlay -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 pb-4">
-                    <div class="glass-card bg-white/5 border-white/10 rounded-3xl p-6 backdrop-blur-md">
+                    <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 shadow-sm">
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                            <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center border border-amber-100 shadow-sm">
                                 <i data-lucide="clock" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <p class="text-xs font-black text-indigo-300/50 uppercase tracking-widest">รออนุมัติ</p>
-                                <p class="text-3xl font-black text-white mt-1">{{ $requests->whereIn('status', ['pending', 'approved', 'director_approved'])->count() }} <span class="text-sm font-bold text-indigo-300/40">รายการ</span></p>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">รออนุมัติ</p>
+                                <p class="text-3xl font-black text-slate-900 mt-1">{{ $requests->whereIn('status', ['pending', 'approved', 'director_approved'])->count() }} <span class="text-sm font-bold text-slate-400">รายการ</span></p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="glass-card bg-white/5 border-white/10 rounded-3xl p-6 backdrop-blur-md">
+                    <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 shadow-sm">
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100 shadow-sm">
                                 <i data-lucide="check-circle" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <p class="text-xs font-black text-indigo-300/50 uppercase tracking-widest">อนุมัติเรียบร้อย</p>
-                                <p class="text-3xl font-black text-white mt-1">{{ $requests->where('status', 'fully_approved')->count() }} <span class="text-sm font-bold text-indigo-300/40">รายการ</span></p>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">อนุมัติเรียบร้อย</p>
+                                <p class="text-3xl font-black text-slate-900 mt-1">{{ $requests->where('status', 'fully_approved')->count() }} <span class="text-sm font-bold text-slate-400">รายการ</span></p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="glass-card bg-white/5 border-white/10 rounded-3xl p-6 backdrop-blur-md">
+                    <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 shadow-sm">
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+                            <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center border border-indigo-100 shadow-sm">
                                 <i data-lucide="shield-check" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <p class="text-xs font-black text-indigo-300/50 uppercase tracking-widest">เวรปฏิบัติหน้าที่ทั้งหมด</p>
-                                <p class="text-3xl font-black text-white mt-1">{{ $requests->count() }} <span class="text-sm font-bold text-indigo-300/40">ครั้ง</span></p>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">เวรปฏิบัติหน้าที่ทั้งหมด</p>
+                                <p class="text-3xl font-black text-slate-900 mt-1">{{ $requests->count() }} <span class="text-sm font-bold text-slate-400">ครั้ง</span></p>
                             </div>
                         </div>
                     </div>

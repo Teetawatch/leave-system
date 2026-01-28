@@ -141,117 +141,93 @@
                 </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Intelligence Filter Console -->
-                <div class="lg:w-80 flex-shrink-0">
-                    <div
-                        class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 p-8 sticky top-24">
-                        <div class="flex items-center gap-3 mb-8">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
-                                <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
-                            </div>
-                            <h3 class="font-bold text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรอง
-                            </h3>
+            <div class="space-y-8">
+                <!-- Intelligence Horizontal Filter Console -->
+                <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                            <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรองข้อมูล</h3>
+                    </div>
+
+                    <form method="GET" action="{{ route('reports.guard-change') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-end">
+                        <!-- Date Start -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-3 h-3"></i>
+                                ตั้งแต่วันที่
+                            </label>
+                            <input type="date" name="start_date" value="{{ request('start_date') }}"
+                                class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none">
                         </div>
 
-                        <form method="GET" action="{{ route('reports.guard-change') }}" class="space-y-6">
-                            <!-- Date Range Context -->
-                            <div class="space-y-4">
-                                <label
-                                    class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
-                                    <i data-lucide="calendar" class="w-3 h-3"></i>
-                                    ช่วงเวลาปฏิบัติงาน
-                                </label>
-                                <div class="space-y-3">
-                                    <div class="relative group">
-                                        <input type="date" name="start_date" value="{{ request('start_date') }}"
-                                            class="block w-full px-4 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/20 transition-all outline-none">
-                                        <div
-                                            class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                                        </div>
-                                    </div>
-                                    <div class="relative group">
-                                        <input type="date" name="end_date" value="{{ request('end_date') }}"
-                                            class="block w-full px-4 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/20 transition-all outline-none">
-                                        <div
-                                            class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                                        </div>
-                                    </div>
+                        <!-- Date End -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-3 h-3"></i>
+                                ถึงวันที่
+                            </label>
+                            <input type="date" name="end_date" value="{{ request('end_date') }}"
+                                class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none">
+                        </div>
+
+                        <!-- Department -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                                <i data-lucide="database" class="w-3 h-3"></i>
+                                หน่วยงาน/แผนก
+                            </label>
+                            <div class="relative">
+                                <select name="department" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer outline-none">
+                                    <option value="">ทุกแผนก/สังกัด</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Organizational Scope -->
-                            <div class="space-y-4">
-                                <label
-                                    class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
-                                    <i data-lucide="database" class="w-3 h-3"></i>
-                                    ขอบเขตองค์กร
-                                </label>
-                                <div class="relative group">
-                                    <select name="department"
-                                        class="block w-full px-4 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/20 transition-all appearance-none cursor-pointer outline-none">
-                                        <option value="">ทุกแผนก/สังกัด</option>
-                                        @foreach($departments as $dept)
-                                            <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-                                    </div>
+                        <!-- Status -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                                <i data-lucide="shield" class="w-3 h-3"></i>
+                                สถานะการตรวจสอบ
+                            </label>
+                            <div class="relative">
+                                <select name="status" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer outline-none">
+                                    <option value="">ทุกสถานะ</option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>รอการสับเปลี่ยน</option>
+                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>ตอบรับแล้ว</option>
+                                    <option value="director_approved" {{ request('status') == 'director_approved' ? 'selected' : '' }}>ผอ. รับทราบ</option>
+                                    <option value="fully_approved" {{ request('status') == 'fully_approved' ? 'selected' : '' }}>อนุมัติสมบูรณ์</option>
+                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>ปฏิเสธ</option>
+                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ยกเลิก</option>
+                                </select>
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Operational Status -->
-                            <div class="space-y-4">
-                                <label
-                                    class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
-                                    <i data-lucide="shield" class="w-3 h-3"></i>
-                                    สถานะการตรวจสอบ
-                                </label>
-                                <div class="relative group">
-                                    <select name="status"
-                                        class="block w-full px-4 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/20 transition-all appearance-none cursor-pointer outline-none">
-                                        <option value="">ทุกสถานะ</option>
-                                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>
-                                            รอการสับเปลี่ยน</option>
-                                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>
-                                            ตอบรับแล้ว</option>
-                                        <option value="director_approved" {{ request('status') == 'director_approved' ? 'selected' : '' }}>ผอ. รับทราบ</option>
-                                        <option value="fully_approved" {{ request('status') == 'fully_approved' ? 'selected' : '' }}>อนุมัติสมบูรณ์</option>
-                                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>
-                                            ปฏิเสธ</option>
-                                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ยกเลิก</option>
-                                    </select>
-                                    <div
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="pt-6 space-y-3">
-                                <button type="submit"
-                                    class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:shadow-indigo-500/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group">
-                                    <i data-lucide="refresh-cw"
-                                        class="w-4 h-4 group-hover:rotate-180 transition-transform duration-700"></i>
-                                    ประมวลผลข้อมูล
-                                </button>
-                                <a href="{{ route('reports.guard-change') }}"
-                                    class="w-full py-4 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-slate-50 text-center transition-all flex items-center justify-center gap-2">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    ล้างตัวกรอง
-                                </a>
-                            </div>
-                        </form>
-                    </div>
+                        <!-- Actions -->
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 py-3.5 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-slate-900/20 hover:shadow-indigo-500/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group whitespace-nowrap">
+                                <i data-lucide="refresh-cw" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
+                                ค้นหาข้อมูล
+                            </button>
+                            <a href="{{ route('reports.guard-change') }}" class="px-4 py-3.5 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 text-center transition-all flex items-center justify-center">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Main Operational Grid -->
-                <div class="flex-1 min-w-0">
+                <!-- Main Operational Area -->
+                <div class="min-w-0">
                     <div
                         class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden relative">
                         <!-- Table Header Overlay -->

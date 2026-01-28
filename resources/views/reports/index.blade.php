@@ -103,73 +103,75 @@
             </div>
 
             <!-- Dashboard Content -->
-            <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Data Filter Console -->
-                <div class="lg:w-80 flex-shrink-0">
-                    <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 p-8 sticky top-24">
-                        <div class="flex items-center gap-3 mb-8">
-                            <i data-lucide="sliders" class="w-5 h-5 text-emerald-500"></i>
-                            <h3 class="font-bold text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรองข้อมูล</h3>
+            <div class="space-y-8">
+                <!-- Horizontal Filter Console -->
+                <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <i data-lucide="sliders" class="w-5 h-5 text-emerald-500"></i>
+                        <h3 class="font-bold text-slate-900 uppercase tracking-widest text-xs">ค้นหาและกรองข้อมูล</h3>
+                    </div>
+
+                    <form method="GET" action="{{ route('reports.index') }}" id="filter-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 items-end">
+                        <!-- Date Start -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">ตั้งแต่วันที่</label>
+                            <input type="date" name="start_date" value="{{ request('start_date') }}" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all">
                         </div>
 
-                        <form method="GET" action="{{ route('reports.index') }}" id="filter-form" class="space-y-6">
-                            <!-- Date Frames -->
-                            <div class="space-y-3">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">ช่วงเวลา</label>
-                                <div class="grid grid-cols-1 gap-3">
-                                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all">
-                                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all">
-                                </div>
-                            </div>
+                        <!-- Date End -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">ถึงวันที่</label>
+                            <input type="date" name="end_date" value="{{ request('end_date') }}" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all">
+                        </div>
 
-                            <!-- Department Context -->
-                            <div class="space-y-3">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">หน่วยงาน/แผนก</label>
-                                <select name="department" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
-                                    <option value="">ทุกหน่วยงาน</option>
-                                    @foreach($departments as $dept)
-                                        <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <!-- Department -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">หน่วยงาน/แผนก</label>
+                            <select name="department" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
+                                <option value="">ทุกหน่วยงาน</option>
+                                @foreach($departments as $dept)
+                                    <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                            <!-- Leave Metadata -->
-                            <div class="space-y-3">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">ประเภทการลา</label>
-                                <select name="leave_type_id" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
-                                    <option value="">ทุกประเภท</option>
-                                    @foreach($leaveTypes as $type)
-                                        <option value="{{ $type->id }}" {{ request('leave_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <!-- Leave Type -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">ประเภทการลา</label>
+                            <select name="leave_type_id" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
+                                <option value="">ทุกประเภท</option>
+                                @foreach($leaveTypes as $type)
+                                    <option value="{{ $type->id }}" {{ request('leave_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                            <!-- Transaction Status -->
-                            <div class="space-y-3">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest px-2">สถานะรายการ</label>
-                                <select name="status" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
-                                    <option value="">ทุกสถานะ</option>
-                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>อนุมัติแล้ว</option>
-                                    <option value="pending" {{ str_contains(request('status') ?? '', 'pending') ? 'selected' : '' }}>รอตรวจสอบ</option>
-                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>ปฏิเสธ</option>
-                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ยกเลิก</option>
-                                </select>
-                            </div>
+                        <!-- Status -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">สถานะรายการ</label>
+                            <select name="status" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
+                                <option value="">ทุกสถานะ</option>
+                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>อนุมัติแล้ว</option>
+                                <option value="pending" {{ str_contains(request('status') ?? '', 'pending') ? 'selected' : '' }}>รอตรวจสอบ</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>ปฏิเสธ</option>
+                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ยกเลิก</option>
+                            </select>
+                        </div>
 
-                            <div class="pt-6 flex flex-col gap-3">
-                                <button type="submit" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20 hover:shadow-emerald-500/30 hover:-translate-y-1 transition-all">
-                                    กรองข้อมูล
-                                </button>
-                                <a href="{{ route('reports.index') }}" class="w-full py-4 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-slate-50 text-center transition-all">
-                                    ล้างค่า
-                                </a>
-                            </div>
-                        </form>
-                    </div>
+                        <!-- Actions -->
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 py-3.5 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-slate-900/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5 transition-all">
+                                กรองข้อมูล
+                            </button>
+                            <a href="{{ route('reports.index') }}" class="px-4 py-3.5 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 text-center transition-all">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Main Matrix & Visualizations -->
-                <div class="flex-1 min-w-0 space-y-8">
+                <!-- Main Content Area -->
+                <div class="min-w-0 space-y-8">
                     @if(isset($topLeavers) && $topLeavers->isNotEmpty())
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <!-- Leaderboard Analysis -->
@@ -195,7 +197,7 @@
                                             </div>
                                             <div class="flex-1">
                                                 <div class="flex justify-between items-baseline mb-1">
-                                                    <p class="font-bold text-sm group-hover/item:translate-x-1 transition-transform">{{ $leaver->user->name }}</p>
+                                                    <p class="font-bold text-sm group-hover/item:translate-x-1 transition-transform">{{ $leaver->user->rank }}{{ $leaver->user->name }}</p>
                                                     <span class="text-emerald-400 font-bold text-sm">{{ $leaver->total_leave_days }} วัน</span>
                                                 </div>
                                                 <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">

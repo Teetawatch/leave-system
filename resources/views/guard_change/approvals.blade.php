@@ -3,14 +3,14 @@
 
     <div class="min-h-screen bg-[#f8fafc]">
         <!-- Cinematic Executive Header -->
-        <div class="relative bg-[#0f172a] pt-16 pb-28 overflow-hidden">
+        <div class="relative bg-white pt-16 pb-28 overflow-hidden border-b border-slate-100">
             <!-- Background Decoration -->
             <div class="absolute inset-0">
                 <div
-                    class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -mr-48 -mt-48">
+                    class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] -mr-48 -mt-48">
                 </div>
                 <div
-                    class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -ml-24 -mb-24">
+                    class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[100px] -ml-24 -mb-24">
                 </div>
             </div>
 
@@ -18,28 +18,27 @@
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                     <div>
                         <nav
-                            class="flex items-center gap-2 text-emerald-300/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
+                            class="flex items-center gap-2 text-emerald-600/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
                             <i data-lucide="shield-check" class="w-4 h-4"></i>
-                            <span>Approval Center</span>
-                            <span class="w-1 h-1 rounded-full bg-emerald-500/40"></span>
-                            <span class="text-emerald-400">Guard Change</span>
+                            <span>ศูนย์การอนุมัติ</span>
+                            <span class="w-1 h-1 rounded-full bg-emerald-500/20"></span>
+                            <span class="text-emerald-600">การเปลี่ยนยาม</span>
                         </nav>
-                        <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+                        <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
                             คำขอเปลี่ยนยามรออนุมัติ
                         </h1>
-                        <p class="text-indigo-100/60 max-w-xl text-lg font-medium leading-relaxed">
+                        <p class="text-slate-500 max-w-xl text-lg font-medium leading-relaxed">
                             ตรวจสอบและพิจารณาคำขอเปลี่ยนเวรยามของกำลังพล
                             เพื่อความต่อเนื่องและประสิทธิภาพในการระวังป้องกันสถานที่
                         </p>
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <div class="glass-card bg-white/5 border-white/10 rounded-2xl px-6 py-4 backdrop-blur-md">
-                            <p class="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-1">PENDING
-                                REQUESTS</p>
+                        <div class="bg-emerald-50 border border-emerald-100 rounded-2xl px-6 py-4 shadow-sm">
+                            <p class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-1">คำขอที่รออนุมัติ</p>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-3xl font-black text-white">{{ $requests->count() }}</span>
-                                <span class="text-sm font-bold text-indigo-300/40 uppercase">Transactions</span>
+                                <span class="text-3xl font-black text-slate-900">{{ $requests->count() }}</span>
+                                <span class="text-sm font-bold text-slate-400 uppercase">รายการ</span>
                             </div>
                         </div>
                     </div>
