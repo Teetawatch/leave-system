@@ -526,10 +526,10 @@
 
                     <div
                         class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group transition-all hover:-translate-y-1">
-                        <i data-lucide="globe"
+                        <i data-lucide="calendar-off"
                             class="w-10 h-10 text-blue-600 mb-6 bg-blue-50 rounded-2xl p-2 group-hover:bg-blue-600 group-hover:text-white transition-all"></i>
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ไปราชการ</p>
-                        <h3 class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($officialDutyCount) }}</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ลางาน/ราชการ</p>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($onLeaveCount) }}</h3>
                     </div>
 
                     <div
@@ -633,8 +633,8 @@
                     </div>
                 @endif
 
-                <!-- Anomaly Alerts (Official Duty Employees) -->
-                @if($onOfficialDutyEmployees->count() > 0)
+                <!-- Anomaly Alerts (Employees on Leave) -->
+                @if($onLeaveEmployees->count() > 0)
                     <div x-data="{ open: false }"
                         class="bg-white rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden mt-10">
                         <button @click="open = !open"
@@ -642,12 +642,12 @@
                             <div class="flex items-center gap-8">
                                 <div
                                     class="w-16 h-16 rounded-[1.5rem] bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner border border-blue-100">
-                                    <i data-lucide="globe" class="w-8 h-8"></i>
+                                    <i data-lucide="coffee" class="w-8 h-8"></i>
                                 </div>
                                 <div class="text-left">
-                                    <h3 class="text-2xl font-bold text-slate-900 tracking-tight">ข้าราชการไปราชการ</h3>
+                                    <h3 class="text-2xl font-bold text-slate-900 tracking-tight">ข้าราชการลางาน/ราชการ</h3>
                                     <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mt-1">จำนวนทั้งหมด
-                                        {{ $onOfficialDutyEmployees->count() }} รายการ</p>
+                                        {{ $onLeaveEmployees->count() }} รายการ</p>
                                 </div>
                             </div>
                             <i data-lucide="chevron-down" class="w-10 h-10 text-slate-300 transition-transform duration-500"
@@ -655,7 +655,7 @@
                         </button>
                         <div x-show="open" x-collapse>
                             <div class="p-10 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                                @foreach($onOfficialDutyEmployees as $employee)
+                                @foreach($onLeaveEmployees as $employee)
                                     <div
                                         class="bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-100 flex flex-col items-center text-center group hover:bg-white hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500">
                                         <div
@@ -668,14 +668,14 @@
                                             @endif
                                         </div>
                                         <h4 class="text-sm font-bold text-slate-900 uppercase">{{ $employee->first_name }}</h4>
-                                          @if($employee->official_duty_reason)
-                                            <p class="text-[9px] font-bold text-blue-500 mt-1 truncate w-full px-2" title="{{ $employee->official_duty_reason }}">
-                                                {{ Str::limit($employee->official_duty_reason, 20) }}
+                                          @if($employee->leave_info->reason)
+                                            <p class="text-[9px] font-bold text-slate-400 mt-1 truncate w-full px-2" title="{{ $employee->leave_info->reason }}">
+                                                {{ Str::limit($employee->leave_info->reason, 20) }}
                                             </p>
                                           @endif
                                         <p
                                             class="text-[9px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full mt-2 border border-blue-100">
-                                            ไปราชการ</p>
+                                            {{ $employee->leave_type_name }}</p>
                                     </div>
                                 @endforeach
                             </div>

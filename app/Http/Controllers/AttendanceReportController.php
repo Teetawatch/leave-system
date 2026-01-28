@@ -160,38 +160,47 @@ class AttendanceReportController extends Controller
             ->pluck('employee_id')
             ->unique();
 
-        // Get approved official duty requests for the date range
-        $officialDutyType = LeaveType::where('slug', 'official-duty')->first();
-        $officialDutyRequests = collect();
-        if ($officialDutyType) {
-            $officialDutyRequests = LeaveRequest::where('leave_type_id', $officialDutyType->id)
-                ->where('status', 'approved')
-                ->where(function ($query) use ($startDate, $endDate) {
-                    // Check for date overlap:
-                    // (start_date <= end_range) AND (end_date >= start_range)
-                    $query->whereDate('start_date', '<=', $endDate)
-                        ->whereDate('end_date', '>=', $startDate);
-                })
-                ->get();
+        // Get ALL approved leave requests for the date range
+        $leaveRequests = LeaveRequest::with(['leaveType', 'user'])
+            ->where('status', 'approved')
+            ->where(function ($query) use ($startDate, $endDate) {
+                // Check for date overlap:
+                // (start_date <= end_range) AND (end_date >= start_range)
+                $query->whereDate('start_date', '<=', $endDate)
+                    ->whereDate('end_date', '>=', $startDate);
+            })
+            ->get();
+
+        // Users on leave (for name matching)
+        $usersOnLeave = collect();
+        if ($leaveRequests->isNotEmpty()) {
+            $userIdsOnLeave = $leaveRequests->pluck('user_id')->unique();
+            $usersOnLeave = \App\Models\User::whereIn('id', $userIdsOnLeave)->get();
         }
 
-        // 1. Process Official Duty Mapping (Hybrid Match: ID or Name)
-        $onOfficialDutyEmployees = collect();
-        if ($officialDutyRequests->isNotEmpty()) {
-            $userIdsOnDuty = $officialDutyRequests->pluck('user_id')->unique();
-            $usersOnDuty = \App\Models\User::whereIn('id', $userIdsOnDuty)->get();
+        // Identify Absent Employees (Not scanned)
+        $absentEmployeesRaw = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
+            return !$scannedEmployeeIds->contains($employee->id);
+        });
 
-            // Map official duty status to FaEmployees (and return the subset of employees on duty)
-            $onOfficialDutyEmployees = $allEmployees->filter(function ($emp) use ($officialDutyRequests, $usersOnDuty) {
-                // Default status
-                $emp->on_official_duty = false;
+        // Partition Absent Employees into 'On Leave' vs 'True Absent'
+        $onLeaveEmployees = collect();
+        $trueAbsentEmployees = collect();
 
-                // Construct full name
-                $empFullName = trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
+        foreach ($absentEmployeesRaw as $emp) {
+            $matchedRequest = null;
+            $empFullName = trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
 
-                // Match User
-                // Match User
-                $matchedUser = $usersOnDuty->first(function ($user) use ($emp, $empFullName) {
+            // 1. Try Match by User ID
+            if ($emp->user_id) {
+                $matchedRequest = $leaveRequests->first(function ($req) use ($emp) {
+                    return $req->user_id == $emp->user_id;
+                });
+            }
+
+            // 2. Try Match by Name (if no match yet)
+            if (!$matchedRequest && $usersOnLeave->isNotEmpty()) {
+                $matchedUser = $usersOnLeave->first(function ($user) use ($emp, $empFullName) {
                     if ($emp->user_id && $emp->user_id == $user->id)
                         return true;
 
@@ -209,31 +218,22 @@ class AttendanceReportController extends Controller
                 });
 
                 if ($matchedUser) {
-                    $duty = $officialDutyRequests->firstWhere('user_id', $matchedUser->id);
-                    $emp->official_duty_reason = $duty ? $duty->reason : null;
-                    $emp->on_official_duty = true;
                     if (!$emp->user_id)
                         $emp->user_id = $matchedUser->id; // Fix missing ID
-                    return true;
+                    $matchedRequest = $leaveRequests->firstWhere('user_id', $matchedUser->id);
                 }
-                return false;
-            });
+            }
+
+            if ($matchedRequest) {
+                $emp->leave_info = $matchedRequest;
+                $emp->leave_type_name = $matchedRequest->leaveType->name ?? 'ลางาน';
+                $onLeaveEmployees->push($emp);
+            } else {
+                $trueAbsentEmployees->push($emp);
+            }
         }
 
-        // 2. Identify Abstract Employees (Not scanned)
-        $absentEmployees = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
-            return !$scannedEmployeeIds->contains($employee->id);
-        });
-
-        // 3. Split Absent into 'Actually Absent' vs 'Official Duty'
-        // actuallyAbsentEmployees should exclude those who are on official duty
-        $actuallyAbsentEmployees = $absentEmployees->filter(function ($emp) {
-            return !($emp->on_official_duty ?? false);
-        });
-
-        // Update counts
-        $absentEmployeeCount = $actuallyAbsentEmployees->count();
-        $officialDutyCount = $onOfficialDutyEmployees->count();
+        // Late employees stats
         $lateEmployeeCount = FaAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('scan_type', 'in')
             ->where('is_late', true)
@@ -249,9 +249,11 @@ class AttendanceReportController extends Controller
 
         // Update final counts for view
         $lateEmployeeCount = $lateEmployees->unique('employee_id')->count();
-        $absentEmployees = $actuallyAbsentEmployees; // Only pass actually absent to the alert section
-        // Final absent count for the dashboard
-        $absentEmployeeCount = $actuallyAbsentEmployees->count();
+
+        // Final collections
+        $absentEmployees = $trueAbsentEmployees;
+        $absentEmployeeCount = $trueAbsentEmployees->count();
+        $onLeaveCount = $onLeaveEmployees->count();
 
         return view('attendance-reports.index', compact(
             'logs',
@@ -275,8 +277,9 @@ class AttendanceReportController extends Controller
             'lateEmployees',
             'absentEmployeeCount',
             'lateEmployeeCount',
-            'officialDutyCount',
-            'onOfficialDutyEmployees'
+            'lateEmployeeCount',
+            'onLeaveCount',
+            'onLeaveEmployees'
         ));
     }
 
