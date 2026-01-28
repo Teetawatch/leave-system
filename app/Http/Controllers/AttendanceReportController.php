@@ -51,11 +51,21 @@ class AttendanceReportController extends Controller
                 ->get();
 
             // Support both period and scan_type (for compatibility)
-            $item->morning = $dayLogs->where('period', 'morning')->sortBy('scan_time')->first()
+            $morningLog = $dayLogs->where('period', 'morning')->sortBy('scan_time')->first()
                 ?? $dayLogs->where('scan_type', 'in')->where('scan_time', '<', $item->scan_date . ' 12:00:00')->sortBy('scan_time')->first();
 
-            $item->afternoon = $dayLogs->where('period', 'afternoon')->sortByDesc('scan_time')->first()
+            $afternoonLog = $dayLogs->where('period', 'afternoon')->sortByDesc('scan_time')->first()
                 ?? $dayLogs->where('scan_type', 'in')->where('scan_time', '>=', $item->scan_date . ' 12:00:00')->sortByDesc('scan_time')->first();
+
+            // Hardcode Late Logic for UI: Morning before 08:30 is NOT late
+            if ($morningLog) {
+                // Carbon object scan_time can be used directly for comparison
+                $scanTimeStr = $morningLog->scan_time->format('H:i:s');
+                $morningLog->is_late = ($scanTimeStr > '08:30:00');
+            }
+
+            $item->morning = $morningLog;
+            $item->afternoon = $afternoonLog;
 
             // Fallback for student data
             $item->student = $dayLogs->first()?->student ?? FaStudent::with('course')->find($item->student_id);
@@ -94,26 +104,24 @@ class AttendanceReportController extends Controller
         }
         $allStudents = $allStudentsQuery->with('course')->get();
 
-        // Get student IDs who have scanned (check-in) in the date range
+        // Identify students who scanned on this date (check-in)
         $scannedStudentIds = FaStudentAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('scan_type', 'in');
-        if ($courseId) {
-            $scannedStudentIds->whereHas('student', function ($q) use ($courseId) {
-                $q->where('course_id', $courseId);
-            });
-        }
-        $scannedStudentIds = $scannedStudentIds->pluck('student_id')->unique();
+            ->where('scan_type', 'in')
+            ->pluck('student_id')
+            ->unique();
 
         // Absent students (haven't checked in at all)
         $absentStudents = $allStudents->filter(function ($student) use ($scannedStudentIds) {
             return !$scannedStudentIds->contains($student->id);
         });
 
-        // Late students (scanned with is_late = true)
+        // Late students - recalculate based on new 08:30 rule for the UI statistics
         $lateStudentsQuery = FaStudentAttendanceLog::with('student.course')
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('scan_type', 'in')
-            ->where('is_late', true);
+            ->whereRaw("TIME(scan_time) > '08:30:00'")
+            ->whereRaw("TIME(scan_time) < '12:00:00'");
+
         if ($courseId) {
             $lateStudentsQuery->whereHas('student', function ($q) use ($courseId) {
                 $q->where('course_id', $courseId);
@@ -309,12 +317,21 @@ class AttendanceReportController extends Controller
 
         // Group scanned students by student_id with morning/afternoon periods
         $scannedStudentLogs = $logs->groupBy('student_id')->map(function ($studentLogs) {
-            $morning = $studentLogs->where('period', 'morning')->first();
-            $afternoon = $studentLogs->where('period', 'afternoon')->first();
+            $morning = $studentLogs->where('period', 'morning')->sortBy('scan_time')->first()
+                ?? $studentLogs->where('scan_time', '<', $studentLogs->first()->scan_time->format('Y-m-d') . ' 12:00:00')->sortBy('scan_time')->first();
+
+            $afternoon = $studentLogs->where('period', 'afternoon')->sortByDesc('scan_time')->first()
+                ?? $studentLogs->where('scan_time', '>=', $studentLogs->first()->scan_time->format('Y-m-d') . ' 12:00:00')->sortByDesc('scan_time')->first();
+
+            // Hardcode Late Logic for PDF: Morning before 08:30 is NOT late
+            $morningLate = false;
+            if ($morning) {
+                $scanTimeStr = $morning->scan_time->format('H:i:s');
+                $morningLate = ($scanTimeStr > '08:30:00');
+            }
 
             // Determine status based on scans
             $status = 'ปกติ';
-            $morningLate = $morning && $morning->is_late;
             $afternoonLate = $afternoon && $afternoon->is_late;
 
             if ($morningLate || $afternoonLate) {

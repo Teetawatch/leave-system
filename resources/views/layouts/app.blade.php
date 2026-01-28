@@ -440,6 +440,13 @@
                                         class="w-4 h-4 {{ request()->routeIs('attendance-reports.*') ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-600' }}"></i>
                                     <span class="ml-3 text-sm font-bold tracking-tight">รายงานการเข้างาน</span>
                                 </a>
+
+                                <a href="{{ route('ranking.index') }}"
+                                    class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('ranking.index') ? 'bg-amber-50 text-amber-700 shadow-sm shadow-amber-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-amber-600' }}">
+                                    <i data-lucide="trophy"
+                                        class="w-4 h-4 {{ request()->routeIs('ranking.index') ? 'text-amber-600' : 'text-slate-400 group-hover:text-amber-600' }}"></i>
+                                    <span class="ml-3 text-sm font-bold tracking-tight">จัดอันดับยอดเยี่ยม</span>
+                                </a>
                             </div>
                         </div>
                     </div>

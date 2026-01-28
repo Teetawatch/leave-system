@@ -23,11 +23,11 @@ use Illuminate\Support\Facades\Artisan;
 Route::get('/storage/{path}', function ($path) {
     $path = str_replace(['../', '..\\'], '', $path); // Prevent directory traversal
     $fullPath = storage_path('app/public/' . $path);
-    
+
     if (!file_exists($fullPath)) {
         abort(404);
     }
-    
+
     $mimeType = mime_content_type($fullPath);
     return response()->file($fullPath, ['Content-Type' => $mimeType]);
 })->where('path', '.*')->name('storage.file');
@@ -35,19 +35,19 @@ Route::get('/storage/{path}', function ($path) {
 // Face Attendance Storage file route (for reading student photos from face-attendance app)
 Route::get('/fa-storage/{path}', function ($path) {
     $path = str_replace(['../', '..\\'], '', $path); // Prevent directory traversal
-    
+
     // Path to face-attendance storage (adjust based on your server setup)
     $faceAttendancePath = base_path('../face-attendance/storage/app/public/' . $path);
-    
+
     // Fallback for local development
     if (!file_exists($faceAttendancePath)) {
         $faceAttendancePath = 'c:/face-attendance/storage/app/public/' . $path;
     }
-    
+
     if (!file_exists($faceAttendancePath)) {
         abort(404);
     }
-    
+
     $mimeType = mime_content_type($faceAttendancePath);
     return response()->file($faceAttendancePath, ['Content-Type' => $mimeType]);
 })->where('path', '.*')->name('fa-storage.file');
@@ -57,15 +57,15 @@ Route::get('/test-pdf', function () {
     try {
         // Get first leave request
         $leaveRequest = \App\Models\LeaveRequest::with(['user', 'leaveType', 'approvals.approver'])->first();
-        
+
         if (!$leaveRequest) {
             return 'No leave requests found';
         }
-        
+
         if (!$leaveRequest->user) {
             return 'Leave request has no user (user_id: ' . $leaveRequest->user_id . ')';
         }
-        
+
         $leaveBalance = new \App\Models\LeaveBalance([
             'user_id' => $leaveRequest->user_id,
             'leave_type_id' => $leaveRequest->leave_type_id,
@@ -74,14 +74,14 @@ Route::get('/test-pdf', function () {
             'used_days' => 0,
             'remaining_days' => 10,
         ]);
-        
+
         $lastYearBalance = null;
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('leave_request.pdf', compact('leaveRequest', 'leaveBalance', 'lastYearBalance'));
         $pdf->setPaper('A4', 'portrait');
-        
+
         return $pdf->stream('test.pdf');
-        
+
     } catch (\Exception $e) {
         return '<pre>Error: ' . $e->getMessage() . "\n\n" . $e->getTraceAsString() . '</pre>';
     }
@@ -98,7 +98,7 @@ Route::get('/api/employees/search', [EmployeeRegistrationController::class, 'sea
 
 Route::get('/dashboard', function () {
     $user = Illuminate\Support\Facades\Auth::user();
-    
+
     // 1. Vacation Balance
     // Assumes 'vacation' slug exists. For Phase 1 we seeded it.
     // If no balance record, we might show default or 0.
@@ -108,7 +108,7 @@ Route::get('/dashboard', function () {
         ->where('leave_type_id', $vacationType->id)
         ->where('year', now()->year)
         ->first();
-    
+
     // 2. Sick Leave Usage (Count requests or Sum days)
     // "Used X times" or "Used X days"
     $sickType = \App\Models\LeaveType::where('slug', 'sick')->first();
@@ -117,7 +117,7 @@ Route::get('/dashboard', function () {
         ->where('status', 'approved')
         ->whereYear('start_date', now()->year)
         ->sum('total_days');
-    
+
     $sickUsageCount = \App\Models\LeaveRequest::where('user_id', $user->id)
         ->where('leave_type_id', $sickType->id)
         ->where('status', 'approved')
@@ -128,7 +128,7 @@ Route::get('/dashboard', function () {
     $personalType = \App\Models\LeaveType::where('slug', 'personal')->first();
     $personalUsageDays = 0;
     $personalUsageCount = 0;
-    
+
     if ($personalType) {
         $personalUsageDays = \App\Models\LeaveRequest::where('user_id', $user->id)
             ->where('leave_type_id', $personalType->id)
@@ -211,32 +211,35 @@ Route::middleware(['auth'])->group(function () {
         // Reports Routes
         Route::get('/reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
-        
+
         // Attendance Reports (from Face Attendance API)
         Route::get('/attendance-reports', [App\Http\Controllers\AttendanceReportController::class, 'index'])->name('attendance-reports.index');
         Route::get('/attendance-reports/pdf', [App\Http\Controllers\AttendanceReportController::class, 'exportPdf'])->name('attendance-reports.pdf');
         Route::get('/attendance-reports/summary', [App\Http\Controllers\AttendanceReportController::class, 'dashboardSummary'])->name('attendance-reports.summary');
-        
+
+        // Ranking Route
+        Route::get('/ranking', [App\Http\Controllers\RankingController::class, 'index'])->name('ranking.index');
+
         // Employee Import Routes (MUST be before resource route)
         Route::get('/employees/import', [App\Http\Controllers\EmployeeController::class, 'importForm'])->name('employees.import');
         Route::post('/employees/import', [App\Http\Controllers\EmployeeController::class, 'import'])->name('employees.import.store');
         Route::post('/employees/import/preview', [App\Http\Controllers\EmployeeController::class, 'previewImport'])->name('employees.import.preview');
         Route::get('/employees/template', [App\Http\Controllers\EmployeeController::class, 'downloadTemplate'])->name('employees.template');
         Route::get('/employees/export', [App\Http\Controllers\EmployeeController::class, 'exportData'])->name('employees.export');
-        
+
         // Employee Registration Approval (MUST be before resource route)
         Route::get('/employees/pending-registrations', [App\Http\Controllers\EmployeeController::class, 'pendingRegistrations'])->name('employees.pending-registrations');
         Route::post('/employees/{id}/approve-registration', [App\Http\Controllers\EmployeeController::class, 'approveRegistration'])->name('employees.approve-registration');
         Route::post('/employees/{id}/reject-registration', [App\Http\Controllers\EmployeeController::class, 'rejectRegistration'])->name('employees.reject-registration');
-        
+
         // Admin Routes - Employees (resource route AFTER specific routes)
         Route::post('/employees/bulk-destroy', [App\Http\Controllers\EmployeeController::class, 'bulkDestroy'])->name('employees.bulk-destroy');
         Route::post('/employees/{id}/official-duty', [App\Http\Controllers\EmployeeController::class, 'storeOfficialDuty'])->name('employees.official-duty.store');
         Route::resource('employees', App\Http\Controllers\EmployeeController::class);
-        
+
         Route::get('/settings', [App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
-        
+
         Route::resource('departments', App\Http\Controllers\DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
 
         // Leave Entitlements Bulk Edit (Admin only)
@@ -253,5 +256,5 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
