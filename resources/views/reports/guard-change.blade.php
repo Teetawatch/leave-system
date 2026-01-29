@@ -148,13 +148,16 @@
                         <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
                             <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
                         </div>
-                        <h3 class="font-bold text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรองข้อมูล</h3>
+                        <h3 class="font-bold text-slate-900 uppercase tracking-widest text-xs">แผงควบคุมการกรองข้อมูล
+                        </h3>
                     </div>
 
-                    <form method="GET" action="{{ route('reports.guard-change') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-end">
+                    <form method="GET" action="{{ route('reports.guard-change') }}"
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-end">
                         <!-- Date Start -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                            <label
+                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
                                 <i data-lucide="calendar" class="w-3 h-3"></i>
                                 ตั้งแต่วันที่
                             </label>
@@ -164,7 +167,8 @@
 
                         <!-- Date End -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                            <label
+                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
                                 <i data-lucide="calendar" class="w-3 h-3"></i>
                                 ถึงวันที่
                             </label>
@@ -174,12 +178,14 @@
 
                         <!-- Department -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                            <label
+                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
                                 <i data-lucide="database" class="w-3 h-3"></i>
                                 หน่วยงาน/แผนก
                             </label>
                             <div class="relative">
-                                <select name="department" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer outline-none">
+                                <select name="department"
+                                    class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer outline-none">
                                     <option value="">ทุกแผนก/สังกัด</option>
                                     @foreach($departments as $dept)
                                         <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
@@ -193,19 +199,25 @@
 
                         <!-- Status -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
+                            <label
+                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 flex items-center gap-2">
                                 <i data-lucide="shield" class="w-3 h-3"></i>
                                 สถานะการตรวจสอบ
                             </label>
                             <div class="relative">
-                                <select name="status" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer outline-none">
+                                <select name="status"
+                                    class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer outline-none">
                                     <option value="">ทุกสถานะ</option>
-                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>รอการสับเปลี่ยน</option>
-                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>ตอบรับแล้ว</option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>
+                                        รอการสับเปลี่ยน</option>
+                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>
+                                        ตอบรับแล้ว</option>
                                     <option value="director_approved" {{ request('status') == 'director_approved' ? 'selected' : '' }}>ผอ. รับทราบ</option>
                                     <option value="fully_approved" {{ request('status') == 'fully_approved' ? 'selected' : '' }}>อนุมัติสมบูรณ์</option>
-                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>ปฏิเสธ</option>
-                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ยกเลิก</option>
+                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>
+                                        ปฏิเสธ</option>
+                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>
+                                        ยกเลิก</option>
                                 </select>
                                 <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
                                     <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
@@ -215,11 +227,14 @@
 
                         <!-- Actions -->
                         <div class="flex gap-2">
-                            <button type="submit" class="flex-1 py-3.5 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-slate-900/20 hover:shadow-indigo-500/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group whitespace-nowrap">
-                                <i data-lucide="refresh-cw" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
+                            <button type="submit"
+                                class="flex-1 py-3.5 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-slate-900/20 hover:shadow-indigo-500/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group whitespace-nowrap">
+                                <i data-lucide="refresh-cw"
+                                    class="w-3 h-3 group-hover:rotate-180 transition-transform duration-700"></i>
                                 ค้นหาข้อมูล
                             </button>
-                            <a href="{{ route('reports.guard-change') }}" class="px-4 py-3.5 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 text-center transition-all flex items-center justify-center">
+                            <a href="{{ route('reports.guard-change') }}"
+                                class="px-4 py-3.5 bg-white border-2 border-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 text-center transition-all flex items-center justify-center">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </a>
                         </div>
@@ -240,19 +255,25 @@
                                 <thead>
                                     <tr class="bg-slate-50 border-b border-slate-100">
                                         <th class="px-8 py-6 text-left">
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">ผู้ส่งมอบ - ผู้รับมอบ</span>
+                                            <span
+                                                class="text-xs font-bold text-slate-500 uppercase tracking-widest">ผู้ส่งมอบ
+                                                - ผู้รับมอบ</span>
                                         </th>
                                         <th class="px-8 py-6 text-left">
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">รายละเอียดเวร</span>
+                                            <span
+                                                class="text-xs font-bold text-slate-500 uppercase tracking-widest">รายละเอียดเวร</span>
                                         </th>
                                         <th class="px-8 py-6 text-center">
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">สถานะปฏิบัติงาน</span>
+                                            <span
+                                                class="text-xs font-bold text-slate-500 uppercase tracking-widest">สถานะปฏิบัติงาน</span>
                                         </th>
                                         <th class="px-8 py-6 text-right">
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">บันทึกข้อมูล</span>
+                                            <span
+                                                class="text-xs font-bold text-slate-500 uppercase tracking-widest">บันทึกข้อมูล</span>
                                         </th>
                                         <th class="px-8 py-6 text-center">
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">เอกสาร</span>
+                                            <span
+                                                class="text-xs font-bold text-slate-500 uppercase tracking-widest">เอกสาร</span>
                                         </th>
                                     </tr>
                                 </thead>
@@ -279,8 +300,11 @@
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <p class="text-base font-bold text-slate-900 leading-tight">{{ $req->user->name }}</p>
-                                                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{{ $req->user->department }}</p>
+                                                            <p class="text-base font-bold text-slate-900 leading-tight">
+                                                                {{ $req->user->rank }} {{ $req->user->name }}</p>
+                                                            <p
+                                                                class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                                                {{ $req->user->department }}</p>
                                                         </div>
                                                     </div>
 
@@ -309,8 +333,12 @@
                                                             @endif
                                                         </div>
                                                         <div>
-                                                            <p class="text-sm font-bold text-slate-700 leading-tight">{{ $req->replacementUser->name }}</p>
-                                                            <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-0.5">ผู้รับมอบหน้าที่</p>
+                                                            <p class="text-sm font-bold text-slate-700 leading-tight">
+                                                                {{ $req->replacementUser->rank }}
+                                                                {{ $req->replacementUser->name }}</p>
+                                                            <p
+                                                                class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-0.5">
+                                                                ผู้รับมอบหน้าที่</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -362,9 +390,11 @@
                                                     };
                                                 @endphp
                                                 <div class="flex flex-col items-center gap-2">
-                                                    <div class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-[1.25rem] {{ $statusConfig['bg'] }} border {{ $statusConfig['shadow'] }} shadow-lg transition-transform group-hover:scale-105">
+                                                    <div
+                                                        class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-[1.25rem] {{ $statusConfig['bg'] }} border {{ $statusConfig['shadow'] }} shadow-lg transition-transform group-hover:scale-105">
                                                         <i data-lucide="{{ $statusConfig['icon'] }}" class="w-4 h-4"></i>
-                                                        <span class="text-xs font-bold uppercase tracking-widest">{{ $statusConfig['label'] }}</span>
+                                                        <span
+                                                            class="text-xs font-bold uppercase tracking-widest">{{ $statusConfig['label'] }}</span>
                                                     </div>
                                                 </div>
                                             </td>
@@ -372,7 +402,8 @@
                                             <td class="px-8 py-8 whitespace-nowrap text-right">
                                                 <div class="space-y-1.5">
                                                     <p class="text-sm font-bold text-slate-900">
-                                                        {{ $req->created_at->locale('th')->translatedFormat('d M Y') }}</p>
+                                                        {{ $req->created_at->locale('th')->translatedFormat('d M Y') }}
+                                                    </p>
                                                     <div
                                                         class="flex items-center justify-end gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                                         <span

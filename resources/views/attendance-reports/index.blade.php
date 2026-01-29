@@ -577,7 +577,12 @@
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
                                             @endif
                                         </div>
-                                        <h4 class="text-sm font-bold text-slate-900 uppercase">{{ $log->employee->first_name }}</h4>
+                                        <h4 class="text-sm font-bold text-slate-900 uppercase">
+                                            @if($log->employee->user && $log->employee->user->rank)
+                                                {{ $log->employee->user->rank }}
+                                            @endif
+                                            {{ $log->employee->first_name }}
+                                        </h4>
                                         <p
                                             class="text-[9px] font-bold text-amber-500 bg-amber-50 px-3 py-1 rounded-full mt-2 border border-amber-100">
                                             สาย @ {{ $log->scan_time->format('H:i') }}</p>
@@ -622,7 +627,12 @@
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
                                             @endif
                                         </div>
-                                        <h4 class="text-sm font-bold text-slate-900 uppercase">{{ $employee->first_name }}</h4>
+                                        <h4 class="text-sm font-bold text-slate-900 uppercase">
+                                            @if($employee->user && $employee->user->rank)
+                                                {{ $employee->user->rank }}
+                                            @endif
+                                            {{ $employee->first_name }}
+                                        </h4>
                                         <p
                                             class="text-[9px] font-bold text-rose-500 bg-rose-50 px-3 py-1 rounded-full mt-2 border border-rose-100">
                                             ขาด/ลา</p>
@@ -667,7 +677,12 @@
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
                                             @endif
                                         </div>
-                                        <h4 class="text-sm font-bold text-slate-900 uppercase">{{ $employee->first_name }}</h4>
+                                        <h4 class="text-sm font-bold text-slate-900 uppercase">
+                                            @if($employee->user && $employee->user->rank)
+                                                {{ $employee->user->rank }}
+                                            @endif
+                                            {{ $employee->first_name }}
+                                        </h4>
                                           @if($employee->leave_info->reason)
                                             <p class="text-[9px] font-bold text-slate-400 mt-1 truncate w-full px-2" title="{{ $employee->leave_info->reason }}">
                                                 {{ Str::limit($employee->leave_info->reason, 20) }}
@@ -735,7 +750,11 @@
                                                 </div>
                                                 <div>
                                                     <p class="text-sm font-bold text-slate-900 uppercase">
-                                                        {{ $log->employee->first_name }} {{ $log->employee->last_name }}</p>
+                                                        @if($log->employee->user && $log->employee->user->rank)
+                                                            {{ $log->employee->user->rank }}
+                                                        @endif
+                                                        {{ $log->employee->first_name }} {{ $log->employee->last_name }}
+                                                    </p>
                                                     <p class="text-xs font-bold text-emerald-600 mt-1">
                                                         {{ $log->employee->position ?? 'ไม่ระบุตำแหน่ง' }}</p>
                                                 </div>

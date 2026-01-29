@@ -66,9 +66,10 @@
                                         <select name="rank" required
                                             class="w-full pl-6 pr-12 py-4 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-700 transition-all appearance-none cursor-pointer">
                                             <option value="">-- เลือก --</option>
-                                            @foreach(['น.อ.', 'น.ท.', 'น.ต.', 'น.ต.หญิง', 'ร.อ.', 'ร.ท.', 'ร.ต.', 'พ.จ.อ.', 'พ.จ.ท.', 'พ.จ.ต.', 'จ.อ.', 'จ.ท.', 'จ.ท.หญิง', 'จ.ต.', 'นาย', 'นางสาว'] as $rank)
+                                            @foreach(['พล.ร.อ.', 'พล.ร.ท.', 'พล.ร.ต.', 'น.อ.พิเศษ', 'น.อ.', 'น.อ.หญิง', 'ว่าที่ น.อ.', 'ว่าที่ น.อ.หญิง', 'น.ท.', 'น.ท.หญิง', 'ว่าที่ น.ท.', 'ว่าที่ น.ท.หญิง', 'น.ต.', 'น.ต.หญิง', 'ว่าที่ น.ต.', 'ว่าที่ น.ต.หญิง', 'ร.อ.', 'ร.อ.หญิง', 'ว่าที่ ร.อ.', 'ว่าที่ ร.อ.หญิง', 'ร.ท.', 'ร.ท.หญิง', 'ว่าที่ ร.ท.', 'ว่าที่ ร.ท.หญิง', 'ร.ต.', 'ร.ต.หญิง', 'ว่าที่ ร.ต.', 'ว่าที่ ร.ต.หญิง', 'พ.จ.อ.', 'พ.จ.อ.หญิง', 'พ.จ.ท.', 'พ.จ.ท.หญิง', 'พ.จ.ต.', 'พ.จ.ต.หญิง', 'จ.อ.', 'จ.อ.หญิง', 'จ.ท.', 'จ.ท.หญิง', 'จ.ต.', 'จ.ต.หญิง', 'พลฯ', 'นาย', 'นาง', 'นางสาว'] as $rank)
                                                 <option value="{{ $rank }}" {{ old('rank') == $rank ? 'selected' : '' }}>
-                                                    {{ $rank }}</option>
+                                                    {{ $rank }}
+                                                </option>
                                             @endforeach
                                         </select>
                                         <div
@@ -77,7 +78,8 @@
                                         </div>
                                     </div>
                                     @error('rank') <p class="text-[10px] font-bold text-rose-500 mt-1 ml-1 uppercase">
-                                    {{ $message }}</p> @enderror
+                                        {{ $message }}
+                                    </p> @enderror
                                 </div>
                                 <div class="md:col-span-2 space-y-3">
                                     <label
@@ -87,7 +89,8 @@
                                         class="w-full px-8 py-4 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-800 text-lg transition-all"
                                         placeholder="ป้อนชื่อและนามสกุล...">
                                     @error('name') <p class="text-[10px] font-bold text-rose-500 mt-1 ml-1 uppercase">
-                                    {{ $message }}</p> @enderror
+                                        {{ $message }}
+                                    </p> @enderror
                                 </div>
                             </div>
 
@@ -234,7 +237,8 @@
                                     class="w-full px-6 py-3.5 rounded-xl border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 font-bold text-slate-700 transition-all"
                                     placeholder="********">
                                 @error('password') <p class="text-[9px] font-bold text-rose-500 mt-1 ml-1">
-                                {{ $message }}</p> @enderror
+                                    {{ $message }}
+                                </p> @enderror
                             </div>
 
                             <div class="space-y-2 pt-4 border-t border-slate-50">

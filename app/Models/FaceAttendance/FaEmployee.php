@@ -37,6 +37,14 @@ class FaEmployee extends Model
     }
 
     /**
+     * Link to system user
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    /**
      * Attendance logs
      */
     public function attendanceLogs()

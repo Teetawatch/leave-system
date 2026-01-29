@@ -451,8 +451,13 @@
                             <tr class="page-break {{ $index % 2 == 0 ? 'bg-white' : 'bg-indigo-50/30' }}">
                                 <td class="px-3 py-3 text-center text-slate-400 font-mono text-xs">{{ $index + 1 }}</td>
                                 <td class="px-3 py-3">
-                                    <div class="font-bold text-slate-800">{{ $row['employee']->first_name ?? '' }}
-                                        {{ $row['employee']->last_name ?? '' }}</div>
+                                    <div class="font-bold text-slate-800">
+                                        @if($row['employee']->user && $row['employee']->user->rank)
+                                            {{ $row['employee']->user->rank }}
+                                        @endif
+                                        {{ $row['employee']->first_name ?? '' }}
+                                        {{ $row['employee']->last_name ?? '' }}
+                                    </div>
                                     <div class="text-xs text-slate-400 font-mono mt-0.5">
                                         {{ $row['employee']->employee_code ?? '-' }}</div>
                                 </td>

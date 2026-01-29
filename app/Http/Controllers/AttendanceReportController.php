@@ -136,7 +136,7 @@ class AttendanceReportController extends Controller
         // ===== ข้อมูลข้าราชการ (Employees) =====
 
         // Get employee attendance logs
-        $employeeLogsQuery = FaAttendanceLog::with(['employee'])
+        $employeeLogsQuery = FaAttendanceLog::with(['employee.user'])
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         $employeeLogs = $employeeLogsQuery->orderBy('scan_time', 'desc')->paginate(20, ['*'], 'emp_page');
 
@@ -241,7 +241,7 @@ class AttendanceReportController extends Controller
             ->count('employee_id');
 
         // Late employees list
-        $lateEmployeesQuery = FaAttendanceLog::with('employee')
+        $lateEmployeesQuery = FaAttendanceLog::with('employee.user')
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('scan_type', 'in')
             ->where('is_late', true);
@@ -386,7 +386,7 @@ class AttendanceReportController extends Controller
         $allEmployees = FaEmployee::where('is_active', true)->get();
 
         // Build query - get all employee logs for the selected date
-        $employeeQuery = FaAttendanceLog::with(['employee'])
+        $employeeQuery = FaAttendanceLog::with(['employee.user'])
             ->whereDate('scan_time', $date);
 
         $employeeLogRecords = $employeeQuery->orderBy('employee_id')->orderBy('scan_time')->get();

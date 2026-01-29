@@ -78,7 +78,7 @@
                                     <div class="relative">
                                         <select name="rank" required
                                             class="w-full pl-6 pr-12 py-4 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-700 transition-all appearance-none cursor-pointer">
-                                            @foreach(['น.อ.', 'น.ท.', 'น.ต.', 'น.ต.หญิง', 'ร.อ.', 'ร.ท.', 'ร.ต.', 'พ.จ.อ.', 'พ.จ.ท.', 'พ.จ.ต.', 'จ.อ.', 'จ.ท.', 'จ.ท.หญิง', 'จ.ต.', 'นาย', 'นางสาว'] as $rank)
+                                            @foreach(['พล.ร.อ.', 'พล.ร.ท.', 'พล.ร.ต.', 'น.อ.พิเศษ', 'น.อ.', 'น.อ.หญิง', 'ว่าที่ น.อ.', 'ว่าที่ น.อ.หญิง', 'น.ท.', 'น.ท.หญิง', 'ว่าที่ น.ท.', 'ว่าที่ น.ท.หญิง', 'น.ต.', 'น.ต.หญิง', 'ว่าที่ น.ต.', 'ว่าที่ น.ต.หญิง', 'ร.อ.', 'ร.อ.หญิง', 'ว่าที่ ร.อ.', 'ว่าที่ ร.อ.หญิง', 'ร.ท.', 'ร.ท.หญิง', 'ว่าที่ ร.ท.', 'ว่าที่ ร.ท.หญิง', 'ร.ต.', 'ร.ต.หญิง', 'ว่าที่ ร.ต.', 'ว่าที่ ร.ต.หญิง', 'พ.จ.อ.', 'พ.จ.อ.หญิง', 'พ.จ.ท.', 'พ.จ.ท.หญิง', 'พ.จ.ต.', 'พ.จ.ต.หญิง', 'จ.อ.', 'จ.อ.หญิง', 'จ.ท.', 'จ.ท.หญิง', 'จ.ต.', 'จ.ต.หญิง', 'พลฯ', 'นาย', 'นาง', 'นางสาว'] as $rank)
                                                 <option value="{{ $rank }}" {{ old('rank', $employee->rank) == $rank ? 'selected' : '' }}>{{ $rank }}</option>
                                             @endforeach
                                         </select>
@@ -108,7 +108,8 @@
                                             class="w-full pl-6 pr-12 py-4 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-700 transition-all appearance-none cursor-pointer">
                                             @foreach($departments as $dept)
                                                 <option value="{{ $dept->name }}" {{ old('department', $employee->department) == $dept->name ? 'selected' : '' }}>
-                                                    {{ $dept->name }}</option>
+                                                    {{ $dept->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                         <div
@@ -164,7 +165,8 @@
                                     <option value="">-- ไม่ระบุ --</option>
                                     @foreach($supervisors as $sup)
                                         <option value="{{ $sup->id }}" {{ old('supervisor_id', $employee->supervisor_id) == $sup->id ? 'selected' : '' }} class="bg-slate-900">
-                                            {{ $sup->name }}</option>
+                                            {{ $sup->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
