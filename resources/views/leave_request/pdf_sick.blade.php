@@ -5,13 +5,13 @@
     <title>ใบลาป่วย แบบ ๓</title>
     <style>
         @php
-            // Use storage/fonts folder (inside Laravel app folder - works on all hosting)
-            $fontPath = storage_path('fonts/THSarabunNew.ttf');
-            $fontPathBold = storage_path('fonts/THSarabunNew Bold.ttf');
-            
-            // Format paths for DomPDF (use file:// protocol and forward slashes)
-            $fontPath = 'file:///' . ltrim(str_replace('\\', '/', $fontPath), '/');
-            $fontPathBold = 'file:///' . ltrim(str_replace('\\', '/', $fontPathBold), '/');
+// Use storage/fonts folder (inside Laravel app folder - works on all hosting)
+$fontPath = storage_path('fonts/THSarabunNew.ttf');
+$fontPathBold = storage_path('fonts/THSarabunNew Bold.ttf');
+
+// Format paths for DomPDF (use file:// protocol and forward slashes)
+$fontPath = 'file:///' . ltrim(str_replace('\\', '/', $fontPath), '/');
+$fontPathBold = 'file:///' . ltrim(str_replace('\\', '/', $fontPathBold), '/');
         @endphp
         @font-face {
             font-family: 'THSarabunNew';
@@ -85,64 +85,65 @@
 </head>
 <body>
     @php
-        if (!function_exists('toThaiNum')) {
-            function toThaiNum($number) {
-                $arabic = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                $thai = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
-                return str_replace($arabic, $thai, $number);
-            }
-        }
+if (!function_exists('toThaiNum')) {
+    function toThaiNum($number)
+    {
+        $arabic = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $thai = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
+        return str_replace($arabic, $thai, $number);
+    }
+}
 
-        $approverHead = $leaveRequest->approvals->whereIn('step', ['supervisor', 'pending_supervisor'])->first();
-        $approverManager = $leaveRequest->approvals->whereIn('step', ['deputy_director', 'department_head', 'pending_deputy_director'])->first();
+$approverHead = $leaveRequest->approvals->whereIn('step', ['supervisor', 'pending_supervisor'])->first();
+$approverManager = $leaveRequest->approvals->whereIn('step', ['director', 'deputy_director', 'department_head', 'pending_deputy_director'])->first();
 
-        // Calculate Fiscal Year Start for this request
-        $date = $leaveRequest->start_date ? \Carbon\Carbon::parse($leaveRequest->start_date) : $leaveRequest->created_at;
-        $year = $date->year;
-        if ($date->month >= 10) {
-            $fiscalYearStart = \Carbon\Carbon::create($year, 10, 1);
-        } else {
-            $fiscalYearStart = \Carbon\Carbon::create($year - 1, 10, 1);
-        }
+// Calculate Fiscal Year Start for this request
+$date = $leaveRequest->start_date ? \Carbon\Carbon::parse($leaveRequest->start_date) : $leaveRequest->created_at;
+$year = $date->year;
+if ($date->month >= 10) {
+    $fiscalYearStart = \Carbon\Carbon::create($year, 10, 1);
+} else {
+    $fiscalYearStart = \Carbon\Carbon::create($year - 1, 10, 1);
+}
 
-        // Calculate Previous Sick Leave in Fiscal Year
-        $previousSickLeaves = \App\Models\LeaveRequest::where('user_id', $leaveRequest->user_id)
-            ->whereHas('leaveType', function($q) {
-                $q->where('slug', 'sick');
-            })
-            ->where('status', 'approved') // Only count approved requests
-            ->where('start_date', '>=', $fiscalYearStart)
-            ->where('start_date', '<', $leaveRequest->start_date) // Strictly before this one
-            ->get();
+// Calculate Previous Sick Leave in Fiscal Year
+$previousSickLeaves = \App\Models\LeaveRequest::where('user_id', $leaveRequest->user_id)
+    ->whereHas('leaveType', function ($q) {
+        $q->where('slug', 'sick');
+    })
+    ->where('status', 'approved') // Only count approved requests
+    ->where('start_date', '>=', $fiscalYearStart)
+    ->where('start_date', '<', $leaveRequest->start_date) // Strictly before this one
+    ->get();
 
-        $sickLeaveCount = $previousSickLeaves->count();
-        $sickLeaveDays = $previousSickLeaves->sum('total_days');
+$sickLeaveCount = $previousSickLeaves->count();
+$sickLeaveDays = $previousSickLeaves->sum('total_days');
 
-        // Calculate Previous Personal Leave in Fiscal Year
-        $previousPersonalLeaves = \App\Models\LeaveRequest::where('user_id', $leaveRequest->user_id)
-            ->whereHas('leaveType', function($q) {
-                $q->where('slug', 'personal');
-            })
-            ->where('status', 'approved') // Only count approved requests
-            ->where('start_date', '>=', $fiscalYearStart)
-            ->where('start_date', '<', $leaveRequest->start_date) // Strictly before this one
-            ->get();
+// Calculate Previous Personal Leave in Fiscal Year
+$previousPersonalLeaves = \App\Models\LeaveRequest::where('user_id', $leaveRequest->user_id)
+    ->whereHas('leaveType', function ($q) {
+        $q->where('slug', 'personal');
+    })
+    ->where('status', 'approved') // Only count approved requests
+    ->where('start_date', '>=', $fiscalYearStart)
+    ->where('start_date', '<', $leaveRequest->start_date) // Strictly before this one
+    ->get();
 
-        $personalLeaveCount = $previousPersonalLeaves->count();
-        $personalLeaveDays = $previousPersonalLeaves->sum('total_days');
+$personalLeaveCount = $previousPersonalLeaves->count();
+$personalLeaveDays = $previousPersonalLeaves->sum('total_days');
 
-        // Calculate Latest Sick Leave (for "Same Instance" field)
-        $lastSickLeave = \App\Models\LeaveRequest::where('user_id', $leaveRequest->user_id)
-            ->whereHas('leaveType', function($q) {
-                $q->where('slug', 'sick');
-            })
-            ->where('status', 'approved')
-            ->where('start_date', '<', $leaveRequest->start_date)
-            ->latest('start_date')
-            ->first();
-            
-        $lastSickLeaveDays = $lastSickLeave ? $lastSickLeave->total_days : 0;
-        $lastSickLeaveTimes = $lastSickLeave ? 1 : 0;
+// Calculate Latest Sick Leave (for "Same Instance" field)
+$lastSickLeave = \App\Models\LeaveRequest::where('user_id', $leaveRequest->user_id)
+    ->whereHas('leaveType', function ($q) {
+        $q->where('slug', 'sick');
+    })
+    ->where('status', 'approved')
+    ->where('start_date', '<', $leaveRequest->start_date)
+    ->latest('start_date')
+    ->first();
+
+$lastSickLeaveDays = $lastSickLeave ? $lastSickLeave->total_days : 0;
+$lastSickLeaveTimes = $lastSickLeave ? 1 : 0;
     @endphp
 
     <div class="header-top">
@@ -170,13 +171,13 @@
     </div>
 
     <div style="margin-left: 1.5cm;" class="content-line">
-        กระผม/ดิฉัน <span class="dotted" style="width: 170px;">{{ $leaveRequest->user->name }}</span>
+        กระผม/ดิฉัน <span class="dotted" style="width: 170px;">{{ $leaveRequest->user->rank }}{{ $leaveRequest->user->name }}</span>
         ตำแหน่ง <span class="dotted" style="width: 220px;font-size:13pt;">{{ $leaveRequest->user->position ?? '...............' }}</span>
     </div>
 
     <div class="content-line">
          ป่วยเป็น <span class="dotted" style="width: 180px;">{{ $leaveRequest->reason }}</span>
-        จึงขออนุญาตลาป่วยเพื่อรักษาตัวมีกำหนด <span class="dotted" style="width: 80px;">{{ toThaiNum((int)$leaveRequest->total_days) }}</span> วัน ตั้งแต่วันที่ <span class="dotted" style="width: 35px;">{{ toThaiNum(\Carbon\Carbon::parse($leaveRequest->start_date)->day) }}</span> 
+        จึงขออนุญาตลาป่วยเพื่อรักษาตัวมีกำหนด <span class="dotted" style="width: 80px;">{{ toThaiNum((int) $leaveRequest->total_days) }}</span> วัน ตั้งแต่วันที่ <span class="dotted" style="width: 35px;">{{ toThaiNum(\Carbon\Carbon::parse($leaveRequest->start_date)->day) }}</span> 
        เดือน <span class="dotted" style="width: 65px;">{{ \Carbon\Carbon::parse($leaveRequest->start_date)->locale('th')->monthName }}</span> พ.ศ. <span class="dotted" style="width: 40px;">{{ toThaiNum(\Carbon\Carbon::parse($leaveRequest->start_date)->year + 543) }}</span> ถึงวันที่ <span class="dotted" style="width: 25px;">{{ toThaiNum(\Carbon\Carbon::parse($leaveRequest->end_date)->day) }}</span> เดือน <span class="dotted" style="width: 60px;">{{ \Carbon\Carbon::parse($leaveRequest->end_date)->locale('th')->monthName }}</span> พ.ศ. <span class="dotted" style="width: 80px;">{{ toThaiNum(\Carbon\Carbon::parse($leaveRequest->end_date)->year + 543) }}</span>
     </div>
 
@@ -190,14 +191,14 @@
 
     <div class="content-line" style="margin-left: 1.5cm;">
         กระผม ดิฉัน ได้ลาป่วยอยู่เดิมแล้วในคราวเดียวกันนี้ <span class="dotted" style="width: 35px;">{{ toThaiNum($lastSickLeaveTimes) }} </span> ครั้ง
-        รวม <span class="dotted" style="width: 35px;">{{ toThaiNum((int)$lastSickLeaveDays) }} </span> วัน
+        รวม <span class="dotted" style="width: 35px;">{{ toThaiNum((int) $lastSickLeaveDays) }} </span> วัน
     </div>
 
     <div class="signature-section">
         <div style="text-align: center; margin-left: 6.7cm; width: 8cm;">
             <div style="margin-bottom: 5px;margin-top: 5px;">ควรมิควรแล้วแต่จะกรุณา</div>
             <div style="margin-bottom: 5px;">
-                (ลงชื่อ) <span class="dotted" style="width: 150px;">{{ $leaveRequest->user->name }} </span>
+                (ลงชื่อ) <span class="dotted" style="width: 150px;">{{ $leaveRequest->user->rank }}{{ $leaveRequest->user->name }} </span>
             </div>
         </div>
     </div>
@@ -206,42 +207,42 @@
     <div style="border-top: 1px solid #000; margin-top: 5px; margin-bottom: 5px;"></div>
 
     <div class="content-line indent-1">
-        ในปีงบประมาณนี้<span class="dotted" style="width: 260px;">{{ $leaveRequest->user->name }}</span>
+        ในปีงบประมาณนี้<span class="dotted" style="width: 260px;">{{ $leaveRequest->user->rank }}{{ $leaveRequest->user->name }}</span>
        ได้ลาป่วย <span class="dotted" style="width: 70px;">{{ toThaiNum($sickLeaveCount) }}</span> ครั้ง
     </div>
 
     @php
-        // Calculate logic to prevent double counting
-        // DB reflects status based on 'approved'.
-        $isApproved = in_array($leaveRequest->status, ['approved']);
-        
-        $dbUsed = $leaveBalance->used_days ?? 0;
-        $dbRemaining = $leaveBalance->remaining_days ?? 0;
-        $reqDays = (int)$leaveRequest->total_days;
+// Calculate logic to prevent double counting
+// DB reflects status based on 'approved'.
+$isApproved = in_array($leaveRequest->status, ['approved']);
 
-        if ($isApproved) {
-            // Database is already updated (Post-Deduction)
-            // Restore 'Before' state
-            $usedBefore = max(0, $dbUsed - $reqDays);
-            $remainingBefore = $dbRemaining + $reqDays;
-            
-            // 'After' state matches DB
-            $usedTotal = $dbUsed;
-            $remainingTotal = $dbRemaining;
-        } else {
-            // Database is NOT updated (Pre-Deduction)
-            // 'Before' state matches DB
-            $usedBefore = $dbUsed;
-            $remainingBefore = $dbRemaining;
-            
-            // Calculate 'After' state
-            $usedTotal = $dbUsed + $reqDays;
-            $remainingTotal = max(0, $dbRemaining - $reqDays);
-        }
+$dbUsed = $leaveBalance->used_days ?? 0;
+$dbRemaining = $leaveBalance->remaining_days ?? 0;
+$reqDays = (int) $leaveRequest->total_days;
+
+if ($isApproved) {
+    // Database is already updated (Post-Deduction)
+    // Restore 'Before' state
+    $usedBefore = max(0, $dbUsed - $reqDays);
+    $remainingBefore = $dbRemaining + $reqDays;
+
+    // 'After' state matches DB
+    $usedTotal = $dbUsed;
+    $remainingTotal = $dbRemaining;
+} else {
+    // Database is NOT updated (Pre-Deduction)
+    // 'Before' state matches DB
+    $usedBefore = $dbUsed;
+    $remainingBefore = $dbRemaining;
+
+    // Calculate 'After' state
+    $usedTotal = $dbUsed + $reqDays;
+    $remainingTotal = max(0, $dbRemaining - $reqDays);
+}
     @endphp
 
     <div class="content-line">
-        รวม <span class="dotted" style="width: 70px;">{{ toThaiNum($sickLeaveDays) }}</span> วัน ทั้งครั้งนี้รวมเป็น <span class="dotted" style="width: 100px;">{{ toThaiNum((int)$sickLeaveDays + (int)$reqDays) }}</span>วันทำการ 
+        รวม <span class="dotted" style="width: 70px;">{{ toThaiNum($sickLeaveDays) }}</span> วัน ทั้งครั้งนี้รวมเป็น <span class="dotted" style="width: 100px;">{{ toThaiNum((int) $sickLeaveDays + (int) $reqDays) }}</span>วันทำการ 
     </div>
 
     <div class="content-line indent-1">

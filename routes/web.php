@@ -211,6 +211,7 @@ Route::middleware(['auth'])->group(function () {
         // Reports Routes
         Route::get('/reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
+        Route::get('/reports/temporary-leave', [App\Http\Controllers\TemporaryLeaveReportController::class, 'index'])->name('reports.temporary-leave');
 
         // Attendance Reports (from Face Attendance API)
         Route::get('/attendance-reports', [App\Http\Controllers\AttendanceReportController::class, 'index'])->name('attendance-reports.index');
