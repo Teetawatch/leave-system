@@ -19,21 +19,24 @@ class LeaveRequestsExport implements FromCollection, WithHeadings, WithMapping, 
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
-        $query = LeaveRequest::with(['user', 'leaveType']);
+        $query = LeaveRequest::with(['user', 'leaveType'])
+            ->whereHas('leaveType', function ($q) {
+                $q->where('slug', '!=', 'temporary');
+            });
 
         // Apply filters
         if (!empty($this->filters['start_date'])) {
             $query->whereDate('start_date', '>=', $this->filters['start_date']);
         }
         if (!empty($this->filters['end_date'])) {
-             $query->whereDate('end_date', '<=', $this->filters['end_date']);
+            $query->whereDate('end_date', '<=', $this->filters['end_date']);
         }
         if (!empty($this->filters['department'])) {
-            $query->whereHas('user', function($q) {
+            $query->whereHas('user', function ($q) {
                 $q->where('department', $this->filters['department']);
             });
         }
@@ -82,13 +85,13 @@ class LeaveRequestsExport implements FromCollection, WithHeadings, WithMapping, 
     public function styles(Worksheet $sheet)
     {
         return [
-            1    => ['font' => ['bold' => true]],
+            1 => ['font' => ['bold' => true]],
         ];
     }
 
     private function mapStatus($status)
     {
-        return match($status) {
+        return match ($status) {
             'approved' => 'อนุมัติแล้ว',
             'rejected' => 'ปฏิเสธ',
             'cancelled' => 'ยกเลิก',

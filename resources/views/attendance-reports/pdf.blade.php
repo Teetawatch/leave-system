@@ -166,7 +166,8 @@
                     <div class="text-right">
                         <div class="text-3xl font-bold text-blue-400">REPORT</div>
                         <p class="text-xs text-slate-400 mt-1">พิมพ์เมื่อ:
-                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMMM YYYY HH:mm') }}</p>
+                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMMM YYYY HH:mm') }}
+                        </p>
                     </div>
                 </div>
 
@@ -199,9 +200,13 @@
                     <div class="text-xs text-amber-600 uppercase font-bold tracking-wider">มาสาย</div>
                     <div class="text-2xl font-bold text-amber-600 mt-1">{{ $lateCount }}</div>
                 </div>
-                <div class="p-4 text-center">
+                <div class="p-4 text-center border-r border-slate-200">
                     <div class="text-xs text-rose-600 uppercase font-bold tracking-wider">ไม่มาลงชื่อ</div>
                     <div class="text-2xl font-bold text-rose-600 mt-1">{{ $absentCount }}</div>
+                </div>
+                <div class="p-4 text-center">
+                    <div class="text-xs text-blue-600 uppercase font-bold tracking-wider">ลางาน/ราชการ</div>
+                    <div class="text-2xl font-bold text-blue-600 mt-1">{{ $leaveCount }}</div>
                 </div>
             </div>
 
@@ -227,9 +232,11 @@
                                 <td class="px-3 py-3 text-center text-slate-400 font-mono text-xs">{{ $index + 1 }}</td>
                                 <td class="px-3 py-3">
                                     <div class="font-bold text-slate-800">{{ $row['student']->first_name }}
-                                        {{ $row['student']->last_name }}</div>
+                                        {{ $row['student']->last_name }}
+                                    </div>
                                     <div class="text-xs text-slate-400 font-mono mt-0.5">
-                                        {{ $row['student']->student_code ?? '-' }}</div>
+                                        {{ $row['student']->student_code ?? '-' }}
+                                    </div>
                                 </td>
                                 <td class="px-3 py-3 text-slate-600 text-xs max-w-[120px]">
                                     <span
@@ -312,6 +319,17 @@
                                             class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200">
                                             ไม่มาลงชื่อ
                                         </span>
+                                    @elseif($row['status'] == 'ลางาน/ราชการ')
+                                        <div class="flex flex-col items-center">
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                                ลางาน/ราชการ
+                                            </span>
+                                            @if(isset($row['leave_type']))
+                                                <span
+                                                    class="text-[10px] text-blue-500 mt-1 font-medium">({{ $row['leave_type'] }})</span>
+                                            @endif
+                                        </div>
                                     @else
                                         -
                                     @endif
@@ -345,7 +363,8 @@
                         </p>
                         <p style="font-size: 0.75rem; color: #64748b;">ฝธก.รร.พธ.พธ.ทร.</p>
                         <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">วันที่
-                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}</p>
+                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}
+                        </p>
                     </td>
 
                     <!-- Approver Column -->
@@ -361,7 +380,8 @@
                         </p>
                         <p style="font-size: 0.75rem; color: #64748b;">ผอ.รร.พธ.พธ.ทร.</p>
                         <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">วันที่
-                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}</p>
+                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}
+                        </p>
                     </td>
                 </tr>
             </table>
@@ -389,7 +409,8 @@
                     <div class="text-right">
                         <div class="text-3xl font-bold text-indigo-300">REPORT</div>
                         <p class="text-xs text-indigo-400 mt-1">พิมพ์เมื่อ:
-                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMMM YYYY HH:mm') }}</p>
+                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMMM YYYY HH:mm') }}
+                        </p>
                     </div>
                 </div>
 
@@ -459,7 +480,8 @@
                                         {{ $row['employee']->last_name ?? '' }}
                                     </div>
                                     <div class="text-xs text-slate-400 font-mono mt-0.5">
-                                        {{ $row['employee']->employee_code ?? '-' }}</div>
+                                        {{ $row['employee']->employee_code ?? '-' }}
+                                    </div>
                                 </td>
                                 <td class="px-3 py-3 text-slate-600 text-xs max-w-[120px]">
                                     <span
@@ -553,7 +575,8 @@
                         </p>
                         <p style="font-size: 0.75rem; color: #64748b;">ฝธก.รร.พธ.พธ.ทร.</p>
                         <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">วันที่
-                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}</p>
+                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}
+                        </p>
                     </td>
 
                     <!-- Approver Column -->
@@ -569,7 +592,8 @@
                         </p>
                         <p style="font-size: 0.75rem; color: #64748b;">ผอ.รร.พธ.พธ.ทร.</p>
                         <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">วันที่
-                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}</p>
+                            {{ \Carbon\Carbon::now()->locale('th')->isoFormat('D MMM YYYY') }}
+                        </p>
                     </td>
                 </tr>
             </table>

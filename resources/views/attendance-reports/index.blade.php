@@ -191,6 +191,23 @@
                     <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group">
                         <div class="flex items-center gap-5 mb-6">
                             <div
+                                class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                                <i data-lucide="coffee" class="w-8 h-8"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ลางาน/ราชการ</p>
+                                <h3 class="text-3xl font-bold text-slate-900 mt-1">{{ number_format($onLeaveStudentCount) }}</h3>
+                            </div>
+                        </div>
+                        <div class="h-2 bg-slate-50 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full rounded-full transition-all duration-[2s]"
+                                style="width: {{ $totalStudents > 0 ? ($onLeaveStudentCount / $totalStudents) * 100 : 0 }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 group">
+                        <div class="flex items-center gap-5 mb-6">
+                            <div
                                 class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-all duration-500">
                                 <i data-lucide="clock" class="w-8 h-8"></i>
                             </div>
@@ -311,7 +328,62 @@
                                         <h4 class="text-sm font-bold text-slate-900 uppercase">{{ $student->first_name }}</h4>
                                         <p
                                             class="text-[9px] font-bold text-rose-500 bg-rose-50 px-3 py-1 rounded-full mt-2 border border-rose-100">
-                                            ขาด/ไม่มา</p>
+                                            ขาด/ไม่ได้ลงชื่อ</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Anomaly Alerts (Students on Leave) -->
+                @if($onLeaveStudents->count() > 0)
+                    <div x-data="{ open: false }"
+                        class="bg-white rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden mt-10">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between p-10 hover:bg-slate-50 transition-all">
+                            <div class="flex items-center gap-8">
+                                <div
+                                    class="w-16 h-16 rounded-[1.5rem] bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner border border-blue-100">
+                                    <i data-lucide="coffee" class="w-8 h-8"></i>
+                                </div>
+                                <div class="text-left">
+                                    <h3 class="text-2xl font-bold text-slate-900 tracking-tight">ตรวจพบนักเรียนลางาน/ราชการ</h3>
+                                    <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mt-1">จำนวนทั้งหมด
+                                        {{ $onLeaveStudents->count() }} รายการ
+                                    </p>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-10 h-10 text-slate-300 transition-transform duration-500"
+                                :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" x-collapse>
+                            <div class="p-10 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                                @foreach($onLeaveStudents as $student)
+                                    <div
+                                        class="bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-100 flex flex-col items-center text-center group hover:bg-white hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500">
+                                        <div
+                                            class="w-20 h-20 rounded-[2rem] overflow-hidden bg-slate-200 mb-4 ring-4 ring-white shadow-xl transition-transform group-hover:scale-110">
+                                            @if($student->photo_path)
+                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($student->photo_path) }}"
+                                                    class="w-full h-full object-cover">
+                                            @else
+                                                <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
+                                            @endif
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-900 uppercase">
+                                            {{ $student->first_name }}
+                                        </h4>
+                                        @if(isset($student->leave_info->reason))
+                                            <p class="text-[9px] font-bold text-slate-400 mt-1 truncate w-full px-2"
+                                                title="{{ $student->leave_info->reason }}">
+                                                {{ Str::limit($student->leave_info->reason, 20) }}
+                                            </p>
+                                        @endif
+                                        <p
+                                            class="text-[9px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full mt-2 border border-blue-100">
+                                            {{ $student->leave_type_name }}
+                                        </p>
                                     </div>
                                 @endforeach
                             </div>

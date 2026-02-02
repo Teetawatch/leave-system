@@ -21,7 +21,10 @@ class ReportController extends Controller
             \App\Enums\UserRole::DEPARTMENT_HEAD->value,
         ]);
 
-        $query = LeaveRequest::with(['user', 'leaveType']);
+        $query = LeaveRequest::with(['user', 'leaveType'])
+            ->whereHas('leaveType', function ($q) {
+                $q->where('slug', '!=', 'temporary');
+            });
 
         // Default Filter for Non-Commanders
         if (!$isCommander) {
@@ -68,11 +71,12 @@ class ReportController extends Controller
 
         $leaveTypes = LeaveType::all();
 
-        // Statistics: Top Leave Takers (all leaves except official-duty)
+        // Statistics: Top Leave Takers (all leaves except official-duty and temporary)
         $topLeaversQuery = LeaveRequest::selectRaw('user_id, SUM(total_days) as total_leave_days, COUNT(*) as leave_count')
             ->whereNotIn('status', ['cancelled', 'rejected'])
             ->whereHas('leaveType', function ($q) {
-                $q->where('slug', '!=', 'official-duty');
+                $q->where('slug', '!=', 'official-duty')
+                    ->where('slug', '!=', 'temporary');
             })
             ->groupBy('user_id')
             ->orderByDesc('total_leave_days')
@@ -86,9 +90,12 @@ class ReportController extends Controller
 
         $topLeavers = $topLeaversQuery->with('user')->get();
 
-        // Statistics: Most Popular Leave Types (all leaves)
+        // Statistics: Most Popular Leave Types (all leaves except temporary)
         $popularLeaveTypesQuery = LeaveRequest::selectRaw('leave_type_id, SUM(total_days) as total_days, COUNT(*) as usage_count')
             ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->whereHas('leaveType', function ($q) {
+                $q->where('slug', '!=', 'temporary');
+            })
             ->groupBy('leave_type_id')
             ->orderByDesc('usage_count');
 
@@ -100,8 +107,11 @@ class ReportController extends Controller
 
         $popularLeaveTypes = $popularLeaveTypesQuery->with('leaveType')->get();
 
-        // Total statistics
-        $totalApprovedLeaves = LeaveRequest::whereNotIn('status', ['cancelled', 'rejected']);
+        // Total statistics (excluding temporary)
+        $totalApprovedLeaves = LeaveRequest::whereNotIn('status', ['cancelled', 'rejected'])
+            ->whereHas('leaveType', function ($q) {
+                $q->where('slug', '!=', 'temporary');
+            });
         if (!$isCommander) {
             $totalApprovedLeaves->whereHas('user', function ($q) use ($user) {
                 $q->where('department', $user->department);

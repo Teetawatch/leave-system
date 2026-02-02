@@ -179,6 +179,9 @@ class LeaveRequestController extends Controller
             if ($type && $type->slug == 'sick') {
                 $request->validate([
                     'addr_house' => 'required|string',
+                    'addr_road' => 'required|string',
+                    'addr_tambon' => 'required|string',
+                    'addr_amphoe' => 'required|string',
                     'addr_province' => 'required|string',
                 ]);
             } elseif ($type && $type->slug == 'personal') {

@@ -141,7 +141,9 @@
                             <select name="leave_type_id" class="block w-full px-4 py-3 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none cursor-pointer">
                                 <option value="">ทุกประเภท</option>
                                 @foreach($leaveTypes as $type)
-                                    <option value="{{ $type->id }}" {{ request('leave_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                    @if($type->slug !== 'temporary')
+                                        <option value="{{ $type->id }}" {{ request('leave_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>

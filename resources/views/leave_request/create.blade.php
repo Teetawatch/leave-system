@@ -166,14 +166,34 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div class="space-y-2">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">บ้านเลขที่
-                                        / ถนน / ซอย</label>
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">บ้านเลขที่</label>
                                     <input type="text" name="addr_house"
                                         class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
-                                        placeholder="123/45 ถนนพลาธิการ...">
+                                        placeholder="เช่น 123/45...">
+                                </div>
+                                <div class="space-y-2">
+                                    <label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">ถนน</label>
+                                    <input type="text" name="addr_road"
+                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
+                                        placeholder="เช่น ถนนพลาธิการ...">
+                                </div>
+                                <div class="space-y-2">
+                                    <label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">ตำบล / แขวง</label>
+                                    <input type="text" name="addr_tambon"
+                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
+                                        placeholder="พิมพ์ชื่อตำบล...">
+                                </div>
+                                <div class="space-y-2">
+                                    <label
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">อำเภอ / เขต</label>
+                                    <input type="text" name="addr_amphoe"
+                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
+                                        placeholder="พิมพ์ชื่ออำเภอ...">
                                 </div>
                                 <div class="space-y-2">
                                     <label

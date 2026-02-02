@@ -111,9 +111,52 @@ class AttendanceReportController extends Controller
             ->unique();
 
         // Absent students (haven't checked in at all)
-        $absentStudents = $allStudents->filter(function ($student) use ($scannedStudentIds) {
+        $absentStudentsRaw = $allStudents->filter(function ($student) use ($scannedStudentIds) {
             return !$scannedStudentIds->contains($student->id);
         });
+
+        // Get approved leave requests for STUDENTS (using student name matching approach)
+        $usersOnLeave = \App\Models\User::whereHas('leaveRequests', function ($q) use ($startDate, $endDate) {
+            $q->where('status', 'approved')
+                ->whereDate('start_date', '<=', $endDate)
+                ->whereDate('end_date', '>=', $startDate);
+        })->with([
+                    'leaveRequests' => function ($q) use ($startDate, $endDate) {
+                        $q->where('status', 'approved')
+                            ->whereDate('start_date', '<=', $endDate)
+                            ->whereDate('end_date', '>=', $startDate);
+                    },
+                    'leaveRequests.leaveType'
+                ])->get();
+
+        // Partition Absent Students into 'On Leave' vs 'True Absent'
+        $onLeaveStudents = collect();
+        $absentStudents = collect();
+
+        foreach ($absentStudentsRaw as $student) {
+            $matchedUser = $usersOnLeave->first(function ($user) use ($student) {
+                $studentFullName = trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? ''));
+                $userParts = array_filter(explode(' ', $user->name));
+                if (empty($userParts))
+                    return false;
+
+                foreach ($userParts as $part) {
+                    if (!str_contains($studentFullName, trim($part))) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            if ($matchedUser) {
+                $matchedRequest = $matchedUser->leaveRequests->first();
+                $student->leave_info = $matchedRequest;
+                $student->leave_type_name = $matchedRequest->leaveType->name ?? 'ลางาน';
+                $onLeaveStudents->push($student);
+            } else {
+                $absentStudents->push($student);
+            }
+        }
 
         // Late students - recalculate based on new 08:30 rule for the UI statistics
         $lateStudentsQuery = FaStudentAttendanceLog::with('student.course')
@@ -131,6 +174,7 @@ class AttendanceReportController extends Controller
 
         // Count statistics
         $absentCount = $absentStudents->count();
+        $onLeaveStudentCount = $onLeaveStudents->count();
         $lateCount = $lateStudents->unique('student_id')->count();
 
         // ===== ข้อมูลข้าราชการ (Employees) =====
@@ -311,6 +355,8 @@ class AttendanceReportController extends Controller
             'absentStudents',
             'lateStudents',
             'absentCount',
+            'onLeaveStudentCount',
+            'onLeaveStudents',
             'lateCount',
             // Employee data
             'employeeLogs',
@@ -384,9 +430,6 @@ class AttendanceReportController extends Controller
             if ($morningLate || $afternoonLate) {
                 $status = 'มาสาย';
             }
-            if (!$morning && !$afternoon) {
-                $status = 'ไม่มาลงชื่อ';
-            }
 
             return [
                 'student' => $studentLogs->first()->student,
@@ -398,17 +441,72 @@ class AttendanceReportController extends Controller
             ];
         })->values();
 
+        // Get approved leave requests for STUDENTS (using student name matching approach)
+        $usersOnLeave = \App\Models\User::whereHas('leaveRequests', function ($q) use ($date) {
+            $q->where('status', 'approved')
+                ->whereDate('start_date', '<=', $date)
+                ->whereDate('end_date', '>=', $date);
+        })->with([
+                    'leaveRequests' => function ($q) use ($date) {
+                        $q->where('status', 'approved')
+                            ->whereDate('start_date', '<=', $date)
+                            ->whereDate('end_date', '>=', $date);
+                    },
+                    'leaveRequests.leaveType'
+                ])->get();
+
+        // Map scanned students
+        $scannedStudentLogs = $scannedStudentLogs->map(function ($data) use ($usersOnLeave) {
+            $studentFullName = trim(($data['student']->first_name ?? '') . ' ' . ($data['student']->last_name ?? ''));
+            $matchedUser = $usersOnLeave->first(function ($user) use ($studentFullName) {
+                $userParts = array_filter(explode(' ', $user->name));
+                if (empty($userParts))
+                    return false;
+                foreach ($userParts as $part) {
+                    if (!str_contains($studentFullName, trim($part)))
+                        return false;
+                }
+                return true;
+            });
+
+            if ($matchedUser) {
+                $data['status'] = 'ลางาน/ราชการ';
+                $data['leave_type'] = $matchedUser->leaveRequests->first()->leaveType->name ?? 'ลางาน';
+            }
+            return $data;
+        });
+
         // Add absent students (those who haven't scanned at all)
         $absentStudentLogs = $allStudents->filter(function ($student) use ($scannedStudentIds) {
             return !$scannedStudentIds->contains($student->id);
-        })->map(function ($student) {
+        })->map(function ($student) use ($usersOnLeave) {
+            $studentFullName = trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? ''));
+            $matchedUser = $usersOnLeave->first(function ($user) use ($studentFullName) {
+                $userParts = array_filter(explode(' ', $user->name));
+                if (empty($userParts))
+                    return false;
+                foreach ($userParts as $part) {
+                    if (!str_contains($studentFullName, trim($part)))
+                        return false;
+                }
+                return true;
+            });
+
+            $status = 'ไม่มาลงชื่อ';
+            $leaveType = null;
+            if ($matchedUser) {
+                $status = 'ลางาน/ราชการ';
+                $leaveType = $matchedUser->leaveRequests->first()->leaveType->name ?? 'ลางาน';
+            }
+
             return [
                 'student' => $student,
                 'morning' => null,
                 'afternoon' => null,
                 'morning_late' => false,
                 'afternoon_late' => false,
-                'status' => 'ไม่มาลงชื่อ',
+                'status' => $status,
+                'leave_type' => $leaveType,
             ];
         })->values();
 
@@ -420,6 +518,7 @@ class AttendanceReportController extends Controller
         $presentCount = $studentLogs->where('status', 'ปกติ')->count();
         $lateCount = $studentLogs->where('status', 'มาสาย')->count();
         $absentCount = $studentLogs->where('status', 'ไม่มาลงชื่อ')->count();
+        $leaveCount = $studentLogs->where('status', 'ลางาน/ราชการ')->count();
 
         $courseName = $courseId ? FaCourse::find($courseId)?->name : 'ทุกหลักสูตร';
         $courses = FaCourse::orderBy('created_at', 'desc')->get();
@@ -551,6 +650,7 @@ class AttendanceReportController extends Controller
             'presentCount',
             'lateCount',
             'absentCount',
+            'leaveCount',
             // Employee data
             'employeeLogs',
             'totalEmployees',
