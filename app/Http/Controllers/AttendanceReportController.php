@@ -537,33 +537,29 @@ class AttendanceReportController extends Controller
         // Get employee IDs who have scanned on this date
         $scannedEmployeeIds = $employeeLogRecords->pluck('employee_id')->unique();
 
-        // Get approved official duty requests for the selected date
-        $officialDutyType = LeaveType::where('slug', 'official-duty')->first();
-        $officialDutyRequests = collect();
-        if ($officialDutyType) {
-            $officialDutyRequests = LeaveRequest::where('leave_type_id', $officialDutyType->id)
-                ->where('status', 'approved')
-                ->whereDate('start_date', '<=', $date)
-                ->whereDate('end_date', '>=', $date)
-                ->get();
-        }
+        // Get ALL approved leave requests for the selected date
+        $allLeaveRequests = LeaveRequest::with(['leaveType', 'user'])
+            ->where('status', 'approved')
+            ->whereDate('start_date', '<=', $date)
+            ->whereDate('end_date', '>=', $date)
+            ->get();
 
         // Fetch Users for Name Matching
-        $usersOnDuty = collect();
-        if ($officialDutyRequests->isNotEmpty()) {
-            $usersOnDuty = \App\Models\User::whereIn('id', $officialDutyRequests->pluck('user_id'))->get();
+        $usersOnLeave = collect();
+        if ($allLeaveRequests->isNotEmpty()) {
+            $usersOnLeave = \App\Models\User::whereIn('id', $allLeaveRequests->pluck('user_id'))->get();
         }
 
-        // Helper to check official duty (Robust ID/Name Match)
-        $checkOfficialDuty = function ($employee) use ($officialDutyRequests, $usersOnDuty) {
+        // Helper to check leave/duty (Robust ID/Name Match)
+        $checkLeaveStatus = function ($employee) use ($allLeaveRequests, $usersOnLeave) {
             $empFullName = trim(($employee->first_name ?? '') . ' ' . ($employee->last_name ?? ''));
 
             // Match User
-            $matchedUser = $usersOnDuty->first(function ($user) use ($employee, $empFullName) {
+            $matchedUser = $usersOnLeave->first(function ($user) use ($employee, $empFullName) {
                 if ($employee->user_id && $employee->user_id == $user->id)
                     return true;
 
-                // Fallback: Check if Employee Name (Longer, with title) contains User Name (Shorter, no title)
+                // Fallback: Check if Employee Name contains User Name
                 $userParts = array_filter(explode(' ', $user->name));
                 if (empty($userParts))
                     return false;
@@ -577,26 +573,32 @@ class AttendanceReportController extends Controller
             });
 
             if ($matchedUser) {
-                return $officialDutyRequests->firstWhere('user_id', $matchedUser->id);
+                return $allLeaveRequests->firstWhere('user_id', $matchedUser->id);
             }
             return null;
         };
 
         // Group scanned employees by employee_id - ข้าราชการสแกนแค่ตอนเช้าครั้งเดียว
-        $scannedEmployeeLogs = $employeeLogRecords->groupBy('employee_id')->map(function ($empLogs) use ($checkOfficialDuty) {
+        $scannedEmployeeLogs = $employeeLogRecords->groupBy('employee_id')->map(function ($empLogs) use ($checkLeaveStatus) {
             // ใช้ log แรกของวัน (เรียงตาม scan_time แล้ว)
             $firstLog = $empLogs->first();
             $employee = $firstLog->employee;
 
-            // Check Official Duty FIRST
-            $onDuty = $checkOfficialDuty($employee);
+            // Check Leave status FIRST
+            $leaveReq = $checkLeaveStatus($employee);
 
-            if ($onDuty) {
-                $status = 'ไปราชการ';
+            $status = 'ปกติ';
+            $leaveType = null;
+
+            if ($leaveReq) {
+                if ($leaveReq->leaveType->slug == 'official-duty') {
+                    $status = 'ไปราชการ';
+                } else {
+                    $status = 'ลางาน';
+                }
+                $leaveType = $leaveReq->leaveType->name;
             } else {
-                $status = 'ปกติ';
                 $isLate = $firstLog && $firstLog->is_late;
-
                 if ($isLate) {
                     $status = 'มาสาย';
                 }
@@ -612,21 +614,36 @@ class AttendanceReportController extends Controller
                 'morning_late' => $firstLog ? $firstLog->is_late : false,
                 'afternoon_late' => false,
                 'status' => $status,
+                'leave_type' => $leaveType,
             ];
         })->values();
 
         // Add absent employees (those who haven't scanned at all)
         $absentEmployeeLogs = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
             return !$scannedEmployeeIds->contains($employee->id);
-        })->map(function ($employee) use ($checkOfficialDuty) {
-            $onDuty = $checkOfficialDuty($employee);
+        })->map(function ($employee) use ($checkLeaveStatus) {
+            $leaveReq = $checkLeaveStatus($employee);
+
+            $status = 'ไม่มาลงชื่อ';
+            $leaveType = null;
+
+            if ($leaveReq) {
+                if ($leaveReq->leaveType->slug == 'official-duty') {
+                    $status = 'ไปราชการ';
+                } else {
+                    $status = 'ลางาน';
+                }
+                $leaveType = $leaveReq->leaveType->name;
+            }
+
             return [
                 'employee' => $employee,
                 'morning' => null,
                 'afternoon' => null,
                 'morning_late' => false,
                 'afternoon_late' => false,
-                'status' => $onDuty ? 'ไปราชการ' : 'ไม่มาลงชื่อ',
+                'status' => $status,
+                'leave_type' => $leaveType,
             ];
         })->values();
 
@@ -639,6 +656,7 @@ class AttendanceReportController extends Controller
         $employeeLateCount = $employeeLogs->where('status', 'มาสาย')->count();
         $employeeAbsentCount = $employeeLogs->where('status', 'ไม่มาลงชื่อ')->count();
         $employeeOfficialDutyCount = $employeeLogs->where('status', 'ไปราชการ')->count();
+        $employeeLeaveCount = $employeeLogs->where('status', 'ลางาน')->count();
 
         return view('attendance-reports.pdf', compact(
             'studentLogs',
@@ -657,7 +675,8 @@ class AttendanceReportController extends Controller
             'employeePresentCount',
             'employeeLateCount',
             'employeeAbsentCount',
-            'employeeOfficialDutyCount'
+            'employeeOfficialDutyCount',
+            'employeeLeaveCount'
         ));
     }
 

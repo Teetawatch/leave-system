@@ -3,7 +3,7 @@
 @section('title', 'รายงานการลงเวลา')
 
 @section('content')
-    <div class="min-h-screen bg-[#f8fafc] pb-20" x-data="{ activeTab: 'students' }">
+    <div class="min-h-screen bg-[#f8fafc] pb-20" x-data="{ activeTab: '{{ request()->input('active_tab', request()->has('emp_page') ? 'employees' : 'students') }}' }">
         <!-- Bright Attendance Header -->
         <div class="relative bg-white pt-16 pb-32 overflow-hidden border-b border-slate-100">
             <div class="absolute inset-0">
@@ -595,7 +595,7 @@
 
                     @if($logs->hasPages())
                         <div class="px-10 py-8 bg-slate-50/50 border-t border-slate-100">
-                            {{ $logs->appends(request()->query())->links() }}
+                            {{ $logs->appends(array_merge(request()->query(), ['active_tab' => 'students']))->links() }}
                         </div>
                     @endif
                 </div>
@@ -1000,7 +1000,7 @@
 
                         @if($employeeLogs->hasPages())
                             <div class="px-10 py-8 bg-slate-50/50 border-t border-slate-100">
-                                {{ $employeeLogs->appends(request()->query())->links() }}
+                                {{ $employeeLogs->appends(array_merge(request()->query(), ['active_tab' => 'employees']))->links() }}
                             </div>
                         @endif
                     </div>
