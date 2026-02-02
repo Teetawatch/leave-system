@@ -267,6 +267,20 @@
                     <span class="ml-3 text-sm font-bold opacity-90">ปฏิทินการลา</span>
                 </a>
 
+                @if(in_array(Auth::user()->role, ['admin', 'deputy_director', 'director']))
+                    <!-- Executive Dashboard - For Executives Only -->
+                    <a href="{{ route('executive.dashboard') }}"
+                        class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 group {{ request()->routeIs('executive.*') ? 'bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-700 shadow-sm shadow-purple-500/10 ring-1 ring-purple-100' : 'text-slate-500 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-indigo-50/50 hover:text-purple-600' }}">
+                        <div
+                            class="w-5 h-5 rounded-md {{ request()->routeIs('executive.*') ? 'bg-gradient-to-br from-purple-500 to-indigo-600' : 'bg-gradient-to-br from-slate-300 to-slate-400 group-hover:from-purple-500 group-hover:to-indigo-600' }} flex items-center justify-center transition-all">
+                            <i data-lucide="bar-chart-3" class="w-3 h-3 text-white"></i>
+                        </div>
+                        <span class="ml-3 text-sm font-bold opacity-90">ภาพรวมผู้บริหาร</span>
+                        <span
+                            class="ml-auto px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider {{ request()->routeIs('executive.*') ? 'bg-purple-100 text-purple-600' : 'bg-slate-100 text-slate-400 group-hover:bg-purple-100 group-hover:text-purple-600' }} rounded transition-colors">Executive</span>
+                    </a>
+                @endif
+
                 <!-- Leave Section - Collapsible -->
                 <div class="pt-3">
                     <button @click="openMenus.leave = !openMenus.leave"

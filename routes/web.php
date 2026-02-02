@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\GuardChangeRequestController;
 use App\Http\Controllers\EmployeeRegistrationController;
+use App\Http\Controllers\ExecutiveDashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
@@ -253,7 +254,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/guard-change', [App\Http\Controllers\GuardChangeReportController::class, 'index'])->name('reports.guard-change');
     });
 
-
+    // Executive Dashboard (Admin, Director, Deputy Director only)
+    Route::middleware(['role:admin,director,deputy_director'])->group(function () {
+        Route::get('/executive-dashboard', [ExecutiveDashboardController::class, 'index'])->name('executive.dashboard');
+        Route::get('/executive-dashboard/department-stats', [ExecutiveDashboardController::class, 'departmentStats'])->name('executive.department-stats');
+    });
 
 });
 
