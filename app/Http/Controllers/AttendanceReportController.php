@@ -135,10 +135,54 @@ class AttendanceReportController extends Controller
 
         // ===== ข้อมูลข้าราชการ (Employees) =====
 
-        // Get employee attendance logs
+        // Get employee attendance logs - Group by employee and date similar to students
         $employeeLogsQuery = FaAttendanceLog::with(['employee.user'])
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
-        $employeeLogs = $employeeLogsQuery->orderBy('scan_time', 'desc')->paginate(20, ['*'], 'emp_page');
+
+        // Group employee logs by employee_id and scan_date for morning/afternoon view
+        $employeeLogsGrouped = $employeeLogsQuery->select('employee_id', \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'))
+            ->groupBy('employee_id', 'scan_date')
+            ->orderBy('scan_date', 'desc')
+            ->paginate(20, ['*'], 'emp_page');
+
+        // Map grouped items to include morning and afternoon scan details
+        $employeeLogsGrouped->getCollection()->transform(function ($item) {
+            $dayLogs = FaAttendanceLog::with(['employee.user'])
+                ->where('employee_id', $item->employee_id)
+                ->whereDate('scan_time', $item->scan_date)
+                ->get();
+
+            // Get morning log (earliest scan before 12:00)
+            $morningLog = $dayLogs->where('scan_type', 'in')
+                ->filter(function ($log) use ($item) {
+                    return $log->scan_time->format('H:i:s') < '12:00:00';
+                })
+                ->sortBy('scan_time')
+                ->first();
+
+            // Get afternoon log (latest scan after 12:00)
+            $afternoonLog = $dayLogs->where('scan_type', 'in')
+                ->filter(function ($log) use ($item) {
+                    return $log->scan_time->format('H:i:s') >= '12:00:00';
+                })
+                ->sortByDesc('scan_time')
+                ->first();
+
+            // Hardcode Late Logic for UI: Morning before 08:30 is NOT late
+            if ($morningLog) {
+                $scanTimeStr = $morningLog->scan_time->format('H:i:s');
+                $morningLog->is_late = ($scanTimeStr > '08:30:00');
+            }
+
+            $item->morning = $morningLog;
+            $item->afternoon = $afternoonLog;
+
+            // Fallback for employee data
+            $item->employee = $dayLogs->first()?->employee ?? FaEmployee::with('user')->find($item->employee_id);
+            return $item;
+        });
+
+        $employeeLogs = $employeeLogsGrouped;
 
         // Total employee scans
         $totalEmployeeScans = FaAttendanceLog::whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])->count();
