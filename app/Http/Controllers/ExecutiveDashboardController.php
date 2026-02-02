@@ -102,19 +102,26 @@ class ExecutiveDashboardController extends Controller
         }
 
         // 4. Top Leave Takers (Employees who take leave frequently)
-        $topLeaveTakers = User::select('users.*')
+        $officialDutyTypeId = LeaveType::where('slug', 'official-duty')->first()?->id;
+
+        $topLeaveTakersQuery = User::select('users.id', 'users.name', 'users.rank', 'users.department')
             ->selectRaw('COUNT(leave_requests.id) as leave_count')
             ->selectRaw('SUM(leave_requests.total_days) as total_days')
             ->join('leave_requests', 'users.id', '=', 'leave_requests.user_id')
             ->whereYear('leave_requests.created_at', $currentYear)
-            ->where('leave_requests.status', 'approved')
-            ->groupBy('users.id')
+            ->where('leave_requests.status', 'approved');
+
+        if ($officialDutyTypeId) {
+            $topLeaveTakersQuery->where('leave_requests.leave_type_id', '!=', $officialDutyTypeId);
+        }
+
+        $topLeaveTakers = $topLeaveTakersQuery->groupBy('users.id', 'users.name', 'users.rank', 'users.department')
             ->orderByDesc('total_days')
             ->limit(10)
             ->get();
 
         // 5. Leave Type Distribution
-        $leaveTypeDistribution = LeaveType::select('leave_types.*')
+        $leaveTypeDistribution = LeaveType::select('leave_types.id', 'leave_types.name', 'leave_types.slug')
             ->selectRaw('COUNT(leave_requests.id) as request_count')
             ->selectRaw('COALESCE(SUM(leave_requests.total_days), 0) as total_days')
             ->leftJoin('leave_requests', function ($join) use ($currentYear) {
@@ -122,7 +129,7 @@ class ExecutiveDashboardController extends Controller
                     ->whereYear('leave_requests.created_at', $currentYear)
                     ->where('leave_requests.status', 'approved');
             })
-            ->groupBy('leave_types.id')
+            ->groupBy('leave_types.id', 'leave_types.name', 'leave_types.slug')
             ->get();
 
         // 6. Today's Leave Summary

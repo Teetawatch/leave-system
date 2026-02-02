@@ -160,7 +160,7 @@
                                         'sick' => 'bg-rose-500',
                                         'personal' => 'bg-amber-500',
                                         'temporary' => 'bg-purple-500',
-                                        'official_duty' => 'bg-emerald-500',
+                                        'official-duty' => 'bg-emerald-500',
                                     ];
                                     $color = $colors[$type->slug] ?? 'bg-slate-400';
                                 @endphp
@@ -430,7 +430,7 @@
                     'sick': '#f43f5e',
                     'personal': '#f59e0b',
                     'temporary': '#8b5cf6',
-                    'official_duty': '#10b981'
+                    'official-duty': '#10b981'
                 };
 
                 new Chart(leaveTypeCtx, {

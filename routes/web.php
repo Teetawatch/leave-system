@@ -100,6 +100,11 @@ Route::get('/api/employees/search', [EmployeeRegistrationController::class, 'sea
 Route::get('/dashboard', function () {
     $user = Illuminate\Support\Facades\Auth::user();
 
+    // Redirect executives to the Executive Dashboard
+    if (in_array($user->role, ['admin', 'deputy_director', 'director'])) {
+        return redirect()->route('executive.dashboard');
+    }
+
     // 1. Vacation Balance
     // Assumes 'vacation' slug exists. For Phase 1 we seeded it.
     // If no balance record, we might show default or 0.
