@@ -128,7 +128,7 @@
                                         class="h-full p-6 rounded-[2.5rem] border-2 border-slate-50 bg-white/50 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active group-hover:border-brand-200">
                                         <div
                                             class="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center text-3xl mb-5 shadow-inner transition-transform group-hover:scale-110 group-active:scale-95
-                                                                                                    {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
+                                                                                                                {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
                                             @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-8 h-8"></i>
@@ -183,14 +183,16 @@
                                 </div>
                                 <div class="space-y-2">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">ตำบล / แขวง</label>
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">ตำบล
+                                        / แขวง</label>
                                     <input type="text" name="addr_tambon"
                                         class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
                                         placeholder="พิมพ์ชื่อตำบล...">
                                 </div>
                                 <div class="space-y-2">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">อำเภอ / เขต</label>
+                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">อำเภอ
+                                        / เขต</label>
                                     <input type="text" name="addr_amphoe"
                                         class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
                                         placeholder="พิมพ์ชื่ออำเภอ...">
@@ -286,7 +288,7 @@
                                             class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300">
                                             <i data-lucide="calendar-check-2" class="w-5 h-5"></i>
                                         </div>
-                                        <input type="date" name="end_date" x-model="endDate" required
+                                        <input type="date" name="end_date" x-model="endDate" required :min="startDate"
                                             class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 font-bold text-slate-800 text-lg transition-all shadow-sm">
                                     </div>
                                 </div>
@@ -507,7 +509,7 @@
                     startDate: '{{ old('start_date') }}',
                     endDate: '{{ old('end_date') }}',
                     temporaryPeriod: '{{ old('temporary_leave_period', 'morning') }}',
-                    todayDate: new Date().toISOString().split('T')[0],
+                    todayDate: new Date().toLocaleDateString('en-CA'),
                     leaveTypes: @json($leaveTypes),
                     fileName: '',
                     steps: [
@@ -521,14 +523,32 @@
                             if (val) {
                                 this.currentStep = 2;
                                 if (this.isTemporary) {
-                                    this.startDate = this.todayDate;
-                                    this.endDate = this.todayDate;
+                                    // Set default if empty, but don't force/reset if user already picked a date
+                                    if (!this.startDate) {
+                                        this.startDate = this.todayDate;
+                                    }
+                                    // For temporary leave, end date should always match start date initially
+                                    this.endDate = this.startDate;
                                 }
                             }
                             this.$nextTick(() => window.lucide.createIcons());
                         });
-                        this.$watch('startDate', () => this.updateStep());
-                        this.$watch('endDate', () => this.updateStep());
+                        this.$watch('startDate', (val) => {
+                            // Automatically sync endDate for temporary leave (1-day leave)
+                            if (this.isTemporary) {
+                                this.endDate = val;
+                            } else if (this.endDate && val > this.endDate) {
+                                this.endDate = val;
+                            }
+                            this.updateStep();
+                        });
+                        this.$watch('endDate', (val) => {
+                            // Ensure start date doesn't exceed end date for non-temporary leave
+                            if (!this.isTemporary && this.startDate && val < this.startDate) {
+                                this.startDate = val;
+                            }
+                            this.updateStep();
+                        });
                         this.updateStep();
                         window.lucide.createIcons();
                     },

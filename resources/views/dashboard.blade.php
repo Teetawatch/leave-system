@@ -4,62 +4,66 @@
     <div class="min-h-screen pb-20">
 
         <!-- Premium Hero Header -->
-        <div class="relative overflow-hidden bg-white -mt-8 pt-16 pb-32 px-4 border-b border-slate-100">
+        <div class="relative overflow-hidden bg-white -mt-8 pt-20 pb-40 px-4 border-b border-slate-100">
             <!-- Dynamic Background Effects -->
-            <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 z-0 overflow-hidden">
                 <div
-                    class="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-500/10 rounded-full blur-[120px] -mr-48 -mt-48 animate-pulse">
+                    class="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-500/10 rounded-full blur-[120px] -mr-96 -mt-96 animate-pulse-slow">
                 </div>
                 <div
-                    class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px] -ml-32 -mb-32">
+                    class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[100px] -ml-48 -mb-48">
+                </div>
+                <div
+                    class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.02]">
                 </div>
             </div>
 
             <div
-                class="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-                <div class="flex-1 space-y-4">
+                class="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+                <div class="flex-1 space-y-6">
                     <div
-                        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 border border-brand-100 text-sm font-bold text-brand-600 uppercase tracking-widest animate-fade-in">
-                        <span class="relative flex h-2 w-2">
+                        class="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-brand-50 border border-brand-100 text-sm font-black text-brand-600 uppercase tracking-widest animate-fade-in shadow-sm">
+                        <span class="relative flex h-3 w-3">
                             <span
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                         ระบบพร้อมใช้งาน
                     </div>
-                    <h1 class="text-4xl md:text-6xl font-bold text-slate-900 tracking-tight leading-tight">
+                    <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
                         สวัสดีครับ, <br class="sm:hidden">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
+                        <span
+                            class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-indigo-600 to-slate-900">
                             {{ Auth::user()->rank }}{{ Auth::user()->name }}
                         </span>
                     </h1>
-                    <p class="text-slate-500 text-lg md:text-xl font-semibold max-w-2xl leading-relaxed">
-                        ยินดีต้อนรับสู่ระบบบริหารจัดการการลาและเวรยาม <br><span
-                            class="text-brand-600 font-bold">โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ</span>
+                    <p class="text-slate-500 text-xl md:text-2xl font-semibold max-w-2xl leading-relaxed">
+                        ยินดีต้อนรับสู่ระบบบริหารจัดการเวิร์กโฟลว์ <br>
+                        <span class="text-slate-900">โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ</span>
                     </p>
                 </div>
 
                 <!-- Strategic Quick Buttons -->
-                <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex flex-col sm:flex-row gap-6">
                     <a href="{{ route('leave-request.create') }}"
-                        class="group relative inline-flex items-center justify-center gap-4 px-8 py-5 bg-gradient-to-br from-brand-600 to-indigo-600 text-white font-bold rounded-[2rem] shadow-[0_20px_40px_-15px_rgba(37,99,235,0.4)] hover:shadow-[0_25px_50px_-12px_rgba(37,99,235,0.6)] hover:-translate-y-1.5 transition-all duration-300 active:scale-95 overflow-hidden">
+                        class="group relative inline-flex items-center justify-center gap-5 px-10 py-6 bg-slate-900 text-white font-black rounded-[2.5rem] shadow-[0_25px_50px_-15px_rgba(15,23,42,0.4)] hover:shadow-[0_30px_60px_-12px_rgba(15,23,42,0.6)] hover:-translate-y-2 transition-all duration-500 active:scale-95 overflow-hidden">
                         <div
-                            class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            class="absolute inset-0 bg-brand-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
                         </div>
                         <div
-                            class="relative w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md group-hover:rotate-12 transition-transform">
-                            <i data-lucide="plus" class="w-6 h-6"></i>
+                            class="relative w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:rotate-12 transition-transform duration-500 border border-white/10">
+                            <i data-lucide="plus" class="w-7 h-7"></i>
                         </div>
-                        <span class="relative text-xl">ยื่นใบลาใหม่</span>
+                        <span class="relative text-2xl tracking-tight">ยื่นใบลาใหม่</span>
                     </a>
 
                     <a href="{{ route('guard-change.create') }}"
-                        class="group inline-flex items-center justify-center gap-4 px-8 py-5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-bold rounded-[2rem] shadow-sm hover:shadow-md hover:-translate-y-1.5 transition-all duration-300 active:scale-95">
+                        class="group inline-flex items-center justify-center gap-5 px-10 py-6 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-black rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 active:scale-95">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform group-hover:text-brand-600">
-                            <i data-lucide="shield-half" class="w-6 h-6"></i>
+                            class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-110 group-hover:bg-brand-50 group-hover:text-brand-600 transition-all duration-500">
+                            <i data-lucide="shield-half" class="w-7 h-7"></i>
                         </div>
-                        <span class="text-xl">ขอเปลี่ยนยาม</span>
+                        <span class="text-2xl tracking-tight">ขอเปลี่ยนยาม</span>
                     </a>
                 </div>
             </div>
@@ -508,10 +512,22 @@
     @push('styles')
         <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap');
+
+            :root {
+                --brand-600: #4f46e5;
+                --brand-700: #4338ca;
+            }
+
+            body {
+                font-family: 'Outfit', 'Sarabun', sans-serif;
+                background-color: #fcfcfd;
+            }
+
             @keyframes fadeInUp {
                 from {
                     opacity: 0;
-                    transform: translate3d(0, 30px, 0);
+                    transform: translate3d(0, 40px, 0);
                 }
 
                 to {
@@ -520,77 +536,94 @@
                 }
             }
 
+            @keyframes pulse-slow {
+
+                0%,
+                100% {
+                    opacity: 0.3;
+                    transform: scale(1);
+                }
+
+                50% {
+                    opacity: 0.5;
+                    transform: scale(1.05);
+                }
+            }
+
             .animate-fade-in {
-                animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             }
 
-            /* FullCalendar UI Overrides */
-            .fc-theme-standard td,
-            .fc-theme-standard th {
-                border: none !important;
+            .animate-pulse-slow {
+                animation: pulse-slow 8s infinite ease-in-out;
             }
 
+            /* Premium Glassmorphism */
+            .glass-panel {
+                background: rgba(255, 255, 255, 0.8);
+                backdrop-filter: blur(24px);
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.04);
+            }
+
+            /* Card Hover Effects */
+            .stat-card {
+                transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .stat-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.08);
+            }
+
+            /* FullCalendar Modernization */
             .dashboard-calendar .fc-toolbar-title {
-                font-size: 1.25rem !important;
-                font-weight: 800 !important;
-                color: #1e293b;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
+                font-family: 'Outfit', sans-serif !important;
+                font-size: 1.5rem !important;
+                font-weight: 900 !important;
+                color: #0f172a !important;
+                letter-spacing: -0.02em;
             }
 
             .dashboard-calendar .fc-daygrid-day-number {
-                font-size: 0.9rem;
+                font-family: 'Outfit', sans-serif;
                 font-weight: 800;
                 color: #94a3b8;
+                padding: 10px !important;
             }
 
             .dashboard-calendar .fc-day-today {
-                background: #f1f5f9 !important;
-                border-radius: 1.25rem !important;
+                background: #f8fafc !important;
             }
 
-            .dashboard-calendar .fc-col-header-cell-cushion {
-                font-size: 0.85rem;
-                font-weight: 800;
-                color: #cbd5e1;
-                text-transform: uppercase;
-                padding-bottom: 12px;
+            .dashboard-calendar .fc-day-today .fc-daygrid-day-number {
+                color: #4f46e5 !important;
+                background: #edf2ff;
+                border-radius: 99px;
             }
 
-            .dashboard-calendar .fc-button {
-                background-color: #f8fafc !important;
-                color: #64748b !important;
-                border: 1px solid #f1f5f9 !important;
-                border-radius: 0.75rem !important;
-                padding: 0.5rem 0.75rem !important;
-                font-size: 0.85rem !important;
+            .dashboard-calendar .fc-button-primary {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                color: #475569 !important;
+                border-radius: 1rem !important;
                 font-weight: 800 !important;
                 text-transform: uppercase;
-                transition: all 0.2s;
+                letter-spacing: 0.05em;
+                padding: 0.6rem 1rem !important;
+                transition: all 0.3s;
             }
 
-            .dashboard-calendar .fc-button:hover {
-                background-color: #f1f5f9 !important;
-                color: #334155 !important;
+            .dashboard-calendar .fc-button-primary:hover {
+                background: #f1f5f9 !important;
+                color: #0f172a !important;
             }
 
-            .dashboard-calendar .fc-button-active {
-                background-color: #334155 !important;
-                color: white !important;
-            }
-
-            /* Events bars */
-            #dashboardCalendar .fc-event {
+            /* Event Dots */
+            .dashboard-calendar .fc-event {
+                border-radius: 12px !important;
+                padding: 2px !important;
                 border: none !important;
-                cursor: pointer;
-                border-radius: 4px;
-                margin-bottom: 2px !important;
-                height: 5px !important;
-            }
-
-            #dashboardCalendar .fc-event-title,
-            #dashboardCalendar .fc-event-time {
-                display: none;
             }
         </style>
     @endpush
