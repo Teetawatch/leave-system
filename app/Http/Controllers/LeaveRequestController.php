@@ -125,28 +125,30 @@ class LeaveRequestController extends Controller
                 'temporary_leave_period.in' => 'ช่วงเวลาไม่ถูกต้อง',
             ]);
 
-            // Must be today only (Thai Time)
-            $today = Carbon::now('Asia/Bangkok')->startOfDay();
-            if (!$startDate->isSameDay($today) || !$endDate->isSameDay($today)) {
-                return back()->withErrors(['start_date' => 'ลาชั่วกาลสามารถลาได้เฉพาะวันที่ทำรายการเท่านั้น (อ้างอิงเวลาประเทศไทยปัจจุบัน)']);
+            // Allow today and future dates (Thai Time)
+            if ($start->lessThan($today)) {
+                return back()->withErrors(['start_date' => 'ลาชั่วกาลไม่สามารถลาล่วงลับ (ย้อนหลัง) ได้']);
             }
 
             // Must be single day
-            if (!$startDate->isSameDay($endDate)) {
+            if (!$start->isSameDay($endDate->setTimezone('Asia/Bangkok')->startOfDay())) {
                 return back()->withErrors(['end_date' => 'ลาชั่วกาลสามารถลาได้แค่ 1 วันเท่านั้น']);
             }
 
-            $currentTime = now()->setTimezone('Asia/Bangkok');
-            $currentHour = (int) $currentTime->format('H');
-            $currentMinute = (int) $currentTime->format('i');
-            $period = $request->temporary_leave_period;
+            // Time constraints only apply if the leave is for TODAY
+            if ($start->isSameDay($today)) {
+                $currentTime = now()->setTimezone('Asia/Bangkok');
+                $currentHour = (int) $currentTime->format('H');
+                $currentMinute = (int) $currentTime->format('i');
+                $period = $request->temporary_leave_period;
 
-            // ลาชั่วกาลช่วงเช้าต้องยื่นก่อน 07:30 น.
-            if ($period === 'morning' && ($currentHour > 7 || ($currentHour === 7 && $currentMinute >= 30))) {
-                return back()->withErrors(['temporary_leave_period' => 'ลาชั่วกาลช่วงเช้าต้องยื่นก่อน 07:30 น. (ขณะนี้เลยเวลาแล้ว)']);
-            }
-            if ($period === 'afternoon' && $currentHour >= 11) {
-                return back()->withErrors(['temporary_leave_period' => 'ลาชั่วกาลช่วงบ่ายต้องยื่นก่อน 11:00 น. (ขณะนี้เลยเวลาแล้ว)']);
+                // ลาชั่วกาลช่วงเช้าต้องยื่นก่อน 07:30 น.
+                if ($period === 'morning' && ($currentHour > 7 || ($currentHour === 7 && $currentMinute >= 30))) {
+                    return back()->withErrors(['temporary_leave_period' => 'ลาชั่วกาลช่วงเช้าต้องยื่นก่อน 07:30 น. (ขณะนี้เลยเวลาแล้ว)']);
+                }
+                if ($period === 'afternoon' && $currentHour >= 11) {
+                    return back()->withErrors(['temporary_leave_period' => 'ลาชั่วกาลช่วงบ่ายต้องยื่นก่อน 11:00 น. (ขณะนี้เลยเวลาแล้ว)']);
+                }
             }
         }
         // 4. Check Balance (Skip for temporary leave - no balance deduction)

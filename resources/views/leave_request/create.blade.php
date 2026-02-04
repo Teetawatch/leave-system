@@ -128,7 +128,7 @@
                                         class="h-full p-6 rounded-[2.5rem] border-2 border-slate-50 bg-white/50 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active group-hover:border-brand-200">
                                         <div
                                             class="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center text-3xl mb-5 shadow-inner transition-transform group-hover:scale-110 group-active:scale-95
-                                                                                                                {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
+                                                                                                                    {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
                                             @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-8 h-8"></i>
                                             @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-8 h-8"></i>
@@ -268,6 +268,7 @@
                                             <i data-lucide="calendar" class="w-5 h-5"></i>
                                         </div>
                                         <input type="date" name="start_date" x-model="startDate" required
+                                            :min="isSick ? '' : todayDate"
                                             class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-800 text-lg transition-all shadow-sm">
                                     </div>
                                 </div>
