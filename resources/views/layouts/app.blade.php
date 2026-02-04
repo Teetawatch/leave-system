@@ -10,27 +10,80 @@
 
 
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Alpine.js cloak style -->
+    <!-- Global Styles & Custom Theme -->
     <style>
         [x-cloak] {
             display: none !important;
+        }
+
+        :root {
+            --brand-50: #f5f7ff;
+            --brand-100: #ebf0fe;
+            --brand-500: #4f46e5;
+            --brand-600: #4338ca;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.5);
+        }
+
+        body {
+            font-family: 'Outfit', 'IBM Plex Sans Thai', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        .premium-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 10px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        .glass-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        /* Premium Focus State */
+        .focus-ring:focus-visible {
+            outline: 2px solid var(--brand-500);
+            outline-offset: 2px;
         }
     </style>
 
     @stack('styles')
 </head>
 
-<body class="font-sans antialiased bg-slate-50 text-slate-600"
+<body class="antialiased bg-slate-50/50 text-slate-600 selection:bg-brand-100 selection:text-brand-700"
     x-data="{ sidebarOpen: false, mobileProfileOpen: false, mobileNotifOpen: false }">
 
     <!-- Mobile Header -->
     <div class="md:hidden sticky top-0 z-20">
         <!-- Main Mobile Bar -->
-        <div
-            class="flex items-center justify-between bg-white/95 backdrop-blur-lg shadow-sm px-4 py-3 border-b border-slate-100">
+        <div class="flex items-center justify-between glass-header px-4 py-3">
             <!-- Left: Logo Area -->
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2.5">
@@ -69,8 +122,8 @@
 
                 <!-- Notifications -->
                 <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open"
-                        class="w-9 h-9 rounded-xl bg-slate-50 text-slate-500 hover:text-brand-600 flex items-center justify-center transition-all active:scale-95 relative border border-slate-100 shadow-sm">
+                    <button @click="open = !open" aria-label="แจ้งเตือน"
+                        class="w-9 h-9 rounded-xl bg-white text-slate-500 hover:text-brand-600 flex items-center justify-center transition-all active:scale-95 relative border border-slate-100 shadow-sm cursor-pointer focus-ring">
                         <i data-lucide="bell" class="w-4 h-4"></i>
                         @if(($navNotificationCount ?? 0) > 0)
                             <span
@@ -121,11 +174,11 @@
 
                 <!-- User Avatar/Profile -->
                 <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open"
-                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md shadow-brand-500/20 active:scale-95 transition-all overflow-hidden border border-white/20">
+                    <button @click="open = !open" aria-label="เมนูผู้ใช้งาน"
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md shadow-brand-500/20 active:scale-95 transition-all overflow-hidden border border-white/20 cursor-pointer focus-ring">
                         <div class="w-full h-full rounded-lg bg-white flex items-center justify-center overflow-hidden">
                             @if(Auth::user()->avatar)
-                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar"
+                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="โปรไฟล์"
                                     class="w-full h-full object-cover">
                             @else
                                 <span class="font-bold text-brand-600 text-xs">{{ substr(Auth::user()->name, 0, 1) }}</span>
@@ -190,8 +243,8 @@
                 </div>
 
                 <!-- Hamburger Menu (Far Right) -->
-                <button @click="sidebarOpen = !sidebarOpen"
-                    class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-slate-900/20">
+                <button @click="sidebarOpen = !sidebarOpen" aria-label="ขยายเมนู"
+                    class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-slate-900/20 cursor-pointer focus-ring">
                     <i data-lucide="menu" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -242,8 +295,8 @@
 
             <!-- Sidebar Profile Removed -->
 
-            <!-- Menu -->
-            <nav class="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar py-4" x-data="{ 
+            <!-- Menu Area -->
+            <nav class="flex-1 px-3 space-y-1.5 overflow-y-auto custom-scrollbar py-6" x-data="{ 
                 openMenus: {
                     leave: {{ request()->routeIs('leave-request.*') ? 'true' : 'false' }},
                     guard: {{ request()->routeIs('guard-change.*') ? 'true' : 'false' }},
@@ -253,18 +306,18 @@
             }">
                 <!-- Dashboard - Always visible -->
                 <a href="{{ route('dashboard') }}"
-                    class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 group {{ request()->routeIs('dashboard') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
+                    class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 group {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
                     <i data-lucide="layout-dashboard"
-                        class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                    <span class="ml-3 text-sm font-bold opacity-90">แผงควบคุม</span>
+                        class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600' }}"></i>
+                    <span class="ml-3 text-sm font-bold tracking-tight">แผงควบคุมหลัก</span>
                 </a>
 
                 <!-- Calendar - Shared Leave Calendar -->
                 <a href="{{ route('calendar.index') }}"
-                    class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 group {{ request()->routeIs('calendar.*') ? 'bg-indigo-50 text-indigo-700 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
+                    class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 group {{ request()->routeIs('calendar.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600' }}">
                     <i data-lucide="calendar-range"
                         class="w-5 h-5 {{ request()->routeIs('calendar.*') ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600' }}"></i>
-                    <span class="ml-3 text-sm font-bold opacity-90">ปฏิทินการลา</span>
+                    <span class="ml-3 text-sm font-bold tracking-tight">ปฏิทินของส่วนรวม</span>
                 </a>
 
                 @if(in_array(Auth::user()->role, ['admin', 'deputy_director', 'director']))
@@ -281,10 +334,9 @@
                     </a>
                 @endif
 
-                <!-- Leave Section - Collapsible -->
                 <div class="pt-3">
-                    <button @click="openMenus.leave = !openMenus.leave"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
+                    <button @click="openMenus.leave = !openMenus.leave" aria-label="ขยายเมนูการลา"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group cursor-pointer focus-ring">
                         <div class="flex items-center">
                             <div
                                 class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mr-3 group-hover:bg-blue-600 group-hover:text-white transition-all">
@@ -317,10 +369,9 @@
                     </div>
                 </div>
 
-                <!-- Guard Change Section - Collapsible -->
                 <div class="pt-3">
-                    <button @click="openMenus.guard = !openMenus.guard"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
+                    <button @click="openMenus.guard = !openMenus.guard" aria-label="ขยายเมนูเวรยาม"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group cursor-pointer focus-ring">
                         <div class="flex items-center">
                             <div
                                 class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mr-3 group-hover:bg-emerald-600 group-hover:text-white transition-all">
@@ -370,8 +421,8 @@
                 @if(in_array(Auth::user()->role, ['supervisor', 'department_head', 'deputy_director', 'director', 'admin']))
                     <!-- Approval Section - Collapsible -->
                     <div class="pt-2">
-                        <button @click="openMenus.approval = !openMenus.approval"
-                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
+                        <button @click="openMenus.approval = !openMenus.approval" aria-label="ขยายเมนูการอนุมัติ"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group cursor-pointer focus-ring">
                             <div class="flex items-center">
                                 <div
                                     class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mr-3 group-hover:bg-purple-600 group-hover:text-white transition-all">
@@ -478,8 +529,8 @@
                 @if(Auth::user()->role === 'admin')
                     <!-- Admin Section - Collapsible -->
                     <div class="pt-2">
-                        <button @click="openMenus.admin = !openMenus.admin"
-                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group">
+                        <button @click="openMenus.admin = !openMenus.admin" aria-label="ขยายเมนูผู้ดูแลระบบ"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-all duration-300 group cursor-pointer focus-ring">
                             <div class="flex items-center">
                                 <div
                                     class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mr-3 group-hover:bg-rose-600 group-hover:text-white transition-all">
@@ -543,7 +594,7 @@
         <main class="flex-1 flex flex-col min-w-0 bg-slate-50/50">
             <!-- Topbar (Desktop) -->
             <header
-                class="hidden md:flex items-center justify-between h-20 bg-white border-b border-slate-100 px-8 sticky top-0 z-50 relative">
+                class="hidden md:flex items-center justify-between h-20 glass-header px-8 sticky top-0 z-50 premium-shadow">
                 <div>
                     <nav class="flex" aria-label="Breadcrumb">
                         <ol class="flex items-center space-x-2">
@@ -603,8 +654,8 @@
 
                     <!-- Notifications -->
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" @click.away="open = false"
-                            class="relative p-2 text-slate-400 hover:text-brand-600 transition-colors rounded-full hover:bg-slate-50 focus:outline-none">
+                        <button @click="open = !open" @click.away="open = false" aria-label="แจ้งเตือน"
+                            class="relative p-2.5 text-slate-400 hover:text-brand-600 transition-all rounded-xl hover:bg-slate-50 focus:outline-none cursor-pointer focus-ring">
                             <i data-lucide="bell" class="w-5 h-5"></i>
                             @if(($navNotificationCount ?? 0) > 0)
                                 <span
@@ -701,23 +752,23 @@
 
                     <!-- User Profile Dropdown -->
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" @click.away="open = false"
-                            class="flex items-center gap-3 focus:outline-none group">
+                        <button @click="open = !open" @click.away="open = false" aria-label="เมนูผู้บัญชาการ"
+                            class="flex items-center gap-3 focus:outline-none group cursor-pointer focus-ring p-1.5 rounded-2xl hover:bg-slate-50 transition-all">
                             <div class="text-right hidden md:block">
                                 <p
                                     class="text-sm font-bold text-slate-900 group-hover:text-brand-600 transition-colors tracking-tight">
                                     {{ Auth::user()->rank }} {{ Auth::user()->name }}
                                 </p>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">
                                     {{ Auth::user()->department ?? 'กองบังคับการ' }}
                                 </p>
                             </div>
                             <div
-                                class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-all overflow-hidden">
+                                class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 p-0.5 shadow-md shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-all overflow-hidden">
                                 <div
-                                    class="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                                    class="w-full h-full rounded-lg bg-white flex items-center justify-center overflow-hidden">
                                     @if(Auth::user()->avatar)
-                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar"
+                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="โปรไฟล์"
                                             class="w-full h-full object-cover">
                                     @else
                                         <span
@@ -726,7 +777,7 @@
                                 </div>
                             </div>
                             <i data-lucide="chevron-down"
-                                class="w-3 h-3 text-slate-300 group-hover:text-brand-600 transition-colors"></i>
+                                class="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-600 transition-colors"></i>
                         </button>
 
                         <!-- Dropdown Menu -->

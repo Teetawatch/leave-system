@@ -3,7 +3,7 @@
 
     @push('styles')
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Sarabun:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&display=swap');
 
             :root {
                 --dashboard-bg: #f8fafc;
@@ -16,7 +16,7 @@
             }
 
             body {
-                font-family: 'Outfit', 'Sarabun', sans-serif;
+                font-family: 'Outfit', 'IBM Plex Sans Thai', sans-serif;
                 background-color: var(--dashboard-bg);
             }
 
@@ -157,7 +157,7 @@
                             <div
                                 class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Live System Dashboard
+                                ระบบบริหารจัดการงานธุรการด้านกำลังพล
                             </div>
                             <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
                                 สวัสดีครับ, {{ Auth::user()->rank }}<br class="hidden md:block">
@@ -320,10 +320,10 @@
                                     <i data-lucide="activity" class="w-6 h-6"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-slate-900 tracking-tight leading-none">Activity
-                                        Feed</h3>
-                                    <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Timeline
-                                        รายการล่าสุดของคุณ</p>
+                                    <h3 class="text-xl font-bold text-slate-900 tracking-tight leading-none">
+                                        ความเคลื่อนไหวล่าสุด</h3>
+                                    <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">
+                                        รายการประวัติการลาล่าสุดของคุณ</p>
                                 </div>
                             </div>
                             <a href="{{ route('leave-request.index') }}"
@@ -346,51 +346,52 @@
                             @else
                                 <div class="space-y-4">
                                     @foreach($recentRequests->take(8) as $req)
-                                                                    <div class="group flex items-center gap-5 p-4 hover:bg-slate-50 rounded-3xl transition-all cursor-pointer border border-transparent hover:border-slate-100"
-                                                                        onclick="window.location='{{ route('leave-request.show', $req->id) }}'">
+                                        <div class="group flex items-center gap-5 p-4 hover:bg-slate-50 rounded-3xl transition-all cursor-pointer border border-transparent hover:border-slate-100"
+                                            onclick="window.location='{{ route('leave-request.show', $req->id) }}'">
 
-                                                                        @php
-                                                                            $cat = match ($req->leaveType->slug) {
-                                                                                'sick' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-500', 'icon' => 'thermometer'],
-                                                                                'vacation' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-500', 'icon' => 'palmtree'],
-                                                                                default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-500', 'icon' => 'briefcase'],
-                                                                            };
-                                                                            $status = match ($req->status) {
-                                                                                'approved' => ['class' => 'text-emerald-500 bg-emerald-50', 'label' => 'อนุมัติแล้ว'],
-                                                                                'rejected' => ['class' => 'text-rose-500 bg-rose-50', 'label' => 'ปฏิเสธแล้ว'],
-                                                                                'cancelled' => ['class' => 'text-slate-400 bg-slate-50', 'label' => 'ยกเลิก'],
-                                                                                default => ['class' => 'text-amber-500 bg-amber-50 animate-pulse', 'label' => 'รออนุมัติ'],
-                                                                            };
-                                                                        @endphp
+                                            @php
+                                                $cat = match ($req->leaveType->slug) {
+                                                    'sick' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-500', 'icon' => 'thermometer'],
+                                                    'vacation' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-500', 'icon' => 'palmtree'],
+                                                    default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-500', 'icon' => 'briefcase'],
+                                                };
+                                                $status = match ($req->status) {
+                                                    'approved' => ['class' => 'text-emerald-500 bg-emerald-50', 'label' => 'อนุมัติแล้ว'],
+                                                    'rejected' => ['class' => 'text-rose-500 bg-rose-50', 'label' => 'ปฏิเสธแล้ว'],
+                                                    'cancelled' => ['class' => 'text-slate-400 bg-slate-50', 'label' => 'ยกเลิก'],
+                                                    default => ['class' => 'text-amber-500 bg-amber-50 animate-pulse', 'label' => 'รออนุมัติ'],
+                                                };
+                                            @endphp
 
-                                         <div
-                                                                            class="w-14 h-14 rounded-2xl {{ $cat['bg'] }} {{ $cat['text'] }} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105">
-                                                                            <i data-lucide="{{ $cat['icon'] }}" class="w-6 h-6"></i>
-                                                                        </div>
+                                            <div
+                                                class="w-14 h-14 rounded-2xl {{ $cat['bg'] }} {{ $cat['text'] }} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105">
+                                                <i data-lucide="{{ $cat['icon'] }}" class="w-6 h-6"></i>
+                                            </div>
 
-                                                                        <div class="flex-1 min-w-0">
-                                                                            <h4
-                                                                                class="font-bold text-slate-800 text-lg tracking-tight truncate leading-tight">
-                                                                                {{ $req->leaveType->name }} <span
-                                                                                    class="text-slate-300 ml-1 font-medium italic">({{ $req->total_days + 0 }}
-                                                                                    วัน)</span>
-                                                                            </h4>
-                                                                            <p
-                                                                                class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mt-1">
-                                                                                <i data-lucide="calendar" class="w-3 h-3 shrink-0"></i>
-                                                                                @thaidate($req->start_date) - @thaidate($req->end_date)
-                                                                            </p>
-                                                                        </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h4
+                                                    class="font-bold text-slate-800 text-lg tracking-tight truncate leading-tight">
+                                                    {{ $req->leaveType->name }} <span
+                                                        class="text-slate-300 ml-1 font-medium italic">({{ $req->total_days + 0 }}
+                                                        วัน)</span>
+                                                </h4>
+                                                <p
+                                                    class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mt-1">
+                                                    <i data-lucide="calendar" class="w-3 h-3 shrink-0"></i>
+                                                    @thaidate($req->start_date) - @thaidate($req->end_date)
+                                                </p>
+                                            </div>
 
-                                                                        <div class="text-right shrink-0">
-                                                                            <span
-                                                                                class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest {{ $status['class'] }} shadow-sm">
-                                                                                {{ $status['label'] }}
-                                                                            </span>
-                                                                            <p class="text-[9px] text-slate-300 mt-2 font-bold">
-                                                                                {{ $req->created_at->diffForHumans() }}</p>
-                                                                        </div>
-                                                                    </div>
+                                            <div class="text-right shrink-0">
+                                                <span
+                                                    class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest {{ $status['class'] }} shadow-sm">
+                                                    {{ $status['label'] }}
+                                                </span>
+                                                <p class="text-[9px] text-slate-300 mt-2 font-bold">
+                                                    {{ $req->created_at->diffForHumans() }}
+                                                </p>
+                                            </div>
+                                        </div>
                                     @endforeach
                                 </div>
                             @endif
@@ -404,7 +405,7 @@
                     <!-- Calendar Widget -->
                     <div class="premium-card">
                         <div class="p-6 border-b border-slate-50 text-center">
-                            <h3 class="text-lg font-black text-slate-900 tracking-tight uppercase">Department Calendar
+                            <h3 class="text-lg font-black text-slate-900 tracking-tight uppercase">ปฏิทินของหน่วยงาน
                             </h3>
                         </div>
                         <div class="p-4 bg-slate-50/30">
@@ -430,8 +431,8 @@
                                     </div>
                                 @endif
                             </div>
-                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">On Leave
-                                Today</span>
+                            <span
+                                class="text-xs font-black text-slate-400 uppercase tracking-widest">กำลังลาวันนี้</span>
                         </div>
                     </div>
 
@@ -446,7 +447,7 @@
                                     class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-indigo-400">
                                     <i data-lucide="info" class="w-6 h-6"></i>
                                 </div>
-                                <h4 class="font-black text-xl tracking-tight uppercase">Knowledge Base</h4>
+                                <h4 class="font-black text-xl tracking-tight uppercase">เกร็ดน่ารู้และระเบียบการลา</h4>
                             </div>
 
                             <div class="space-y-4">
@@ -484,13 +485,13 @@
                             <i data-lucide="help-circle" class="w-10 h-10 text-indigo-500"></i>
                         </div>
                         <div>
-                            <h4 class="font-black text-slate-900 uppercase">Need Assistance?</h4>
+                            <h4 class="font-black text-slate-900 uppercase">ต้องการความช่วยเหลือ?</h4>
                             <p class="text-xs text-slate-500 mt-2 font-medium">ติดต่อฝ่ายกำลังพล โรงเรียนพลาธิการ
                                 หากพบปัญหาในการใช้งานระบบ</p>
                         </div>
                         <a href="tel:023456789"
                             class="text-indigo-600 font-black text-sm uppercase tracking-widest hover:underline decoration-2 underline-offset-4">
-                            CALL SUPPORT
+                            ติดต่อเจ้าหน้าที่
                         </a>
                     </div>
 

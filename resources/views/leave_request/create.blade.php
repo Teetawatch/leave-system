@@ -5,47 +5,53 @@
         <style>
             .premium-bg {
                 min-height: 100vh;
+                background: radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.03) 0%, transparent 40%),
+                            radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 40%);
             }
 
             .glass-panel {
                 background: rgba(255, 255, 255, 0.7);
                 backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
                 border: 1px solid rgba(255, 255, 255, 0.5);
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
             }
 
             .step-active {
-                background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
                 box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
             }
 
             .type-card-active {
                 background: white;
                 border-color: #4f46e5;
-                box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1), 0 10px 10px -5px rgba(79, 70, 229, 0.04);
-                transform: translateY(-4px);
+                box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1);
+                transform: translateY(-4px) scale(1.02);
             }
 
-            @keyframes pulse-soft {
-
-                0%,
-                100% {
-                    transform: scale(1);
-                    opacity: 0.5;
-                }
-
-                50% {
-                    transform: scale(1.05);
-                    opacity: 0.8;
-                }
+            .premium-input {
+                background: rgba(255, 255, 255, 0.6);
+                border: 1px solid rgba(226, 232, 240, 0.8);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            .glow-effect {
-                position: absolute;
-                width: 150px;
-                height: 150px;
-                background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
-                pointer-events: none;
+            .premium-input:focus {
+                background: white;
+                border-color: #4338ca;
+                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            }
+
+            @keyframes slide-up {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .animate-slide-up {
+                animation: slide-up 0.5s ease-out forwards;
+            }
+
+            .ticket-gradient {
+                background: linear-gradient(165deg, #1e293b 0%, #0f172a 100%);
             }
         </style>
     @endpush
@@ -63,15 +69,19 @@
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
 
             <!-- Header Section -->
-            <div class="flex flex-col items-center text-center mb-16 space-y-4">
+            <div class="flex flex-col items-center text-center mb-16 space-y-6 animate-slide-up">
                 <div
-                    class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-sm font-bold uppercase tracking-widest shadow-sm">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                    Leave System
+                    class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-[11px] font-black uppercase tracking-[0.2em] shadow-sm border border-indigo-100">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    ระบบบริหารจัดการงานกำลังพล
                 </div>
-                <h1 class="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight">แบบฟอร์มยื่นคำขอลา</h1>
-                <p class="text-slate-500 font-semibold text-lg max-w-2xl">กรุณาเลือกประเภทและระบุรายละเอียดการลา
-                    ระบบจะดำเนินการส่งเรื่องไปยังผู้อนุมัติตามลำดับสายงานอัตโนมัติ</p>
+                <h1 class="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none">
+                    แบบฟอร์มยื่นคำขอลา
+                </h1>
+                <p class="text-slate-500 font-medium text-lg max-w-2xl leading-relaxed">
+                    ยื่นคำขอลาออนไลน์ผ่านระบบบริหารจัดการกำลังพลแบบเรียลไทม์<br class="hidden md:block">
+                    รวดเร็ว โปร่งใส และตรวจสอบสถานะได้ทันที
+                </p>
 
                 <!-- Modern Stepper UI -->
                 <div
@@ -90,7 +100,7 @@
                             </div>
                             <div x-show="index < steps.length - 1"
                                 class="w-12 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-brand-500 transition-all duration-700"
+                                <div class="h-full bg-indigo-500 transition-all duration-700"
                                     :style="'width: ' + (currentStep > index + 1 ? '100%' : '0%')"></div>
                             </div>
                         </div>
@@ -106,40 +116,42 @@
                 <div class="lg:col-span-8 space-y-10">
 
                     <!-- STEP 1: Type Selection -->
-                    <section class="glass-panel rounded-[3rem] p-8 md:p-12" x-show="currentStep >= 1" x-transition>
-                        <div class="flex items-center gap-5 mb-10">
+                    <section class="glass-panel rounded-[3.5rem] p-8 md:p-12 shadow-2xl shadow-indigo-500/5 border-indigo-50/50" x-show="currentStep >= 1" x-transition>
+                        <div class="flex items-center gap-6 mb-12">
                             <div
-                                class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl rotate-3">
-                                <i data-lucide="layers" class="w-7 h-7"></i>
+                                class="w-16 h-16 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center shadow-xl rotate-3 flex-shrink-0">
+                                <i data-lucide="layers" class="w-8 h-8"></i>
                             </div>
                             <div>
-                                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">1. เลือกประเภทการลา</h3>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                <h3 class="text-3xl font-black text-slate-900 tracking-tight">1. เลือกประเภทการลา</h3>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2">
                                     ระบุวัตถุประสงค์หลักของการลาครั้งนี้</p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             @foreach($leaveTypes as $type)
                                 <label class="relative group cursor-pointer">
                                     <input type="radio" name="leave_type_id" value="{{ $type->id }}" class="peer sr-only"
                                         x-model="leaveType">
                                     <div
-                                        class="h-full p-6 rounded-[2.5rem] border-2 border-slate-50 bg-white/50 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active group-hover:border-brand-200">
+                                        class="h-full p-8 rounded-[2.5rem] border-2 border-slate-50 bg-white/40 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active hover:border-indigo-100 hover:bg-white/80">
                                         <div
-                                            class="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center text-3xl mb-5 shadow-inner transition-transform group-hover:scale-110 group-active:scale-95
+                                            class="w-20 h-20 mx-auto rounded-[2rem] flex items-center justify-center text-4xl mb-6 shadow-inner transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6
                                                                                                                     {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
-                                            @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-8 h-8"></i>
-                                            @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-8 h-8"></i>
-                                            @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-8 h-8"></i>
-                                            @else <i data-lucide="briefcase" class="w-8 h-8"></i>
+                                            @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-10 h-10"></i>
+                                            @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-10 h-10"></i>
+                                            @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-10 h-10"></i>
+                                            @else <i data-lucide="briefcase" class="w-10 h-10"></i>
                                             @endif
                                         </div>
-                                        <h4 class="text-base font-bold text-slate-800 tracking-tight mb-1">{{ $type->name }}
+                                        <h4 class="text-lg font-black text-slate-900 tracking-tight">{{ $type->name }}
                                         </h4>
                                         <div
-                                            class="absolute top-4 right-4 text-brand-500 opacity-0 peer-checked:opacity-100 transition-opacity">
-                                            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                                            class="absolute top-5 right-5 text-indigo-600 opacity-0 peer-checked:opacity-100 transition-all transform scale-50 peer-checked:scale-100">
+                                            <div class="p-1 bg-indigo-50 rounded-full">
+                                                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </label>
@@ -152,168 +164,163 @@
                         x-transition:enter-start="opacity-0 translate-y-10">
 
                         <!-- Address for Sick Leave -->
-                        <section x-show="isSick" class="glass-panel rounded-[3rem] p-8 md:p-12 mb-10">
-                            <div class="flex items-center gap-5 mb-10">
+                        <section x-show="isSick" class="glass-panel rounded-[3.5rem] p-8 md:p-12 mb-10 shadow-xl border-rose-50/50">
+                            <div class="flex items-center gap-6 mb-12">
                                 <div
-                                    class="w-14 h-14 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg -rotate-3">
-                                    <i data-lucide="map-pin" class="w-7 h-7"></i>
+                                    class="w-16 h-16 rounded-[2rem] bg-rose-500 text-white flex items-center justify-center shadow-xl -rotate-3 flex-shrink-0">
+                                    <i data-lucide="map-pin" class="w-8 h-8"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">
+                                    <h3 class="text-3xl font-black text-slate-900 tracking-tight text-rose-500">
                                         ที่อยู่ที่สามารถติดต่อได้</h3>
-                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                    <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2">
                                         กรณีฉุกเฉินหรือต้องการแจ้งผลการตรวจ</p>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="space-y-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                <div class="space-y-3">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">บ้านเลขที่</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">บ้านเลขที่</label>
                                     <input type="text" name="addr_house"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
-                                        placeholder="เช่น 123/45...">
+                                        class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
+                                        placeholder="123/45...">
                                 </div>
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">ถนน</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">ถนน</label>
                                     <input type="text" name="addr_road"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
-                                        placeholder="เช่น ถนนพลาธิการ...">
+                                        class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
+                                        placeholder="ถนนพลาธิการ...">
                                 </div>
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">ตำบล
-                                        / แขวง</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">ตำบล / แขวง</label>
                                     <input type="text" name="addr_tambon"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
-                                        placeholder="พิมพ์ชื่อตำบล...">
+                                        class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
+                                        placeholder="ระบุตำบล...">
                                 </div>
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">อำเภอ
-                                        / เขต</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">อำเภอ / เขต</label>
                                     <input type="text" name="addr_amphoe"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
-                                        placeholder="พิมพ์ชื่ออำเภอ...">
+                                        class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
+                                        placeholder="ระบุอำเภอ...">
                                 </div>
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">จังหวัด</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">จังหวัด</label>
                                     <input type="text" name="addr_province" list="provinces"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
-                                        placeholder="พิมพ์ชื่อจังหวัด...">
+                                        class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
+                                        placeholder="ระบุจังหวัด...">
                                 </div>
                             </div>
                         </section>
 
                         <!-- Address for Personal Leave -->
-                        <section x-show="isPersonal" class="glass-panel rounded-[3rem] p-8 md:p-12 mb-10">
-                            <div class="flex items-center gap-5 mb-10">
+                        <section x-show="isPersonal" class="glass-panel rounded-[3.5rem] p-8 md:p-12 mb-10 shadow-xl border-amber-50/50">
+                            <div class="flex items-center gap-6 mb-12">
                                 <div
-                                    class="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg rotate-2">
-                                    <i data-lucide="map-pin" class="w-7 h-7"></i>
+                                    class="w-16 h-16 rounded-[2rem] bg-amber-500 text-white flex items-center justify-center shadow-xl rotate-2 flex-shrink-0">
+                                    <i data-lucide="map-pin" class="w-8 h-8"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">
+                                    <h3 class="text-3xl font-black text-slate-900 tracking-tight text-amber-500">
                                         สถานที่ติดต่อระหว่างลา</h3>
-                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                    <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2">
                                         ระบุสถานที่ที่สามารถติดต่อได้กรณีเร่งด่วน</p>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="space-y-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-3">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">สถานที่
-                                        / บ้านเลขที่</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">สถานที่ / บ้านเลขที่</label>
                                     <input type="text" name="personal_location"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
+                                        class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
                                         placeholder="เช่น บ้านพักต่างจังหวัด...">
                                 </div>
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">จังหวัด</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">จังหวัด</label>
                                     <input type="text" name="personal_province" list="provinces"
-                                        class="w-full px-6 py-4 bg-white/50 border border-slate-100 rounded-2xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-700 transition-all text-base"
-                                        placeholder="พิมพ์ชื่อจังหวัด...">
+                                        class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
+                                        placeholder="ระบุจังหวัด...">
                                 </div>
                             </div>
                         </section>
 
                         <!-- Date Range Selection -->
-                        <section class="glass-panel rounded-[3rem] p-8 md:p-12 mb-10">
-                            <div class="flex items-center gap-5 mb-10">
+                        <section class="glass-panel rounded-[3.5rem] p-8 md:p-12 mb-10 shadow-xl border-indigo-50/50">
+                            <div class="flex items-center gap-6 mb-12">
                                 <div
-                                    class="w-14 h-14 rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-lg rotate-3">
-                                    <i data-lucide="calendar-days" class="w-7 h-7"></i>
+                                    class="w-16 h-16 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center shadow-xl rotate-3 flex-shrink-0">
+                                    <i data-lucide="calendar-days" class="w-8 h-8"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">2. กำหนดช่วงเวลาการลา
+                                    <h3 class="text-3xl font-black text-slate-900 tracking-tight">2. กำหนดช่วงเวลาการลา
                                     </h3>
-                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1"
+                                    <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2"
                                         x-text="isTemporary ? 'ระบุวันและช่วงเวลาที่ต้องการลา' : 'เลือกวันเริ่มต้นถึงวันสิ้นสุดการปฏิบัติราชการ'">
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="flex flex-col md:flex-row items-center gap-6">
+                            <div class="flex flex-col md:flex-row items-center gap-8">
                                 <!-- Start Date -->
                                 <div class="flex-1 w-full relative group">
                                     <label
-                                        class="absolute -top-3 left-6 px-2 bg-white text-xs font-bold text-brand-500 uppercase tracking-widest rounded-full z-10 border border-brand-100 shadow-sm">วันเริ่มต้น</label>
+                                        class="absolute -top-3 left-8 px-3 bg-white text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] rounded-full z-10 border border-indigo-100 shadow-sm">วันเริ่มต้น</label>
                                     <div class="relative">
                                         <div
-                                            class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300">
-                                            <i data-lucide="calendar" class="w-5 h-5"></i>
+                                            class="absolute inset-y-0 left-0 pl-8 flex items-center pointer-events-none text-slate-300 transition-colors group-focus-within:text-indigo-500">
+                                            <i data-lucide="calendar" class="w-6 h-6"></i>
                                         </div>
                                         <input type="date" name="start_date" x-model="startDate" required
                                             :min="isSick ? '' : todayDate"
-                                            class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-800 text-lg transition-all shadow-sm">
+                                            class="w-full pl-20 pr-8 py-6 premium-input rounded-[2.5rem] font-black text-slate-900 text-xl shadow-inner">
                                     </div>
                                 </div>
 
                                 <div class="hidden md:flex flex-col items-center">
                                     <div
-                                        class="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center text-brand-500 shadow-inner">
-                                        <i data-lucide="arrow-right" class="w-6 h-6"></i>
+                                        class="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 shadow-inner group-hover:text-indigo-500 transition-colors">
+                                        <i data-lucide="arrow-right" class="w-7 h-7"></i>
                                     </div>
                                 </div>
 
                                 <!-- End Date -->
                                 <div class="flex-1 w-full relative group" x-show="!isTemporary">
                                     <label
-                                        class="absolute -top-3 left-6 px-2 bg-white text-xs font-bold text-indigo-500 uppercase tracking-widest rounded-full z-10 border border-indigo-100 shadow-sm">วันสิ้นสุด</label>
+                                        class="absolute -top-3 left-8 px-3 bg-white text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] rounded-full z-10 border border-indigo-100 shadow-sm">วันสิ้นสุด</label>
                                     <div class="relative">
                                         <div
-                                            class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-300">
-                                            <i data-lucide="calendar-check-2" class="w-5 h-5"></i>
+                                            class="absolute inset-y-0 left-0 pl-8 flex items-center pointer-events-none text-slate-300 transition-colors group-focus-within:text-indigo-500">
+                                            <i data-lucide="calendar-check-2" class="w-6 h-6"></i>
                                         </div>
                                         <input type="date" name="end_date" x-model="endDate" required :min="startDate"
-                                            class="w-full pl-16 pr-6 py-5 bg-white/80 border-2 border-slate-50 rounded-[2rem] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 font-bold text-slate-800 text-lg transition-all shadow-sm">
+                                            class="w-full pl-20 pr-8 py-6 premium-input rounded-[2.5rem] font-black text-slate-900 text-xl shadow-inner">
                                     </div>
                                 </div>
 
                                 <!-- Period Selection for Temporary -->
-                                <div x-show="isTemporary" class="flex-1 w-full flex bg-slate-100 p-1.5 rounded-[2rem]">
+                                <div x-show="isTemporary" class="flex-1 w-full flex bg-slate-50 p-2 rounded-[2.5rem] border border-slate-100">
                                     <label class="flex-1 cursor-pointer">
                                         <input type="radio" name="temporary_leave_period" value="morning"
                                             class="sr-only peer" x-model="temporaryPeriod">
                                         <div
-                                            class="py-3 text-center rounded-[1.75rem] font-bold text-base peer-checked:bg-white peer-checked:text-brand-600 peer-checked:shadow-lg transition-all text-slate-400">
+                                            class="py-4 text-center rounded-[2rem] font-black text-base peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-xl transition-all duration-300 text-slate-400">
                                             ช่วงเช้า
-                                            <span class="block text-[10px] mt-0.5 opacity-80 font-medium">(ก่อน 07:30
-                                                น.)</span>
+                                            <span class="block text-[10px] mt-1 opacity-70 font-bold">(ก่อน 07:30 น.)</span>
                                         </div>
                                     </label>
                                     <label class="flex-1 cursor-pointer">
                                         <input type="radio" name="temporary_leave_period" value="afternoon"
                                             class="sr-only peer" x-model="temporaryPeriod">
                                         <div
-                                            class="py-3 text-center rounded-[1.75rem] font-bold text-base peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-lg transition-all text-slate-400">
+                                            class="py-4 text-center rounded-[2rem] font-black text-base peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-xl transition-all duration-300 text-slate-400">
                                             ช่วงบ่าย
-                                            <span class="block text-[10px] mt-0.5 opacity-80 font-medium">(ก่อน 11:00
-                                                น.)</span>
+                                            <span class="block text-[10px] mt-1 opacity-70 font-bold">(ก่อน 11:00 น.)</span>
                                         </div>
                                     </label>
                                 </div>
@@ -321,61 +328,61 @@
                         </section>
 
                         <!-- Details & Documents -->
-                        <section class="glass-panel rounded-[3rem] p-8 md:p-12">
-                            <div class="flex items-center gap-5 mb-10">
+                        <section class="glass-panel rounded-[3.5rem] p-8 md:p-12 shadow-xl border-emerald-50/50">
+                            <div class="flex items-center gap-6 mb-12">
                                 <div
-                                    class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg -rotate-3">
-                                    <i data-lucide="file-text" class="w-7 h-7"></i>
+                                    class="w-16 h-16 rounded-[2rem] bg-emerald-500 text-white flex items-center justify-center shadow-xl -rotate-3 flex-shrink-0">
+                                    <i data-lucide="file-text" class="w-8 h-8"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">3. รายละเอียดเพิ่มเติม
+                                    <h3 class="text-3xl font-black text-slate-900 tracking-tight">3. รายละเอียดเพิ่มเติม
                                     </h3>
-                                    <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">
+                                    <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2">
                                         ระบุเหตุผลความจำเป็นและความประสงค์</p>
                                 </div>
                             </div>
 
-                            <div class="space-y-8">
+                            <div class="space-y-10">
                                 <div class="relative">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase  mb-3 ml-1">เหตุผลหรือความจำเป็นในการลา
-                                        <span class="text-rose-500">*</span></label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">เหตุผลหรือความจำเป็นในการลา
+                                        <span class="text-rose-500 font-bold">*</span></label>
                                     <textarea name="reason" rows="4" required
-                                        class="w-full px-8 py-6 bg-white/50 border border-slate-100 rounded-[2rem] focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-semibold text-slate-800 text-lg transition-all resize-none shadow-inner"
-                                        placeholder="ระบุเหตุผล เช่น ติดธุระส่วนตัวไม่สามารถมาปฏิบัติราชการได้..."></textarea>
+                                        class="w-full px-8 py-6 premium-input rounded-[2.5rem] font-bold text-slate-900 text-xl resize-none shadow-inner"
+                                        placeholder="ระบุเหตุผลการลา..."></textarea>
                                 </div>
 
                                 <div class="relative group">
                                     <label
-                                        class="block text-xs font-bold text-slate-400 uppercase  mb-3 ml-1">เอกสารประกอบ
-                                        (ถ้ามี)</label>
-                                    <div class="file-drop relative rounded-[2rem] border-2 border-dashed border-slate-200 p-10 text-center hover:border-brand-500 hover:bg-brand-50/30 transition-all cursor-pointer group/upload"
-                                        @dragover.prevent="$el.classList.add('bg-brand-50', 'border-brand-500')"
-                                        @dragleave.prevent="$el.classList.remove('bg-brand-50', 'border-brand-500')"
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">เอกสารประกอบ (ถ้ามี)</label>
+                                    <div class="file-drop relative rounded-[3rem] border-2 border-dashed border-slate-200 p-12 text-center hover:border-indigo-500 hover:bg-indigo-50/30 transition-all cursor-pointer group/upload"
+                                        @dragover.prevent="$el.classList.add('bg-indigo-50', 'border-indigo-500')"
+                                        @dragleave.prevent="$el.classList.remove('bg-indigo-50', 'border-indigo-500')"
                                         @drop.prevent="handleFileDrop($event)">
                                         <input type="file" name="attachment"
                                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                             id="fileInput" @change="handleFileChange($event)">
-                                        <div class="flex flex-col items-center gap-4">
+                                        <div class="flex flex-col items-center gap-6">
                                             <div
-                                                class="w-20 h-20 rounded-[1.75rem] bg-indigo-50 text-indigo-500 flex items-center justify-center group-hover/upload:scale-110 group-hover/upload:rotate-12 transition-all shadow-inner">
-                                                <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+                                                class="w-24 h-24 rounded-[2.5rem] bg-white text-indigo-500 flex items-center justify-center group-hover/upload:scale-110 group-hover/upload:rotate-12 transition-all shadow-xl border border-indigo-50">
+                                                <i data-lucide="upload-cloud" class="w-12 h-12"></i>
                                             </div>
-                                            <div x-show="!fileName" class="animate-pulse">
-                                                <p class="text-xl font-bold text-slate-800">ลากไฟล์มาวางที่นี่ หรือ
-                                                    คลิกเพื่อเลือก</p>
+                                            <div x-show="!fileName">
+                                                <p class="text-2xl font-black text-slate-900">ลากไฟล์มาวาง หรือ คลิกเพื่ออัปโหลด</p>
                                                 <p
-                                                    class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest leading-relaxed">
-                                                    รองรับไฟล์ PDF, JPG, PNG ขนาดไม่เกิน 5MB</p>
+                                                    class="text-xs font-black text-slate-400 mt-3 uppercase tracking-[0.2em]">
+                                                    PDF, JPG, PNG (ไม่เกิน 5MB)</p>
                                             </div>
                                             <div x-show="fileName" x-cloak
-                                                class="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-xl border border-indigo-100 scale-105 transition-transform">
-                                                <i data-lucide="file-check" class="w-5 h-5 text-emerald-500"></i>
-                                                <span class="text-base font-bold text-brand-600 truncate max-w-[200px]"
+                                                class="flex items-center gap-4 bg-white px-8 py-4 rounded-[2rem] shadow-2xl border border-indigo-100 scale-105">
+                                                <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+                                                    <i data-lucide="file-check" class="w-6 h-6"></i>
+                                                </div>
+                                                <span class="text-lg font-black text-slate-800 truncate max-w-[250px]"
                                                     x-text="fileName"></span>
                                                 <button type="button" @click.prevent="clearFile()"
-                                                    class="p-1.5 bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-100 transition-colors">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                    class="p-2 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors cursor-pointer">
+                                                    <i data-lucide="trash-2" class="w-5 h-5"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -385,16 +392,16 @@
                         </section>
 
                         <!-- Action Button -->
-                        <div class="pt-10 flex flex-col md:flex-row items-center gap-6">
+                        <div class="pt-12 flex flex-col md:flex-row items-center gap-8">
                             <button type="submit"
-                                class="w-full md:w-auto flex-1 py-6 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-2xl rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.4)] hover:shadow-[0_25px_60px_-12px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-4 group">
+                                class="w-full md:w-auto flex-1 py-7 bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-white font-black text-2xl rounded-[3rem] shadow-[0_25px_60px_-15px_rgba(79,70,229,0.5)] hover:shadow-[0_35px_70px_-12px_rgba(79,70,229,0.6)] transition-all hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-5 group cursor-pointer">
                                 <i data-lucide="shield-check"
-                                    class="w-7 h-7 group-hover:rotate-12 transition-transform"></i>
-                                <span>ยืนยันและส่งใบลา</span>
+                                    class="w-8 h-8 group-hover:rotate-12 transition-transform"></i>
+                                <span>ส่งคำขอยืนยันใบลา</span>
                             </button>
                             <a href="{{ route('dashboard') }}"
-                                class="w-full md:w-auto px-10 py-6 bg-white text-slate-400 hover:text-slate-600 font-bold text-xl rounded-[2.5rem] transition-all hover:bg-slate-50 border border-slate-100 text-center">
-                                ยกเลิกรายการ
+                                class="w-full md:w-auto px-12 py-7 bg-white text-slate-400 hover:text-rose-500 font-black text-xl rounded-[3rem] transition-all hover:bg-rose-50 border border-slate-100 text-center shadow-sm">
+                                ยกเลิก
                             </a>
                         </div>
                     </div>
@@ -402,88 +409,69 @@
 
                 <!-- Right Sidebar: Premium Summary Ticket -->
                 <div class="lg:col-span-4 lg:sticky lg:top-24">
-                    <div class="glass-panel rounded-[3rem] p-8 pb-12 relative overflow-hidden bg-slate-900 shadow-2xl">
+                    <div class="glass-panel rounded-[3.5rem] p-8 pb-12 relative overflow-hidden ticket-gradient shadow-2xl border-slate-800">
                         <!-- Background Pattern -->
-                        <div
-                            class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]">
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 w-32 h-32 bg-brand-500/20 rounded-full blur-3xl -mr-16 -mt-16">
-                        </div>
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]"></div>
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
 
-                        <div class="relative z-10 space-y-8">
+                        <div class="relative z-10 space-y-10">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-2xl font-bold text-black tracking-tight uppercase">สรุปการลา
-                                </h4>
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-brand-400 border border-white/10">
-                                    <i data-lucide="monitor" class="w-6 h-6"></i>
+                                <h4 class="text-2xl font-black text-white tracking-tight uppercase">สรุปรายการลา</h4>
+                                <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-indigo-400 border border-white/10">
+                                    <i data-lucide="award" class="w-8 h-8"></i>
                                 </div>
                             </div>
 
                             <!-- Digital Ticket Look -->
-                            <div class="bg-white rounded-3xl p-6 shadow-2xl space-y-6 relative group overflow-hidden">
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-br from-brand-50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                </div>
+                            <div class="bg-white rounded-[3rem] p-8 shadow-2xl space-y-8 relative group overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-
-                                <div class="space-y-6 relative z-10">
-                                    <div class="flex items-center gap-4 border-b border-slate-50 pb-4">
-                                        <div
-                                            class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center font-black">
-                                            <i data-lucide="tag" class="w-6 h-6"></i>
+                                <div class="space-y-8 relative z-10">
+                                    <div class="flex items-center gap-5 border-b border-slate-50 pb-6">
+                                        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black">
+                                            <i data-lucide="tag" class="w-7 h-7"></i>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                                ประเภทการลา</p>
-                                            <p class="text-base font-bold text-slate-800 leading-none mt-1"
-                                                x-text="getLeaveTypeName() || 'รอเลือกประเภท...'"></p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ประเภทการลา</p>
+                                            <p class="text-lg font-black text-slate-900 leading-none mt-1.5" x-text="getLeaveTypeName() || 'รอเลือกประเภท...'"></p>
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-6">
+                                    <div class="grid grid-cols-2 gap-8">
                                         <div>
-                                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                                วันเริ่มต้น</p>
-                                            <p class="text-base font-bold text-slate-700 mt-1"
-                                                x-text="formatDate(startDate) || '-'"></p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">วันเริ่มต้น</p>
+                                            <p class="text-lg font-black text-slate-800 mt-2" x-text="formatDate(startDate) || '-'"></p>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                                วันสิ้นสุด</p>
-                                            <p class="text-base font-bold text-slate-700 mt-1"
-                                                x-text="formatDate(endDate) || '-'"></p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">วันสิ้นสุด</p>
+                                            <p class="text-lg font-black text-slate-800 mt-2" x-text="formatDate(endDate) || '-'"></p>
                                         </div>
                                     </div>
 
-                                    <div
-                                        class="pt-6 border-t border-dashed border-slate-200 flex items-center justify-between">
+                                    <div class="pt-8 border-t border-dashed border-slate-200 flex items-center justify-between">
                                         <div class="flex flex-col">
-                                            <span
-                                                class="text-xs font-bold text-slate-400 uppercase tracking-widest">ยอดรวมการลาครั้งนี้</span>
-                                            <span
-                                                class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-600"
-                                                x-text="(duration > 0 ? duration : 0) + ' วัน'"></span>
+                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ยอดรวมการลาครั้งนี้</span>
+                                            <div class="flex items-baseline gap-1 mt-2">
+                                                <span class="text-5xl font-black text-indigo-600" x-text="duration > 0 ? duration : 0"></span>
+                                                <span class="text-xl font-black text-slate-400">วัน</span>
+                                            </div>
                                         </div>
-                                        <div class="w-14 h-14 rounded-full border-4 border-indigo-50 border-t-indigo-500 animate-spin"
-                                            x-show="duration > 0 && !isTemporary"></div>
+                                        <div class="w-16 h-16 rounded-full border-4 border-indigo-50 border-t-indigo-500 animate-spin" x-show="duration > 0 && !isTemporary"></div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Real-time Validation Message -->
-                            <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
-                                <div class="flex items-start gap-4">
-                                    <div
-                                        class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
-                                        <i data-lucide="info" class="w-5 h-5"></i>
+                            <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+                                <div class="flex items-start gap-5">
+                                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center flex-shrink-0">
+                                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
                                     </div>
-                                    <div class="space-y-1">
-                                        <p class="text-base font-bold text-black">ข้อควรระวัง</p>
-                                        <p class="text-sm font-semibold text-slate-500 leading-relaxed">
-                                            กรุณาตรวจสอบข้อมูลและวันลาคงเหลือของท่านก่อนกดยืนยัน
-                                            เพื่อป้องกันการไม่อนุมัติจากสายงาน</p>
+                                    <div class="space-y-2">
+                                        <p class="text-lg font-black text-white">ข้อควรทราบ</p>
+                                        <p class="text-[13px] font-medium text-slate-400 leading-relaxed">
+                                            กรุณาตรวจสอบสิทธิ์วันลาคงเหลือของท่านให้ถูกต้องก่อนกดยันยัน เพื่อความรวดเร็วในการอนุมัติ
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -524,18 +512,15 @@
                             if (val) {
                                 this.currentStep = 2;
                                 if (this.isTemporary) {
-                                    // Set default if empty, but don't force/reset if user already picked a date
                                     if (!this.startDate) {
                                         this.startDate = this.todayDate;
                                     }
-                                    // For temporary leave, end date should always match start date initially
                                     this.endDate = this.startDate;
                                 }
                             }
                             this.$nextTick(() => window.lucide.createIcons());
                         });
                         this.$watch('startDate', (val) => {
-                            // Automatically sync endDate for temporary leave (1-day leave)
                             if (this.isTemporary) {
                                 this.endDate = val;
                             } else if (this.endDate && val > this.endDate) {
@@ -544,7 +529,6 @@
                             this.updateStep();
                         });
                         this.$watch('endDate', (val) => {
-                            // Ensure start date doesn't exceed end date for non-temporary leave
                             if (!this.isTemporary && this.startDate && val < this.startDate) {
                                 this.startDate = val;
                             }
