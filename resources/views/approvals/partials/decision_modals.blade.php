@@ -21,7 +21,7 @@
                     @csrf
                     <input type="hidden" name="signature" id="signature-input-{{ $req->id }}">
 
-                    <div class="bg-white p-8">
+                    <div class="bg-white p-8 max-h-[80vh] overflow-y-auto">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -33,13 +33,13 @@
                                 </div>
                             </div>
                             <button type="button" @click="openApprove = false"
-                                class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                                class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors cursor-pointer">
                                 <i data-lucide="x" class="w-5 h-5"></i>
                             </button>
                         </div>
 
                         <!-- User Summary -->
-                        <div class="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
+                        <div class="mb-6 p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
                             <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
                                 @if($req->user->avatar)
                                     <img src="{{ asset('storage/' . $req->user->avatar) }}" class="w-full h-full object-cover">
@@ -61,18 +61,109 @@
                             </div>
                         </div>
 
+                        <!-- Leave Details -->
+                        <div class="mb-6 grid grid-cols-2 gap-3">
+                            <div class="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/60">
+                                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">ระยะเวลาลา</p>
+                                <p class="text-sm font-bold text-slate-800">
+                                    <i data-lucide="calendar" class="w-3.5 h-3.5 inline -mt-0.5 mr-1 text-indigo-500"></i>
+                                    @thaidate($req->start_date) — @thaidate($req->end_date)
+                                </p>
+                            </div>
+                            <div class="p-4 bg-amber-50/50 rounded-2xl border border-amber-100/60">
+                                <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">จำนวนวัน</p>
+                                <p class="text-sm font-bold text-slate-800">
+                                    <i data-lucide="clock" class="w-3.5 h-3.5 inline -mt-0.5 mr-1 text-amber-500"></i>
+                                    {{ $req->total_days + 0 }} วัน
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Reason -->
+                        @if($req->reason)
+                            <div class="mb-6 p-5 bg-slate-50/80 rounded-2xl border border-slate-100 relative">
+                                <i data-lucide="quote" class="absolute top-3 right-4 w-8 h-8 text-slate-200/60"></i>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">เหตุผลการลา</p>
+                                <p class="text-sm text-slate-600 font-medium italic relative z-10">"{{ $req->reason }}"</p>
+                            </div>
+                        @endif
+
+                        <!-- Attachment Preview -->
+                        @if($req->attachment_path)
+                            @php
+                                $attachExt = strtolower(pathinfo($req->attachment_path, PATHINFO_EXTENSION));
+                                $isImage = in_array($attachExt, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
+                                $isPdf = $attachExt === 'pdf';
+                            @endphp
+                            <div class="mb-6">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1 flex items-center gap-2">
+                                    <i data-lucide="paperclip" class="w-3.5 h-3.5"></i>
+                                    เอกสารแนบ
+                                </p>
+                                <div class="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 overflow-hidden">
+                                    @if($isImage)
+                                        <div class="relative group/img">
+                                            <img src="{{ asset('storage/' . $req->attachment_path) }}" 
+                                                 alt="เอกสารแนบ" 
+                                                 class="w-full max-h-64 object-contain p-4 cursor-pointer transition-transform duration-300 group-hover/img:scale-[1.02]"
+                                                 @click="window.open('{{ asset('storage/' . $req->attachment_path) }}', '_blank')">
+                                            <div class="absolute bottom-3 right-3 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                                <a href="{{ asset('storage/' . $req->attachment_path) }}" target="_blank"
+                                                   class="inline-flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-indigo-600 rounded-xl text-xs font-bold shadow-lg border border-indigo-100 hover:bg-indigo-50 transition-colors">
+                                                    <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                                                    ดูขนาดเต็ม
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @elseif($isPdf)
+                                        <div class="p-6 flex items-center gap-4">
+                                            <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                <i data-lucide="file-text" class="w-7 h-7"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-slate-800 truncate">{{ basename($req->attachment_path) }}</p>
+                                                <p class="text-xs font-medium text-slate-400 uppercase">PDF Document</p>
+                                            </div>
+                                            <a href="{{ asset('storage/' . $req->attachment_path) }}" target="_blank"
+                                               class="inline-flex items-center gap-2 px-5 py-3 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 transition-colors cursor-pointer">
+                                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                                                เปิดไฟล์
+                                            </a>
+                                        </div>
+                                    @else
+                                        <div class="p-6 flex items-center gap-4">
+                                            <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                <i data-lucide="file" class="w-7 h-7"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-slate-800 truncate">{{ basename($req->attachment_path) }}</p>
+                                                <p class="text-xs font-medium text-slate-400 uppercase">{{ strtoupper($attachExt) }} File</p>
+                                            </div>
+                                            <a href="{{ asset('storage/' . $req->attachment_path) }}" target="_blank"
+                                               class="inline-flex items-center gap-2 px-5 py-3 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 transition-colors cursor-pointer">
+                                                <i data-lucide="download" class="w-4 h-4"></i>
+                                                ดาวน์โหลด
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="space-y-6">
                             <!-- Toggle Signature Mode -->
                             @if(Auth::user()->signature)
                                 <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200">
                                     <button type="button" @click="useSaved = false; $nextTick(() => { resizeCanvas(); })"
                                         :class="!useSaved ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                                        class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all">
+                                        class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer">
+                                        <i data-lucide="pen-tool" class="w-3.5 h-3.5 inline -mt-0.5 mr-1"></i>
                                         เซ็นชื่อใหม่
                                     </button>
                                     <button type="button" @click="useSaved = true"
                                         :class="useSaved ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                                        class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all">
+                                        class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer">
+                                        <i data-lucide="check-circle" class="w-3.5 h-3.5 inline -mt-0.5 mr-1"></i>
                                         ใช้ลายเซ็นเดิม
                                     </button>
                                 </div>
@@ -85,8 +176,11 @@
                                 <!-- Draw Pad -->
                                 <div x-show="!useSaved" class="space-y-4">
                                     <div class="flex justify-between items-center px-1">
-                                        <label class="text-xs font-bold text-slate-500 uppercase">พื้นที่เซ็นชื่ออิเล็กทรอนิกส์</label>
-                                        <button type="button" @click="clearSignature()" class="text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors">
+                                        <label class="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                                            <i data-lucide="pen-tool" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                            พื้นที่เซ็นชื่ออิเล็กทรอนิกส์
+                                        </label>
+                                        <button type="button" @click="clearSignature()" class="text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors cursor-pointer">
                                             <i data-lucide="refresh-cw" class="w-3 h-3"></i> ล้าง
                                         </button>
                                     </div>
@@ -102,7 +196,10 @@
                                 <!-- Saved Signature -->
                                 @if(Auth::user()->signature)
                                     <div x-show="useSaved" class="space-y-4">
-                                        <label class="text-xs font-bold text-slate-500 uppercase px-1">ลายเซ็นที่บันทึกไว้</label>
+                                        <label class="text-xs font-bold text-slate-500 uppercase px-1 flex items-center gap-2">
+                                            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                            ลายเซ็นที่บันทึกไว้
+                                        </label>
                                         <div class="bg-slate-50 border border-slate-200 rounded-2xl h-48 flex items-center justify-center p-8 relative overflow-hidden">
                                             <img src="{{ asset('storage/' . Auth::user()->signature) }}" class="max-h-full max-w-full object-contain filter drop-shadow-sm">
                                             <div class="absolute bottom-4 right-4 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-2">
@@ -132,13 +229,13 @@
                     </div>
 
                     <div class="bg-slate-50 px-8 py-6 flex flex-col sm:flex-row-reverse gap-4 border-t border-slate-100 rounded-b-3xl">
-                        <button type="button" @click="submit($event)"
-                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-slate-900/20">
+                        <button type="button" @click="submitForm($event)"
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-slate-900/20 cursor-pointer">
                             <i data-lucide="check" class="w-5 h-5 mr-2"></i>
                             ยืนยันการอนุมัติ
                         </button>
                         <button type="button" @click="openApprove = false"
-                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
                             ยกเลิก
                         </button>
                     </div>
@@ -175,7 +272,7 @@
                                 </div>
                             </div>
                             <button type="button" @click="openReject = false"
-                                class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                                class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors cursor-pointer">
                                 <i data-lucide="x" class="w-5 h-5"></i>
                             </button>
                         </div>
@@ -196,12 +293,12 @@
 
                     <div class="bg-slate-50 px-8 py-6 flex flex-col sm:flex-row-reverse gap-4 border-t border-slate-100 rounded-b-3xl">
                         <button type="submit"
-                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/30">
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/30 cursor-pointer">
                             <i data-lucide="x-circle" class="w-5 h-5 mr-2"></i>
                             ยืนยันปฏิเสธ
                         </button>
                         <button type="button" @click="openReject = false"
-                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
                             ยกเลิก
                         </button>
                     </div>

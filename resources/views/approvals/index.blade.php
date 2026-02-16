@@ -379,3 +379,63 @@
         </div>
     </div>
 </x-app-layout>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('signaturePad', (id) => ({
+            signaturePad: null,
+            useSaved: {{ Auth::user()->signature ? 'true' : 'false' }},
+            isCanvasEmpty: true,
+            init() {
+                this.$watch('openApprove', (value) => {
+                    if (value) {
+                        this.$nextTick(() => {
+                            if (!this.signaturePad) {
+                                this.initCanvas();
+                            } else {
+                                this.resizeCanvas();
+                            }
+                        });
+                    }
+                });
+            },
+            initCanvas() {
+                const canvas = document.getElementById('signature-canvas-' + id);
+                if (canvas) {
+                    this.signaturePad = new SignaturePad(canvas, {
+                        backgroundColor: 'rgba(255, 255, 255, 0)',
+                        penColor: 'rgb(15, 23, 42)',
+                        onBegin: () => {
+                            this.isCanvasEmpty = false;
+                        }
+                    });
+                    this.resizeCanvas();
+                }
+            },
+            resizeCanvas() {
+                const canvas = document.getElementById('signature-canvas-' + id);
+                if (canvas && this.signaturePad) {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                    this.signaturePad.clear();
+                    this.isCanvasEmpty = true;
+                }
+            },
+            clearSignature() {
+                if (this.signaturePad) {
+                    this.signaturePad.clear();
+                    this.isCanvasEmpty = true;
+                }
+            },
+            submitForm(event) {
+                if (this.signaturePad && !this.signaturePad.isEmpty()) {
+                    document.getElementById('signature-input-' + id).value = this.signaturePad.toDataURL();
+                }
+                document.getElementById('form-approve-' + id).submit();
+            }
+        }));
+    });
+</script>
