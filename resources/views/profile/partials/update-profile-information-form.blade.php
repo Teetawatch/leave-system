@@ -95,7 +95,7 @@
                         <div class="relative">
                             <input type="text" name="name" value="{{ old('name', $user->name) }}" required
                                 class="w-full px-6 py-4 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 font-bold text-slate-800 transition-all"
-                                placeholder="Enter Full Name">
+                                placeholder="กรอกชื่อ-นามสกุล">
                             <div
                                 class="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none text-slate-300">
                                 <i data-lucide="user" class="w-5 h-5"></i>

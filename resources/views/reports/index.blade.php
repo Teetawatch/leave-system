@@ -86,7 +86,7 @@
                     <div>
                         <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-black uppercase tracking-[0.2em] mb-6 shadow-sm border border-emerald-100">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            Analytics & Reporting Module
+                            ระบบวิเคราะห์และรายงาน
                         </div>
                         <h1 class="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6">
                             รายงานสรุป <span class="text-emerald-600">สถิติการลา</span>
@@ -151,7 +151,7 @@
                         <i data-lucide="sliders-horizontal" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-black text-slate-900 tracking-tight uppercase">Intelligence Filter</h3>
+                        <h3 class="text-xl font-black text-slate-900 tracking-tight uppercase">ตัวกรองข้อมูล</h3>
                         <p class="text-[10px] font-black text-slate-400 tracking-[0.25em] mt-1">กำหนดเงื่อนไขการสืบค้นข้อมูล</p>
                     </div>
                 </div>
@@ -232,7 +232,7 @@
                                 <i data-lucide="award" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Top Leavers Analysis</h3>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">การวิเคราะห์ผู้ใช้สิทธิ์ลาสูงสุด</h3>
                                 <p class="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">สถิติกำลังพลที่ใช้สิทธิ์การลาสูงสุด</p>
                             </div>
                         </div>
@@ -268,7 +268,7 @@
                                 <i data-lucide="pie-chart" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Leave Type Distribution</h3>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">สัดส่วนประเภทการลา</h3>
                                 <p class="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">สัดส่วนความถี่แยกตามประเภทการลา</p>
                             </div>
                         </div>
@@ -304,10 +304,10 @@
                         <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner">
                             <i data-lucide="database" class="w-5 h-5"></i>
                         </div>
-                        <h4 class="text-lg font-black text-white tracking-widest uppercase">Database Record</h4>
+                        <h4 class="text-lg font-black text-white tracking-widest uppercase">ฐานข้อมูลรายการ</h4>
                     </div>
                     <div class="px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Total: {{ number_format($requests->total()) }} Records
+                        ทั้งหมด: {{ number_format($requests->total()) }} รายการ
                     </div>
                 </div>
 
@@ -428,7 +428,7 @@
             <!-- Dashboard Visual Decorations -->
             <div class="mt-20 flex flex-col items-center justify-center gap-6 opacity-30">
                 <div class="w-1 bg-gradient-to-b from-indigo-500 to-transparent h-20 rounded-full"></div>
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">End of Analytics Document</div>
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">สิ้นสุดเอกสารรายงาน</div>
             </div>
         </div>
     </div>

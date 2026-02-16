@@ -15,9 +15,9 @@
                     <div>
                         <nav class="flex items-center gap-2 text-indigo-600/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
                             <i data-lucide="shield" class="w-4 h-4"></i>
-                            <span>System Duty</span>
+                            <span>ระบบเวรยาม</span>
                             <span class="w-1 h-1 rounded-full bg-indigo-500/20"></span>
-                            <span class="text-indigo-600">Guard Change</span>
+                            <span class="text-indigo-600">การเปลี่ยนยาม</span>
                         </nav>
                         <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
                             รายการขอเปลี่ยนยาม
@@ -170,7 +170,7 @@
                                         <span class="text-[10px] text-slate-400 font-bold mt-1 group-hover:text-white/60">{{ $request->duty_date->year + 543 }}</span>
                                     </div>
                                     <div class="lg:text-center">
-                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ID Request</p>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">เลขที่คำขอ</p>
                                         <p class="text-xs font-bold text-indigo-600">#{{ str_pad($request->id, 5, '0', STR_PAD_LEFT) }}</p>
                                     </div>
                                 </div>

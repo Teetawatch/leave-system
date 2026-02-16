@@ -67,7 +67,7 @@
                             <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
                                 <i data-lucide="file-check-2" class="w-5 h-5"></i>
                             </span>
-                            <span class="text-indigo-600 font-bold tracking-wide uppercase text-xs">Guard Change Request</span>
+                            <span class="text-indigo-600 font-bold tracking-wide uppercase text-xs">คำขอเปลี่ยนเวร</span>
                         </div>
                         <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">
                             รายละเอียดการเปลี่ยนเวร

@@ -16,9 +16,9 @@
                     <div>
                         <nav class="flex items-center gap-2 text-rose-300/60 transition-all mb-4 text-sm font-black tracking-widest uppercase">
                             <i data-lucide="crown" class="w-4 h-4"></i>
-                            <span>Command Decision</span>
+                            <span>การตัดสินใจ</span>
                             <span class="w-1 h-1 rounded-full bg-rose-500/40"></span>
-                            <span class="text-rose-400">Final Director Approval</span>
+                            <span class="text-rose-400">ผอ. อนุมัติขั้นสุดท้าย</span>
                         </nav>
                         <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
                             คำขอเปลี่ยนยามรอ ผอ. อนุมัติ
@@ -31,10 +31,10 @@
 
                     <div class="flex items-center gap-4">
                         <div class="glass-card bg-white/5 border-white/10 rounded-3xl px-8 py-6 backdrop-blur-md shadow-2xl">
-                            <p class="text-[10px] font-black text-rose-400 uppercase tracking-[0.3em] mb-1">COMMAND QUEUE</p>
+                            <p class="text-[10px] font-black text-rose-400 uppercase tracking-[0.3em] mb-1">รอดำเนินการ</p>
                             <div class="flex items-baseline gap-3">
                                 <span class="text-4xl font-black text-white">{{ $requests->count() }}</span>
-                                <span class="text-sm font-bold text-indigo-300/40 uppercase">Pending Final</span>
+                                <span class="text-sm font-bold text-indigo-300/40 uppercase">รายการ</span>
                             </div>
                         </div>
                     </div>
@@ -104,7 +104,7 @@
                                     </div>
                                     <div class="flex-1 xl:flex-none">
                                         <h4 class="text-2xl font-black text-slate-900 leading-tight tracking-tight">{{ $req->user->rank }}{{ $req->user->name }}</h4>
-                                        <p class="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mt-2 bg-rose-50 px-3 py-1 rounded-full inline-block">Requester Level</p>
+                                        <p class="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mt-2 bg-rose-50 px-3 py-1 rounded-full inline-block">ผู้ขอเปลี่ยนเวร</p>
                                         <p class="text-sm font-bold text-slate-400 mt-2 flex items-center gap-2">
                                             <i data-lucide="building-2" class="w-4 h-4"></i>
                                             {{ $req->user->department }}
@@ -132,7 +132,7 @@
                                                 <i data-lucide="user-check" class="w-7 h-7"></i>
                                             </div>
                                             <div class="flex-1">
-                                                <p class="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">REPLACEMENT ACCEPTANCE</p>
+                                                <p class="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">ผู้รับเปลี่ยนเวร</p>
                                                 <p class="text-base font-black text-slate-800">{{ $req->replacementUser->rank }}{{ $req->replacementUser->name }}</p>
                                             </div>
                                         </div>
@@ -142,7 +142,7 @@
                                                 <i data-lucide="signature" class="w-7 h-7"></i>
                                             </div>
                                             <div class="flex-1">
-                                                <p class="text-[10px] font-black text-purple-600/60 uppercase tracking-widest mb-1">DEPUTY DIRECTOR REVIEW</p>
+                                                <p class="text-[10px] font-black text-purple-600/60 uppercase tracking-widest mb-1">รอง ผอ. เห็นชอบ</p>
                                                 <p class="text-base font-black text-slate-800">
                                                     @if($req->directorApprover)
                                                         {{ $req->directorApprover->rank }}{{ $req->directorApprover->name }}
@@ -157,7 +157,7 @@
                                     @if($req->remarks)
                                         <div class="bg-slate-50/80 rounded-[2rem] p-8 border border-slate-100 relative group/quote">
                                             <i data-lucide="quote" class="absolute top-4 right-6 w-12 h-12 text-slate-200/50 group-hover/quote:text-rose-200/50 transition-colors"></i>
-                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">REASON FOR CHANGE</p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">เหตุผลการเปลี่ยนเวร</p>
                                             <p class="text-lg text-slate-600 font-medium italic relative z-10">"{{ $req->remarks }}"</p>
                                         </div>
                                     @endif
@@ -204,8 +204,8 @@
                                                                 <i data-lucide="crown" class="w-10 h-10"></i>
                                                             </div>
                                                             <div>
-                                                                <h3 class="text-4xl font-black text-slate-900 tracking-tighter">FINAL DECISION</h3>
-                                                                <p class="text-rose-500 font-black text-xs uppercase tracking-widest">Command Signature Required</p>
+                                                                <h3 class="text-4xl font-black text-slate-900 tracking-tighter">อนุมัติขั้นสุดท้าย</h3>
+                                                                <p class="text-rose-500 font-black text-xs uppercase tracking-widest">กรุณาลงลายมือชื่อ</p>
                                                             </div>
                                                         </div>
                                                         <button type="button" @click="openApprove = false" class="w-14 h-14 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors">
@@ -242,7 +242,7 @@
                                                         <!-- Draw Area -->
                                                         <div x-show="!useSaved" class="space-y-4">
                                                             <div class="flex justify-between items-center px-4">
-                                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">MASTER COMMAND SIGNATURE</label>
+                                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">ลงลายมือชื่อ</label>
                                                                 <button type="button" @click="clearSignature()" class="text-xs font-black text-rose-500 hover:text-rose-600 flex items-center gap-2 transition-colors">
                                                                     <i data-lucide="eraser" class="w-4 h-4"></i>
                                                                     ล้าง
@@ -254,7 +254,7 @@
                                                                     <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-3">
                                                                         <i data-lucide="edit-3" class="w-8 h-8 text-slate-300"></i>
                                                                     </div>
-                                                                    <p class="text-xs font-black text-slate-300 uppercase tracking-widest">Signature Pad</p>
+                                                                    <p class="text-xs font-black text-slate-300 uppercase tracking-widest">พื้นที่ลงนาม</p>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -262,19 +262,19 @@
                                                         <!-- Registered Signature -->
                                                         @if(Auth::user()->signature)
                                                             <div x-show="useSaved" class="space-y-4">
-                                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-4">AUTHORITATIVE CREDENTIAL</label>
+                                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-4">ลายเซ็นประจำตัว</label>
                                                                 <div class="bg-rose-50/30 border-4 border-solid border-rose-100 rounded-[3rem] h-64 flex items-center justify-center p-12 relative overflow-hidden group/saved">
                                                                     <img src="{{ asset('storage/' . Auth::user()->signature) }}" class="max-h-full max-w-full object-contain relative z-10 filter drop-shadow-2xl">
                                                                     <div class="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover/saved:opacity-100 transition-opacity"></div>
                                                                     <div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-md border border-rose-100 px-6 py-2 rounded-full text-[10px] font-black text-rose-600 shadow-lg uppercase tracking-widest">
-                                                                        Stored Identity
+                                                                        ลายเซ็นที่บันทึกไว้
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         @endif
 
                                                         <div class="space-y-4">
-                                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-4">COMMANDER'S ORDER / OBSERVATION</label>
+                                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-4">ความเห็น / ข้อสังเกต</label>
                                                             <textarea name="comment" rows="3" class="block w-full rounded-[2rem] border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-rose-500 focus:ring-8 focus:ring-rose-500/5 transition-all p-6 text-base font-bold text-slate-700 placeholder:text-slate-300 resize-none shadow-inner" placeholder="ระบุข้อความคำสั่งเพิ่มเติม (ถ้ามี)..."></textarea>
                                                         </div>
                                                     </div>

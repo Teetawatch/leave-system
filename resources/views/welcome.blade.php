@@ -153,7 +153,7 @@
                                         <i data-lucide="check" class="w-6 h-6"></i>
                                     </div>
                                     <div>
-                                        <p class="text-[10px] uppercase font-black text-slate-400">Status Approved</p>
+                                        <p class="text-[10px] uppercase font-black text-slate-400">อนุมัติแล้ว</p>
                                         <p class="text-xs font-black text-white tracking-widest">ดำเนินการเรียบร้อย</p>
                                     </div>
                                 </div>

@@ -696,7 +696,7 @@
                 } else if (props.type === 'guard_change') {
                     modalHeader.className = `relative px-6 pt-6 pb-8 ${headerColors['guard_change']}`;
                     modalTitle.textContent = 'เปลี่ยนเวร';
-                    modalSubtitle.textContent = 'Guard Change Request';
+                    modalSubtitle.textContent = 'คำขอเปลี่ยนเวร';
 
                     html = `
                         <div class="space-y-4">

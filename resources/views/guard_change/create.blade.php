@@ -18,9 +18,9 @@
                 <nav
                     class="flex justify-center items-center gap-2 text-emerald-600/60 transition-all mb-4 text-sm font-bold tracking-widest uppercase">
                     <i data-lucide="shield" class="w-4 h-4"></i>
-                    <span>Duty Management</span>
+                    <span>การจัดการเวรยาม</span>
                     <span class="w-1 h-1 rounded-full bg-emerald-500/20"></span>
-                    <span class="text-emerald-600">Request New Change</span>
+                    <span class="text-emerald-600">ขอเปลี่ยนเวรใหม่</span>
                 </nav>
                 <h1 class="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-4">
                     แบบฟอร์มขออนุญาตเปลี่ยนยาม
@@ -102,7 +102,7 @@
                                             <div
                                                 class="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-200">
                                                 <i data-lucide="check-circle" class="w-3 h-3"></i>
-                                                READY TO REPLACE
+                                                พร้อมปฏิบัติแทน
                                             </div>
                                         </div>
                                     </template>
@@ -236,8 +236,7 @@
                                         <div
                                             class="group/input focus-within:ring-4 focus-within:ring-blue-500/10 rounded-3xl overflow-hidden transition-all">
                                             <label
-                                                class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">SELECT
-                                                DATE</label>
+                                                class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">เลือกวันที่</label>
                                             <input type="date" name="duty_date" x-model="dutyDate"
                                                 class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-blue-500 p-6 rounded-3xl text-xl font-bold text-slate-800 transition-all cursor-pointer"
                                                 required>
@@ -274,8 +273,7 @@
                                         <div
                                             class="group/input focus-within:ring-4 focus-within:ring-purple-500/10 rounded-3xl overflow-hidden transition-all">
                                             <label
-                                                class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">REASON
-                                                (OPTIONAL)</label>
+                                                class="block text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">เหตุผล (ไม่บังคับ)</label>
                                             <textarea name="remarks" rows="2" x-model="remarks"
                                                 class="block w-full bg-slate-50 border-2 border-slate-100 group-focus-within/input:bg-white group-focus-within/input:border-purple-500 p-6 rounded-3xl text-lg font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold transition-all resize-none"
                                                 placeholder="ระบุเหตุผล เช่น ไปราชการ กทม..."></textarea>

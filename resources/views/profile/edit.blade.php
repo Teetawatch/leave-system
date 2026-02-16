@@ -16,7 +16,7 @@
                 <div
                     class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-[10px] font-black text-brand-400 uppercase tracking-widest mb-8 animate-fade-in">
                     <i data-lucide="user" class="w-3.5 h-3.5"></i>
-                    Account Settings
+                    ตั้งค่าบัญชี
                 </div>
 
                 <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
@@ -68,7 +68,7 @@
                         <div
                             class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl text-xs font-bold text-slate-400 border border-slate-100">
                             <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
-                            Verified Account
+                            ยืนยันแล้ว
                         </div>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                     </div>
                     <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-center min-w-[120px]">
                         <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">พาสเวิร์ด</p>
-                        <p class="text-2xl font-black text-amber-600 italic">SECURED</p>
+                        <p class="text-2xl font-black text-amber-600 italic">ปลอดภัย</p>
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                             <div>
                                 <h3 class="font-black text-slate-800 text-xl tracking-tight">ข้อมูลบัญชีและรูปถ่าย</h3>
                                 <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1 italic">
-                                    Identity & Profile Assets</p>
+                                    ข้อมูลส่วนตัวและรูปโปรไฟล์</p>
                             </div>
                         </div>
                         <div class="p-10">
@@ -144,8 +144,7 @@
                             </div>
                             <div class="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-3">
                                 <i data-lucide="info" class="w-4 h-4 text-brand-400"></i>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Supported
-                                    formats: JPG, PNG</span>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">รองรับไฟล์: JPG, PNG</span>
                             </div>
                         </div>
                     </div>
