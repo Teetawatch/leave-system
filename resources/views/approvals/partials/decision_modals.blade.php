@@ -1,76 +1,79 @@
+@php
+    $needsSignature = in_array($req->status, ['pending_supervisor', 'pending_manager', 'pending_director']);
+@endphp
+
 <!-- Approval Modal -->
 <template x-teleport="body">
     <div x-show="openApprove" class="fixed inset-0 z-[100] overflow-y-auto" style="display: none;"
-        x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-400"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="openApprove = false">
-                <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"></div>
+                <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
             </div>
 
-            <div class="bg-white rounded-[4.5rem] text-left overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transform transition-all relative w-full max-w-2xl border-t-8 border-emerald-500 animate-slide-up"
+            <div class="bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all relative w-full max-w-2xl animate-slide-up"
                 x-data="signaturePad({{ $req->id }})">
 
-                <form action="{{ route('approvals.approve', $req->id) }}" method="POST"
-                    id="form-approve-{{ $req->id }}">
+                <form action="{{ route('approvals.approve', $req->id) }}" method="POST" id="form-approve-{{ $req->id }}">
                     @csrf
                     <input type="hidden" name="signature" id="signature-input-{{ $req->id }}">
 
-                    <div class="bg-white p-12 md:p-16">
-                        <div class="flex items-center justify-between mb-12">
-                            <div class="flex items-center gap-6">
-                                <div
-                                    class="w-20 h-20 rounded-[2.5rem] bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-inner border border-emerald-100">
-                                    <i data-lucide="shield-check" class="w-10 h-10"></i>
+                    <div class="bg-white p-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                    <i data-lucide="shield-check" class="w-6 h-6"></i>
                                 </div>
                                 <div>
-                                    <h3
-                                        class="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-2 uppercase">
-                                        Official Decision</h3>
-                                    <p class="text-emerald-500 font-black text-[10px] uppercase tracking-[0.4em]">
-                                        Authorization Protocol Required</p>
+                                    <h3 class="text-xl font-bold text-slate-800">ยืนยันการอนุมัติ</h3>
+                                    <p class="text-emerald-600 text-xs font-medium">กรุณาตรวจสอบข้อมูลก่อนดำเนินการ</p>
                                 </div>
                             </div>
                             <button type="button" @click="openApprove = false"
-                                class="w-16 h-16 rounded-[2rem] bg-slate-50 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center text-slate-400 transition-all active:scale-90">
-                                <i data-lucide="x" class="w-8 h-8"></i>
+                                class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                                <i data-lucide="x" class="w-5 h-5"></i>
                             </button>
                         </div>
 
-                        <div
-                            class="mb-12 p-10 bg-slate-50/80 rounded-[3.5rem] border border-slate-100 relative overflow-hidden group">
-                            <div
-                                class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700">
+                        <!-- User Summary -->
+                        <div class="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                                @if($req->user->avatar)
+                                    <img src="{{ asset('storage/' . $req->user->avatar) }}" class="w-full h-full object-cover">
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center text-slate-400 font-bold bg-white">
+                                        {{ substr($req->user->name, 0, 1) }}
+                                    </div>
+                                @endif
                             </div>
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Target
-                                Personnel</p>
-                            <p class="text-3xl font-black text-slate-900 tracking-tighter mb-4">
-                                {{ $req->user->rank }}{{ $req->user->name }}
-                            </p>
-                            <div class="flex items-center gap-4">
-                                <span
-                                    class="px-5 py-2 bg-white rounded-full text-[10px] font-black text-indigo-600 shadow-sm border border-indigo-100 uppercase tracking-widest">{{ $req->leaveType->name }}</span>
-                                <span
-                                    class="px-5 py-2 bg-white rounded-full text-[10px] font-black text-emerald-600 shadow-sm border border-emerald-100 uppercase tracking-widest">{{ $req->total_days + 0 }}
-                                    วัน</span>
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">ผู้ขออนุมัติ</p>
+                                <p class="text-lg font-bold text-slate-800">{{ $req->user->rank }}{{ $req->user->name }}</p>
+                            </div>
+                            <div class="ml-auto text-right">
+                                <span class="block text-xs font-bold text-slate-400 mb-1">ประเภทการลา</span>
+                                <span class="inline-block px-3 py-1 bg-white rounded-lg text-xs font-bold text-indigo-600 border border-indigo-100 shadow-sm">
+                                    {{ $req->leaveType->name }}
+                                </span>
                             </div>
                         </div>
 
-                        <div class="space-y-10">
+                        <div class="space-y-6">
                             <!-- Toggle Signature Mode -->
                             @if(Auth::user()->signature)
-                                <div class="flex p-2.5 bg-slate-100 rounded-full border border-slate-200">
+                                <div class="flex p-1 bg-slate-100 rounded-xl border border-slate-200">
                                     <button type="button" @click="useSaved = false; $nextTick(() => { resizeCanvas(); })"
-                                        :class="!useSaved ? 'bg-white shadow-xl text-emerald-600' : 'text-slate-400 hover:text-slate-600'"
-                                        class="flex-1 py-5 rounded-full text-xs font-black uppercase tracking-[0.2em] transition-all duration-500">
-                                        Manual Signature
+                                        :class="!useSaved ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
+                                        class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all">
+                                        เซ็นชื่อใหม่
                                     </button>
                                     <button type="button" @click="useSaved = true"
-                                        :class="useSaved ? 'bg-white shadow-xl text-emerald-600' : 'text-slate-400 hover:text-slate-600'"
-                                        class="flex-1 py-5 rounded-full text-xs font-black uppercase tracking-[0.2em] transition-all duration-500">
-                                        Registered Identity
+                                        :class="useSaved ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
+                                        class="flex-1 py-2.5 rounded-lg text-xs font-bold transition-all">
+                                        ใช้ลายเซ็นเดิม
                                     </button>
                                 </div>
                                 <input type="hidden" name="use_saved_signature" :value="useSaved ? '1' : '0'">
@@ -78,96 +81,65 @@
                                 <input type="hidden" name="use_saved_signature" value="0">
                             @endif
 
-                            <!-- Signature Area -->
-                            @php
-                                $needsSignature = in_array($req->status, ['pending_supervisor', 'pending_manager', 'pending_director']);
-                            @endphp
-
                             @if($needsSignature)
                                 <!-- Draw Pad -->
-                                <div x-show="!useSaved" class="space-y-6 animate-slide-up" style="animation-duration: 0.4s">
-                                    <div class="flex justify-between items-center px-6">
-                                        <label
-                                            class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Electronic
-                                            Signature Pad</label>
-                                        <button type="button" @click="clearSignature()"
-                                            class="text-[10px] font-black text-rose-500 hover:text-rose-600 flex items-center gap-3 transition-colors uppercase tracking-[0.2em]">
-                                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                                            Clear Pad
+                                <div x-show="!useSaved" class="space-y-4">
+                                    <div class="flex justify-between items-center px-1">
+                                        <label class="text-xs font-bold text-slate-500 uppercase">พื้นที่เซ็นชื่ออิเล็กทรอนิกส์</label>
+                                        <button type="button" @click="clearSignature()" class="text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors">
+                                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> ล้าง
                                         </button>
                                     </div>
-                                    <div
-                                        class="bg-slate-50 border-4 border-dashed border-slate-200 rounded-[4rem] h-72 relative cursor-crosshair group/pad hover:border-emerald-400 hover:bg-emerald-50/10 transition-all duration-500 shadow-inner">
-                                        <canvas id="signature-canvas-{{ $req->id }}" class="w-full h-full"></canvas>
-                                        <div x-show="isCanvasEmpty"
-                                            class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-50">
-                                            <div
-                                                class="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center mb-4 group-hover/pad:scale-110 transition-transform">
-                                                <i data-lucide="pen-tool" class="w-10 h-10 text-slate-300"></i>
-                                            </div>
-                                            <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">
-                                                ลงชื่อพิจารณาสั่งการ</p>
+                                    <div class="bg-white border-2 border-dashed border-slate-300 rounded-2xl h-48 relative cursor-crosshair hover:border-emerald-400 transition-colors">
+                                        <canvas id="signature-canvas-{{ $req->id }}" class="w-full h-full rounded-2xl"></canvas>
+                                        <div x-show="isCanvasEmpty" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-300">
+                                            <i data-lucide="pen-tool" class="w-8 h-8 mb-2"></i>
+                                            <p class="text-xs font-bold uppercase">เซ็นชื่อที่นี่</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Saved Signature -->
                                 @if(Auth::user()->signature)
-                                    <div x-show="useSaved" class="space-y-6 animate-slide-up" style="animation-duration: 0.4s">
-                                        <label
-                                            class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-6">System
-                                            Registered Persona</label>
-                                        <div
-                                            class="bg-white border-4 border-solid border-emerald-50 rounded-[4rem] h-72 flex items-center justify-center p-16 relative overflow-hidden group/saved shadow-2xl shadow-emerald-500/5">
-                                            <div class="absolute inset-0 bg-gradient-to-tr from-emerald-50/50 to-transparent">
-                                            </div>
-                                            <img src="{{ asset('storage/' . Auth::user()->signature) }}"
-                                                class="max-h-full max-w-full object-contain relative z-10 filter drop-shadow-2xl brightness-90 group-hover:brightness-100 transition-all duration-700">
-                                            <div
-                                                class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-8 py-3 rounded-full text-[10px] font-black shadow-2xl uppercase tracking-[0.3em]">
-                                                Verified Identity
+                                    <div x-show="useSaved" class="space-y-4">
+                                        <label class="text-xs font-bold text-slate-500 uppercase px-1">ลายเซ็นที่บันทึกไว้</label>
+                                        <div class="bg-slate-50 border border-slate-200 rounded-2xl h-48 flex items-center justify-center p-8 relative overflow-hidden">
+                                            <img src="{{ asset('storage/' . Auth::user()->signature) }}" class="max-h-full max-w-full object-contain filter drop-shadow-sm">
+                                            <div class="absolute bottom-4 right-4 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-2">
+                                                <i data-lucide="check-circle" class="w-3 h-3"></i> ยืนยันแล้ว
                                             </div>
                                         </div>
                                     </div>
                                 @endif
                             @else
-                                <!-- No signature message for Deputy stage -->
-                                <div
-                                    class="p-12 bg-indigo-50/50 rounded-[3.5rem] border-2 border-indigo-100/50 flex flex-col items-center text-center group">
-                                    <div
-                                        class="w-20 h-20 rounded-[2rem] bg-white shadow-xl text-indigo-500 flex items-center justify-center mb-8 group-hover:rotate-12 transition-transform">
-                                        <i data-lucide="info" class="w-10 h-10"></i>
+                                <!-- Acknowledgement Only -->
+                                <div class="p-8 bg-indigo-50 rounded-2xl border border-indigo-100 flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 rounded-full bg-white text-indigo-500 flex items-center justify-center mb-4 shadow-sm">
+                                        <i data-lucide="info" class="w-6 h-6"></i>
                                     </div>
-                                    <p class="text-lg font-black text-indigo-900 uppercase tracking-[0.2em] mb-3">
-                                        Acknowledgement Protocol</p>
-                                    <p
-                                        class="text-sm font-bold text-slate-400 max-w-xs leading-relaxed uppercase tracking-widest">
-                                        ขั้นตอนนี้เป็นการยืนยันรับทราบข้อมูลในระบบ โดยไม่ต้องลงลายนิ้วมืออิเล็กทรอนิกส์</p>
+                                    <h5 class="font-bold text-indigo-900 mb-2">รับทราบคำขอ</h5>
+                                    <p class="text-sm text-indigo-700/80">ขั้นตอนนี้เป็นการยืนยันรับทราบข้อมูลในระบบ โดยไม่ต้องลงลายมือชื่อ</p>
                                 </div>
                             @endif
 
-                            <div class="space-y-4">
-                                <label
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] px-6">Official
-                                    Command / Observation</label>
-                                <textarea name="comment" rows="4"
-                                    class="block w-full rounded-[3rem] border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-[12px] focus:ring-emerald-500/5 transition-all p-10 text-lg font-black text-slate-800 placeholder:text-slate-300 resize-none shadow-inner"
-                                    placeholder="เพิ่มข้อสั่งการ หรือข้อสังเกตการณ์ในการลา..."></textarea>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase px-1">ข้อคิดเห็น / สั่งการ (ถ้ามี)</label>
+                                <textarea name="comment" rows="3"
+                                    class="block w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm transition-all resize-none placeholder:text-slate-400"
+                                    placeholder="ระบุข้อความเพิ่มเติม..."></textarea>
                             </div>
                         </div>
                     </div>
 
-                    <div
-                        class="bg-slate-50 px-12 py-12 md:px-16 md:py-16 flex flex-col sm:flex-row-reverse gap-8 border-t border-slate-100">
-                        <button type="submit" @click="submit($event)"
-                            class="relative flex-[2] inline-flex justify-center items-center px-12 py-8 bg-slate-950 text-white font-black uppercase tracking-[0.3em] text-sm rounded-full shadow-[0_25px_50px_-15px_rgba(0,0,0,0.4)] hover:shadow-emerald-600/50 hover:bg-emerald-600 transition-all hover:-translate-y-2 group/btn">
-                            <i data-lucide="shield-check"
-                                class="w-7 h-7 mr-4 group-hover/btn:scale-125 transition-transform"></i>
-                            Execute Decision
+                    <div class="bg-slate-50 px-8 py-6 flex flex-col sm:flex-row-reverse gap-4 border-t border-slate-100 rounded-b-3xl">
+                        <button type="button" @click="submit($event)"
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-slate-900/20">
+                            <i data-lucide="check" class="w-5 h-5 mr-2"></i>
+                            ยืนยันการอนุมัติ
                         </button>
                         <button type="button" @click="openApprove = false"
-                            class="flex-1 inline-flex justify-center items-center px-12 py-8 bg-white border-2 border-slate-200 text-slate-400 font-black uppercase tracking-[0.3em] text-sm rounded-full hover:bg-slate-100 hover:text-slate-600 transition-all shadow-sm">
-                            Cancel
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                            ยกเลิก
                         </button>
                     </div>
                 </form>
@@ -179,59 +151,58 @@
 <!-- Reject Modal -->
 <template x-teleport="body">
     <div x-show="openReject" class="fixed inset-0 z-[100] overflow-y-auto" style="display: none;"
-        x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-400"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="openReject = false">
-                <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"></div>
+                <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
             </div>
 
-            <div
-                class="bg-white rounded-[4.5rem] text-left overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] transform transition-all relative w-full max-w-xl border-t-8 border-rose-500 animate-slide-up">
+            <div class="bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all relative w-full max-w-xl animate-slide-up">
                 <form action="{{ route('approvals.reject', $req->id) }}" method="POST">
                     @csrf
-                    <div class="bg-white p-12 md:p-16">
-                        <div class="flex items-start justify-between mb-12">
-                            <div
-                                class="w-20 h-20 rounded-[2.5rem] bg-rose-50 text-rose-500 flex items-center justify-center shadow-inner border border-rose-100">
-                                <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+                    <div class="bg-white p-8">
+                        <div class="flex items-start justify-between mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-slate-800">ยืนยันการปฏิเสธ</h3>
+                                    <p class="text-rose-500 text-xs font-medium">การดำเนินการนี้ไม่สามารถเรียกคืนได้</p>
+                                </div>
                             </div>
                             <button type="button" @click="openReject = false"
-                                class="w-16 h-16 rounded-[2rem] bg-slate-50 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center text-slate-400 transition-all active:scale-90">
-                                <i data-lucide="x" class="w-8 h-8"></i>
+                                class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                                <i data-lucide="x" class="w-5 h-5"></i>
                             </button>
                         </div>
 
-                        <h3 class="text-4xl font-black text-slate-900 tracking-tighter mb-4 uppercase leading-none">
-                            REJECTION PROTOCOL</h3>
-                        <p class="text-slate-500 font-bold mb-12 leading-relaxed uppercase tracking-[0.15em] text-sm">
-                            ยืนยันการปฏิเสธคำขอรับการพิจารณาของ <span
-                                class="text-rose-600 underline decoration-rose-200 decoration-4 underline-offset-8">{{ $req->user->name }}</span>
-                        </p>
+                        <div class="mb-8 text-center px-4">
+                            <p class="text-slate-600 text-sm">
+                                คุณกำลังจะปฏิเสธคำขอลาของ <span class="font-bold text-slate-800">{{ $req->user->rank }}{{ $req->user->name }}</span>
+                            </p>
+                        </div>
 
-                        <div class="space-y-6">
-                            <label
-                                class="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] px-6">Mandatory
-                                Rejection Comment</label>
-                            <textarea name="comment" rows="6" required
-                                class="block w-full rounded-[3.5rem] border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-rose-500 focus:ring-[12px] focus:ring-rose-500/5 transition-all p-12 text-lg font-black text-slate-800 placeholder:text-slate-300 resize-none shadow-inner"
-                                placeholder="ระบุเหตุผลความจำเป็นในการปฏิเสธคำขอให้ชัดเจน..."></textarea>
+                        <div class="space-y-4">
+                            <label class="text-xs font-bold text-rose-500 uppercase px-1">เหตุผลการปฏิเสธ (จำเป็น)</label>
+                            <textarea name="comment" rows="4" required
+                                class="block w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:border-rose-500 focus:ring-rose-500 sm:text-sm transition-all resize-none placeholder:text-slate-400"
+                                placeholder="โปรดระบุเหตุผล..."></textarea>
                         </div>
                     </div>
 
-                    <div
-                        class="bg-slate-50 px-12 py-12 md:px-16 md:py-16 flex flex-col sm:flex-row-reverse gap-8 border-t border-slate-100">
+                    <div class="bg-slate-50 px-8 py-6 flex flex-col sm:flex-row-reverse gap-4 border-t border-slate-100 rounded-b-3xl">
                         <button type="submit"
-                            class="flex-1 inline-flex justify-center items-center px-12 py-8 bg-rose-500 text-white font-black uppercase tracking-[0.3em] text-sm rounded-full shadow-[0_25px_50px_-15px_rgba(244,63,94,0.4)] hover:bg-rose-600 transition-all hover:-translate-y-2 group/btn">
-                            <i data-lucide="x-circle"
-                                class="w-7 h-7 mr-4 group-hover/btn:scale-125 transition-transform"></i>
-                            Confirm Reject
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/30">
+                            <i data-lucide="x-circle" class="w-5 h-5 mr-2"></i>
+                            ยืนยันปฏิเสธ
                         </button>
                         <button type="button" @click="openReject = false"
-                            class="flex-1 inline-flex justify-center items-center px-12 py-8 bg-white border-2 border-slate-200 text-slate-400 font-black uppercase tracking-[0.3em] text-sm rounded-full hover:bg-slate-100 hover:text-slate-600 transition-all shadow-sm">
-                            Go Back
+                            class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors">
+                            ยกเลิก
                         </button>
                     </div>
                 </form>

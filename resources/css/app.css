@@ -1,16 +1,116 @@
-/* Custom Font - Sarabun */
-@import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+    html {
+        font-size: 16px;
+        color: #1F2937;
+    }
+
     body {
         font-family: 'Sarabun', sans-serif;
+        font-weight: 400;
+        line-height: 1.6;
+        @apply text-gray-800 antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'IBM Plex Sans Thai', sans-serif;
+        line-height: 1.35;
+        @apply tracking-tight;
+    }
+
+    h1 {
+        font-size: 32px;
+        font-weight: 600;
+    }
+
+    h2 {
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    h3 {
+        font-size: 20px;
+        font-weight: 500;
+    }
+
+    h4 {
+        font-size: 18px;
+        font-weight: 500;
+    }
+
+    /* Table Styles */
+    table {
+        font-family: 'Sarabun', sans-serif;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+        @apply w-full text-left border-collapse;
+    }
+
+    th {
+        font-weight: 500;
+        @apply text-gray-900;
+    }
+
+    td {
+        font-weight: 400;
+        @apply text-gray-700;
     }
 }
 
+@layer components {
+    .text-secondary {
+        font-size: 15px;
+        font-weight: 400;
+        @apply text-gray-600;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 500;
+        @apply block text-gray-700 mb-1;
+    }
+
+    .helper-text {
+        font-size: 13px;
+        font-weight: 400;
+        @apply text-gray-500 mt-1;
+    }
+
+    .kpi-number {
+        font-family: 'IBM Plex Sans Thai', sans-serif;
+        font-weight: 600;
+        font-size: 32px;
+        line-height: 1.2;
+        @apply text-gray-900;
+    }
+
+    @screen md {
+        .kpi-number {
+            font-size: 36px;
+        }
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+    h4 { font-size: 16px; }
+    
+    body { font-size: 14px; }
+    
+    .kpi-number {
+        font-size: 28px;
+    }
+    
+    table {
+        font-size: 14px;
+    }
+}
 
 [x-cloak] {
     display: none !important;

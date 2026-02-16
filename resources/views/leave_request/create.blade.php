@@ -6,7 +6,7 @@
             .premium-bg {
                 min-height: 100vh;
                 background: radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.03) 0%, transparent 40%),
-                            radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 40%);
+                    radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 40%);
             }
 
             .glass-panel {
@@ -42,8 +42,15 @@
             }
 
             @keyframes slide-up {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
             .animate-slide-up {
@@ -116,7 +123,9 @@
                 <div class="lg:col-span-8 space-y-10">
 
                     <!-- STEP 1: Type Selection -->
-                    <section class="glass-panel rounded-[3.5rem] p-8 md:p-12 shadow-2xl shadow-indigo-500/5 border-indigo-50/50" x-show="currentStep >= 1" x-transition>
+                    <section
+                        class="glass-panel rounded-[3.5rem] p-8 md:p-12 shadow-2xl shadow-indigo-500/5 border-indigo-50/50"
+                        x-show="currentStep >= 1" x-transition>
                         <div class="flex items-center gap-6 mb-12">
                             <div
                                 class="w-16 h-16 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center shadow-xl rotate-3 flex-shrink-0">
@@ -138,10 +147,12 @@
                                         class="h-full p-8 rounded-[2.5rem] border-2 border-slate-50 bg-white/40 backdrop-blur-md text-center transition-all duration-300 peer-checked:type-card-active hover:border-indigo-100 hover:bg-white/80">
                                         <div
                                             class="w-20 h-20 mx-auto rounded-[2rem] flex items-center justify-center text-4xl mb-6 shadow-inner transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6
-                                                                                                                    {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
+                                                                                                                        {{ $type->slug == 'vacation' ? 'bg-blue-50 text-blue-500' : ($type->slug == 'sick' ? 'bg-rose-50 text-rose-500' : ($type->slug == 'temporary' ? 'bg-purple-50 text-purple-500' : 'bg-amber-50 text-amber-500')) }}">
                                             @if($type->slug == 'vacation') <i data-lucide="palmtree" class="w-10 h-10"></i>
-                                            @elseif($type->slug == 'sick') <i data-lucide="thermometer" class="w-10 h-10"></i>
-                                            @elseif($type->slug == 'temporary') <i data-lucide="clock" class="w-10 h-10"></i>
+                                            @elseif($type->slug == 'sick') <i data-lucide="thermometer"
+                                                class="w-10 h-10"></i>
+                                            @elseif($type->slug == 'temporary') <i data-lucide="clock"
+                                                class="w-10 h-10"></i>
                                             @else <i data-lucide="briefcase" class="w-10 h-10"></i>
                                             @endif
                                         </div>
@@ -164,7 +175,8 @@
                         x-transition:enter-start="opacity-0 translate-y-10">
 
                         <!-- Address for Sick Leave -->
-                        <section x-show="isSick" class="glass-panel rounded-[3.5rem] p-8 md:p-12 mb-10 shadow-xl border-rose-50/50">
+                        <section x-show="isSick"
+                            class="glass-panel rounded-[3.5rem] p-8 md:p-12 mb-10 shadow-xl border-rose-50/50">
                             <div class="flex items-center gap-6 mb-12">
                                 <div
                                     class="w-16 h-16 rounded-[2rem] bg-rose-500 text-white flex items-center justify-center shadow-xl -rotate-3 flex-shrink-0">
@@ -195,14 +207,16 @@
                                 </div>
                                 <div class="space-y-3">
                                     <label
-                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">ตำบล / แขวง</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">ตำบล
+                                        / แขวง</label>
                                     <input type="text" name="addr_tambon"
                                         class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
                                         placeholder="ระบุตำบล...">
                                 </div>
                                 <div class="space-y-3">
                                     <label
-                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">อำเภอ / เขต</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">อำเภอ
+                                        / เขต</label>
                                     <input type="text" name="addr_amphoe"
                                         class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
                                         placeholder="ระบุอำเภอ...">
@@ -218,7 +232,8 @@
                         </section>
 
                         <!-- Address for Personal Leave -->
-                        <section x-show="isPersonal" class="glass-panel rounded-[3.5rem] p-8 md:p-12 mb-10 shadow-xl border-amber-50/50">
+                        <section x-show="isPersonal"
+                            class="glass-panel rounded-[3.5rem] p-8 md:p-12 mb-10 shadow-xl border-amber-50/50">
                             <div class="flex items-center gap-6 mb-12">
                                 <div
                                     class="w-16 h-16 rounded-[2rem] bg-amber-500 text-white flex items-center justify-center shadow-xl rotate-2 flex-shrink-0">
@@ -235,7 +250,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div class="space-y-3">
                                     <label
-                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">สถานที่ / บ้านเลขที่</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">สถานที่
+                                        / บ้านเลขที่</label>
                                     <input type="text" name="personal_location"
                                         class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 transition-all text-lg"
                                         placeholder="เช่น บ้านพักต่างจังหวัด...">
@@ -304,14 +320,16 @@
                                 </div>
 
                                 <!-- Period Selection for Temporary -->
-                                <div x-show="isTemporary" class="flex-1 w-full flex bg-slate-50 p-2 rounded-[2.5rem] border border-slate-100">
+                                <div x-show="isTemporary"
+                                    class="flex-1 w-full flex bg-slate-50 p-2 rounded-[2.5rem] border border-slate-100">
                                     <label class="flex-1 cursor-pointer">
                                         <input type="radio" name="temporary_leave_period" value="morning"
                                             class="sr-only peer" x-model="temporaryPeriod">
                                         <div
                                             class="py-4 text-center rounded-[2rem] font-black text-base peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-xl transition-all duration-300 text-slate-400">
                                             ช่วงเช้า
-                                            <span class="block text-[10px] mt-1 opacity-70 font-bold">(ก่อน 07:30 น.)</span>
+                                            <span class="block text-[10px] mt-1 opacity-70 font-bold">(ก่อน 07:30
+                                                น.)</span>
                                         </div>
                                     </label>
                                     <label class="flex-1 cursor-pointer">
@@ -320,7 +338,8 @@
                                         <div
                                             class="py-4 text-center rounded-[2rem] font-black text-base peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-xl transition-all duration-300 text-slate-400">
                                             ช่วงบ่าย
-                                            <span class="block text-[10px] mt-1 opacity-70 font-bold">(ก่อน 11:00 น.)</span>
+                                            <span class="block text-[10px] mt-1 opacity-70 font-bold">(ก่อน 11:00
+                                                น.)</span>
                                         </div>
                                     </label>
                                 </div>
@@ -354,7 +373,8 @@
 
                                 <div class="relative group">
                                     <label
-                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">เอกสารประกอบ (ถ้ามี)</label>
+                                        class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1">เอกสารประกอบ
+                                        (ถ้ามี)</label>
                                     <div class="file-drop relative rounded-[3rem] border-2 border-dashed border-slate-200 p-12 text-center hover:border-indigo-500 hover:bg-indigo-50/30 transition-all cursor-pointer group/upload"
                                         @dragover.prevent="$el.classList.add('bg-indigo-50', 'border-indigo-500')"
                                         @dragleave.prevent="$el.classList.remove('bg-indigo-50', 'border-indigo-500')"
@@ -368,14 +388,16 @@
                                                 <i data-lucide="upload-cloud" class="w-12 h-12"></i>
                                             </div>
                                             <div x-show="!fileName">
-                                                <p class="text-2xl font-black text-slate-900">ลากไฟล์มาวาง หรือ คลิกเพื่ออัปโหลด</p>
+                                                <p class="text-2xl font-black text-slate-900">ลากไฟล์มาวาง หรือ
+                                                    คลิกเพื่ออัปโหลด</p>
                                                 <p
                                                     class="text-xs font-black text-slate-400 mt-3 uppercase tracking-[0.2em]">
                                                     PDF, JPG, PNG (ไม่เกิน 5MB)</p>
                                             </div>
                                             <div x-show="fileName" x-cloak
                                                 class="flex items-center gap-4 bg-white px-8 py-4 rounded-[2rem] shadow-2xl border border-indigo-100 scale-105">
-                                                <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+                                                <div
+                                                    class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
                                                     <i data-lucide="file-check" class="w-6 h-6"></i>
                                                 </div>
                                                 <span class="text-lg font-black text-slate-800 truncate max-w-[250px]"
@@ -409,54 +431,74 @@
 
                 <!-- Right Sidebar: Premium Summary Ticket -->
                 <div class="lg:col-span-4 lg:sticky lg:top-24">
-                    <div class="glass-panel rounded-[3.5rem] p-8 pb-12 relative overflow-hidden ticket-gradient shadow-2xl border-slate-800">
+                    <div
+                        class="glass-panel rounded-[3.5rem] p-8 pb-12 relative overflow-hidden ticket-gradient shadow-2xl border-slate-800">
                         <!-- Background Pattern -->
-                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]"></div>
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                        <div
+                            class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]">
+                        </div>
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-16 -mt-16">
+                        </div>
 
                         <div class="relative z-10 space-y-10">
                             <div class="flex items-center justify-between">
                                 <h4 class="text-2xl font-black text-white tracking-tight uppercase">สรุปรายการลา</h4>
-                                <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-indigo-400 border border-white/10">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-indigo-400 border border-white/10">
                                     <i data-lucide="award" class="w-8 h-8"></i>
                                 </div>
                             </div>
 
                             <!-- Digital Ticket Look -->
-                            <div class="bg-white rounded-[3rem] p-8 shadow-2xl space-y-8 relative group overflow-hidden">
-                                <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div
+                                class="bg-white rounded-[3rem] p-8 shadow-2xl space-y-8 relative group overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
 
                                 <div class="space-y-8 relative z-10">
                                     <div class="flex items-center gap-5 border-b border-slate-50 pb-6">
-                                        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black">
+                                        <div
+                                            class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black">
                                             <i data-lucide="tag" class="w-7 h-7"></i>
                                         </div>
                                         <div>
-                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ประเภทการลา</p>
-                                            <p class="text-lg font-black text-slate-900 leading-none mt-1.5" x-text="getLeaveTypeName() || 'รอเลือกประเภท...'"></p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                                ประเภทการลา</p>
+                                            <p class="text-lg font-black text-slate-900 leading-none mt-1.5"
+                                                x-text="getLeaveTypeName() || 'รอเลือกประเภท...'"></p>
                                         </div>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-8">
                                         <div>
-                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">วันเริ่มต้น</p>
-                                            <p class="text-lg font-black text-slate-800 mt-2" x-text="formatDate(startDate) || '-'"></p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                                วันเริ่มต้น</p>
+                                            <p class="text-lg font-black text-slate-800 mt-2"
+                                                x-text="formatDate(startDate) || '-'"></p>
                                         </div>
                                         <div>
-                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">วันสิ้นสุด</p>
-                                            <p class="text-lg font-black text-slate-800 mt-2" x-text="formatDate(endDate) || '-'"></p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                                วันสิ้นสุด</p>
+                                            <p class="text-lg font-black text-slate-800 mt-2"
+                                                x-text="formatDate(endDate) || '-'"></p>
                                         </div>
                                     </div>
 
-                                    <div class="pt-8 border-t border-dashed border-slate-200 flex items-center justify-between">
+                                    <div
+                                        class="pt-8 border-t border-dashed border-slate-200 flex items-center justify-between">
                                         <div class="flex flex-col">
-                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ยอดรวมการลาครั้งนี้</span>
+                                            <span
+                                                class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ยอดรวมการลาครั้งนี้</span>
                                             <div class="flex items-baseline gap-1 mt-2">
-                                                <span class="text-5xl font-black text-indigo-600" x-text="duration > 0 ? duration : 0"></span>
+                                                <span class="text-5xl font-black text-indigo-600"
+                                                    x-text="duration > 0 ? duration : 0"></span>
                                                 <span class="text-xl font-black text-slate-400">วัน</span>
                                             </div>
                                         </div>
-                                        <div class="w-16 h-16 rounded-full border-4 border-indigo-50 border-t-indigo-500 animate-spin" x-show="duration > 0 && !isTemporary"></div>
+                                        <div class="w-16 h-16 rounded-full border-4 border-indigo-50 border-t-indigo-500 animate-spin"
+                                            x-show="duration > 0 && !isTemporary"></div>
                                     </div>
                                 </div>
                             </div>
@@ -464,13 +506,15 @@
                             <!-- Real-time Validation Message -->
                             <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
                                 <div class="flex items-start gap-5">
-                                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center flex-shrink-0">
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center flex-shrink-0">
                                         <i data-lucide="alert-circle" class="w-6 h-6"></i>
                                     </div>
                                     <div class="space-y-2">
                                         <p class="text-lg font-black text-white">ข้อควรทราบ</p>
                                         <p class="text-[13px] font-medium text-slate-400 leading-relaxed">
-                                            กรุณาตรวจสอบสิทธิ์วันลาคงเหลือของท่านให้ถูกต้องก่อนกดยันยัน เพื่อความรวดเร็วในการอนุมัติ
+                                            กรุณาตรวจสอบสิทธิ์วันลาคงเหลือของท่านให้ถูกต้องก่อนกดยันยัน
+                                            เพื่อความรวดเร็วในการอนุมัติ
                                         </p>
                                     </div>
                                 </div>
@@ -583,10 +627,38 @@
                         });
                     },
 
-                    handleFileChange(e) { this.fileName = e.target.files[0]?.name || ''; },
+                    handleFileChange(e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'ขนาดไฟล์เกินกำหนด',
+                                    text: 'กรุณาอัปโหลดไฟล์ที่มีขนาดไม่เกิน 5MB',
+                                    confirmButtonText: 'ตกลง',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                                this.clearFile();
+                                return;
+                            }
+                            this.fileName = file.name;
+                        } else {
+                            this.fileName = '';
+                        }
+                    },
                     handleFileDrop(e) {
                         const file = e.dataTransfer.files[0];
                         if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'ขนาดไฟล์เกินกำหนด',
+                                    text: 'กรุณาอัปโหลดไฟล์ที่มีขนาดไม่เกิน 5MB',
+                                    confirmButtonText: 'ตกลง',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                                return;
+                            }
                             this.fileName = file.name;
                             document.getElementById('fileInput').files = e.dataTransfer.files;
                         }

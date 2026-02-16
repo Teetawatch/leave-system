@@ -14,6 +14,7 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Sarabun', ...defaultTheme.fontFamily.sans],
+                heading: ['"IBM Plex Sans Thai"', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 // Brand Colors
