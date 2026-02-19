@@ -988,6 +988,65 @@
                 @endif
         });
     </script>
+    <!-- Missing Avatar Prompt Modal -->
+    @if(!Auth::user()->avatar && !request()->routeIs('profile.edit'))
+        <div x-data="{ show: true }" 
+             x-show="show" 
+             style="display: none;"
+             class="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6">
+            
+            <!-- Backdrop -->
+            <div x-show="show" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+
+            <!-- Modal Card -->
+            <div x-show="show" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="relative bg-white rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 p-8 text-center">
+                
+                <!-- Decoration -->
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-500 to-indigo-600"></div>
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+                
+                <!-- Icon -->
+                <div class="relative w-24 h-24 mx-auto mb-6">
+                    <div class="absolute inset-0 bg-brand-100 rounded-full animate-ping opacity-20"></div>
+                    <div class="relative w-full h-full bg-gradient-to-br from-brand-50 to-indigo-50 rounded-full flex items-center justify-center border border-brand-100 shadow-inner">
+                        <i data-lucide="camera" class="w-10 h-10 text-brand-600"></i>
+                    </div>
+                    <div class="absolute bottom-1 right-1 w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-white"></i>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <h3 class="text-2xl font-black text-slate-800 mb-2 tracking-tight">ยังไม่มีรูปโปรไฟล์</h3>
+                <p class="text-slate-500 mb-8 leading-relaxed">
+                    เพื่อให้ระบบมีความสมบูรณ์และสวยงาม<br>
+                    กรุณาอัปโหลดรูปถ่ายประจำตัวของคุณ
+                </p>
+
+                <!-- Actions -->
+                <div class="space-y-3">
+                    <a href="{{ route('profile.edit') }}" 
+                       class="flex items-center justify-center w-full px-6 py-3.5 text-base font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 rounded-xl hover:from-brand-700 hover:to-indigo-700 shadow-lg shadow-brand-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                        <i data-lucide="upload-cloud" class="w-5 h-5 mr-2"></i>
+                        อัปโหลดรูปภาพตอนนี้
+                    </a>
+                    
+                    <button @click="show = false" 
+                            class="w-full px-6 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
+                        ไว้ทีหลัง
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </body>
 
 </html>

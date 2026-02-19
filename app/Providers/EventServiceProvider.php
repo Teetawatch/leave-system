@@ -18,6 +18,12 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        \App\Events\LeaveRequestSubmitted::class => [
+            \App\Listeners\SendLineLeaveNotification::class,
+        ],
+        \App\Events\LeaveRequestStatusChanged::class => [
+            \App\Listeners\SendLineStatusNotification::class,
+        ],
     ];
 
     /**
@@ -27,6 +33,15 @@ class EventServiceProvider extends ServiceProvider
     {
         //
     }
+
+    /**
+     * The subscriber classes to register.
+     *
+     * @var array
+     */
+    protected $subscribe = [
+        \App\Listeners\SendLegacyLeaveNotifications::class,
+    ];
 
     /**
      * Determine if events and listeners should be automatically discovered.

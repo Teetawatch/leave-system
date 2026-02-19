@@ -59,7 +59,19 @@ class LeaveRequestController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string|max:500',
-            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'leave_type_id.required' => 'กรุณาเลือกประเภทการลา',
+            'leave_type_id.exists' => 'ประเภทการลาไม่ถูกต้อง',
+            'start_date.required' => 'กรุณาระบุวันเริ่มต้น',
+            'start_date.date' => 'รูปแบบวันที่ไม่ถูกต้อง',
+            'end_date.required' => 'กรุณาระบุวันสิ้นสุด',
+            'end_date.date' => 'รูปแบบวันที่ไม่ถูกต้อง',
+            'end_date.after_or_equal' => 'วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น',
+            'reason.required' => 'กรุณาระบุเหตุผลการลา',
+            'reason.max' => 'เหตุผลต้องไม่เกิน 500 ตัวอักษร',
+            'attachment.mimes' => 'รองรับเฉพาะไฟล์ jpg, jpeg, png, และ pdf เท่านั้น',
+            'attachment.max' => 'ขนาดไฟล์แนบต้องไม่เกิน 5MB',
         ]);
 
         $user = Auth::user();
@@ -185,11 +197,20 @@ class LeaveRequestController extends Controller
                     'addr_tambon' => 'required|string',
                     'addr_amphoe' => 'required|string',
                     'addr_province' => 'required|string',
+                ], [
+                    'addr_house.required' => 'กรุณาระบุบ้านเลขที่',
+                    'addr_road.required' => 'กรุณาระบุถนน',
+                    'addr_tambon.required' => 'กรุณาระบุตำบล/แขวง',
+                    'addr_amphoe.required' => 'กรุณาระบุอำเภอ/เขต',
+                    'addr_province.required' => 'กรุณาระบุจังหวัด',
                 ]);
             } elseif ($type && $type->slug == 'personal') {
                 $request->validate([
                     'personal_location' => 'required|string',
                     'personal_province' => 'required|string',
+                ], [
+                    'personal_location.required' => 'กรุณาระบุสถานที่ติดต่อ',
+                    'personal_province.required' => 'กรุณาระบุจังหวัด',
                 ]);
             }
         }
@@ -231,28 +252,8 @@ class LeaveRequestController extends Controller
         // Load the leaveType relation for notification
         $leaveRequest->load('leaveType');
 
-        // Notify the supervisor about the new leave request
-        if ($user->supervisor_id) {
-            $supervisor = User::find($user->supervisor_id);
-            if ($supervisor) {
-                // Send Database Notification
-                $supervisor->notify(new NewLeaveRequestNotification($leaveRequest, $user));
-
-                // Send Push Notification via FCM
-                if ($supervisor->fcm_token) {
-                    $fcmService = new \App\Services\FCMService();
-                    $fcmService->sendNotification(
-                        $supervisor->fcm_token,
-                        'มีใบลาเข้ามาใหม่ 🔔',
-                        "{$user->rank} {$user->name} ขอ{$leaveType->name} จำนวน {$diffDays} วัน รอการอนุมัติจากคุณ",
-                        [
-                            'type' => 'new_leave_request',
-                            'request_id' => $leaveRequest->id,
-                        ]
-                    );
-                }
-            }
-        }
+        // Dispatch Event for Notifications (LINE, etc.)
+        event(new \App\Events\LeaveRequestSubmitted($leaveRequest));
 
         return redirect()->route('leave-request.index')->with('status', 'ส่งคำขอเรียบร้อยแล้ว รอการอนุมัติ');
     }

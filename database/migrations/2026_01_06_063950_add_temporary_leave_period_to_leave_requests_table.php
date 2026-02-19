@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('leave_requests', function (Blueprint $table) {
-            $table->enum('temporary_leave_period', ['morning', 'afternoon'])->nullable()->after('contact_address');
+            if (!Schema::hasColumn('leave_requests', 'temporary_leave_period')) {
+                $table->enum('temporary_leave_period', ['morning', 'afternoon'])->nullable()->after('contact_address');
+            }
         });
     }
 

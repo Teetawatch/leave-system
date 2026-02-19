@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\GuardChangeRequestController;
 // =============================================================================
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/line/webhook', [\App\Http\Controllers\Api\LineController::class, 'webhook']);
 
 // =============================================================================
 // PROTECTED ROUTES (Require Sanctum Token)
