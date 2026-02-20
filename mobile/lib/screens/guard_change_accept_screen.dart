@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import '../models/guard_change_model.dart';
-import '../providers/guard_change_provider.dart'; // Assuming this exists
-import '../config/app_theme.dart';
-import 'dart:ui';
+// Assuming this exists
 
 class GuardChangeAcceptScreen extends StatefulWidget {
   final GuardChangeRequest request;

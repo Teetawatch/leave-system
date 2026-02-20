@@ -201,7 +201,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                               ),
                               indicatorSize: TabBarIndicatorSize.tab,
                               dividerColor: Colors.transparent,
-                              overlayColor: MaterialStateProperty.all(
+                              overlayColor: WidgetStateProperty.all(
                                 Colors.transparent,
                               ),
                               tabs: const [

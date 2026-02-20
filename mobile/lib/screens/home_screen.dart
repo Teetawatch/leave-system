@@ -128,9 +128,10 @@ class _HomeScreenState extends State<HomeScreen>
 
   Color _getPm25Color(double value) {
     if (value <= 25) return Colors.green; // Good
-    if (value <= 37)
+    if (value <= 37) {
       return Colors
           .yellow[700]!; // Moderate (Thai standard is stricter, adjusted slightly)
+    }
     if (value <= 50) return Colors.orange; // Unhealthy for sensitive groups
     if (value <= 90) return Colors.red; // Unhealthy
     return Colors.purple; // Very Unhealthy / Hazardous

@@ -87,14 +87,16 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
           if (dept.contains('ศึกษา') ||
               dept.contains('edu') ||
               dept.contains('study') ||
-              dept.contains('train'))
+              dept.contains('train')) {
             return true;
+          }
 
           // Support
           if (dept.contains('สนับสนุน') ||
               dept.contains('support') ||
-              dept.contains('supply'))
+              dept.contains('supply')) {
             return true;
+          }
 
           // Admin (Clerk/Office)
           if (dept.contains('ธุรการ') || dept.contains('admin')) return true;
@@ -102,8 +104,9 @@ class _GuardChangeRequestScreenState extends State<GuardChangeRequestScreen>
           // Finance
           if (dept.contains('การเงิน') ||
               dept.contains('fin') ||
-              dept.contains('account'))
+              dept.contains('account')) {
             return true;
+          }
 
           return false;
         }).toList();

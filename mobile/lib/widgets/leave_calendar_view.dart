@@ -244,8 +244,9 @@ class _LeaveCalendarViewState extends State<LeaveCalendarView> {
         'waiting_head',
         'waiting_hr',
         'waiting_director',
-      ].contains(event.status))
+      ].contains(event.status)) {
         return const Color(0xFFF59E0B);
+      }
       return Colors.grey;
     } else if (event is GuardChangeRequest) {
       return const Color(0xFF3B82F6);

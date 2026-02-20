@@ -117,7 +117,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: Colors.transparent,
-                  overlayColor: MaterialStateProperty.all(Colors.transparent),
+                  overlayColor: WidgetStateProperty.all(Colors.transparent),
                   tabs: [
                     Tab(
                       text: 'การลา (${leaveProvider.pendingApprovals.length})',

@@ -174,40 +174,31 @@
 
                                         {{-- Approval Chain Track --}}
                                         @php
-                                            $stepMap = [
-                                                'supervisor' => 'pending_supervisor',
-                                                'manager' => 'pending_manager',
-                                                'deputy_director' => 'pending_deputy_director',
-                                                'director' => 'pending_director',
-                                            ];
                                             $steps = [
-                                                'pending_supervisor' => ['label' => 'ผู้บังคับบัญชา', 'icon' => 'user-check', 'color' => 'emerald', 'step_key' => 'supervisor'],
-                                                'pending_manager' => ['label' => 'ผู้บังคับบัญชา', 'icon' => 'users', 'color' => 'blue', 'step_key' => 'manager'],
-                                                'pending_deputy_director' => ['label' => 'รอง ผอ.', 'icon' => 'signature', 'color' => 'purple', 'step_key' => 'deputy_director'],
-                                                'pending_director' => ['label' => 'ผอ.', 'icon' => 'crown', 'color' => 'rose', 'step_key' => 'director'],
+                                                'pending_supervisor'     => ['label' => 'หัวหน้างาน',  'sublabel' => 'Supervisor',      'icon' => 'user-check', 'color' => 'emerald', 'step_key' => 'supervisor'],
+                                                'pending_manager'        => ['label' => 'ผู้จัดการ',    'sublabel' => 'Manager',          'icon' => 'users',      'color' => 'blue',    'step_key' => 'manager'],
+                                                'pending_deputy_director'=> ['label' => 'รอง ผอ.',      'sublabel' => 'Deputy Director',  'icon' => 'shield',     'color' => 'violet',  'step_key' => 'deputy_director'],
+                                                'pending_director'       => ['label' => 'ผอ.',          'sublabel' => 'Director',         'icon' => 'crown',      'color' => 'rose',    'step_key' => 'director'],
                                             ];
-                                            $statusOrder = array_keys($steps);
+                                            $statusOrder  = array_keys($steps);
                                             $currentIndex = array_search($req->status, $statusOrder);
                                             if ($currentIndex === false) $currentIndex = -1;
 
-                                            // หาชื่อผู้รับผิดชอบแต่ละขั้นตอน
+                                            $isFullyApproved = $req->status === 'approved';
+                                            $isRejected      = $req->status === 'rejected';
+
                                             $getApproverName = function($stepKey) use ($req) {
-                                                // 1. ถ้าเป็นขั้นตอนที่อนุมัติแล้ว ดึงจาก approvals
                                                 $approval = $req->approvals->where('step', $stepKey)->first();
                                                 if ($approval && $approval->approver) {
                                                     return $approval->approver->rank . $approval->approver->name;
                                                 }
-
-                                                // 2. ดึงจาก relation ของ user (ผู้ขอลา)
                                                 switch ($stepKey) {
                                                     case 'supervisor':
                                                         return $req->user->supervisor
-                                                            ? $req->user->supervisor->rank . $req->user->supervisor->name
-                                                            : null;
+                                                            ? $req->user->supervisor->rank . $req->user->supervisor->name : null;
                                                     case 'manager':
                                                         return $req->user->manager
-                                                            ? $req->user->manager->rank . $req->user->manager->name
-                                                            : null;
+                                                            ? $req->user->manager->rank . $req->user->manager->name : null;
                                                     case 'deputy_director':
                                                         $deputy = \App\Models\User::where('role', 'deputy_director')->first();
                                                         return $deputy ? $deputy->rank . $deputy->name : null;
@@ -217,75 +208,103 @@
                                                 }
                                                 return null;
                                             };
+
+                                            $getApprovedAt = function($stepKey) use ($req) {
+                                                $approval = $req->approvals->where('step', $stepKey)->first();
+                                                return ($approval && $approval->approved_at)
+                                                    ? \Carbon\Carbon::parse($approval->approved_at)->locale('th')->isoFormat('D MMM YY')
+                                                    : null;
+                                            };
                                         @endphp
-                                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                                            @foreach($steps as $key => $step)
-                                                @php
-                                                    $stepIdx = array_search($key, $statusOrder);
-                                                    $personName = $getApproverName($step['step_key']);
-                                                @endphp
-                                                <div class="{{ $stepIdx < $currentIndex 
-                                                    ? 'bg-emerald-50/50 border-2 border-emerald-100' 
-                                                    : ($stepIdx == $currentIndex 
-                                                        ? 'bg-' . $step['color'] . '-50/50 border-2 border-' . $step['color'] . '-200 ring-4 ring-' . $step['color'] . '-50' 
-                                                        : 'bg-slate-50/50 border-2 border-slate-100') 
-                                                }} rounded-[2.5rem] p-6 flex items-center gap-5 transition-all duration-300">
-                                                    <div class="h-14 w-14 rounded-2xl bg-white shadow-md flex items-center justify-center {{ $stepIdx < $currentIndex 
-                                                        ? 'text-emerald-500' 
-                                                        : ($stepIdx == $currentIndex 
-                                                            ? 'text-' . $step['color'] . '-500' 
-                                                            : 'text-slate-300') }}">
-                                                        @if($stepIdx < $currentIndex)
-                                                            <i data-lucide="check-circle-2" class="w-7 h-7"></i>
-                                                        @elseif($stepIdx == $currentIndex)
-                                                            <i data-lucide="{{ $step['icon'] }}" class="w-7 h-7"></i>
-                                                        @else
-                                                            <i data-lucide="circle-dashed" class="w-7 h-7"></i>
-                                                        @endif
-                                                    </div>
-                                                    <div class="flex-1 min-w-0">
-                                                        <p class="text-[10px] font-black uppercase tracking-widest mb-1 {{ $stepIdx < $currentIndex 
-                                                            ? 'text-emerald-600/60' 
-                                                            : ($stepIdx == $currentIndex 
-                                                                ? 'text-' . $step['color'] . '-600/60' 
-                                                                : 'text-slate-400/60') }}">
-                                                            @if($stepIdx < $currentIndex)
-                                                                อนุมัติแล้ว
-                                                            @elseif($stepIdx == $currentIndex)
-                                                                ขั้นตอนปัจจุบัน
+
+                                        {{-- Section Header --}}
+                                        <div class="flex items-center gap-3 mb-5">
+                                            <div class="h-px flex-1 bg-gradient-to-r from-slate-100 to-transparent"></div>
+                                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                                <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+                                                สายการอนุมัติ
+                                            </span>
+                                            <div class="h-px flex-1 bg-gradient-to-l from-slate-100 to-transparent"></div>
+                                        </div>
+
+                                        {{-- Stepper --}}
+                                        <div class="relative mb-8">
+                                            {{-- Connector line background --}}
+                                            <div class="hidden sm:block absolute top-7 left-[calc(12.5%+1.75rem)] right-[calc(12.5%+1.75rem)] h-0.5 bg-slate-100 z-0"></div>
+
+                                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-2 relative z-10">
+                                                @foreach($steps as $key => $step)
+                                                    @php
+                                                        $stepIdx    = array_search($key, $statusOrder);
+                                                        $isDone     = $isFullyApproved || $stepIdx < $currentIndex;
+                                                        $isActive   = !$isFullyApproved && $stepIdx == $currentIndex;
+                                                        $isPending  = !$isDone && !$isActive;
+                                                        $personName = $getApproverName($step['step_key']);
+                                                        $approvedAt = $getApprovedAt($step['step_key']);
+                                                        $isLast     = $stepIdx === count($steps) - 1;
+                                                    @endphp
+                                                    <div class="flex flex-col items-center text-center gap-2 px-1">
+                                                        {{-- Step bubble --}}
+                                                        <div class="relative">
+                                                            @if($isDone)
+                                                                <div class="w-14 h-14 rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-200 flex items-center justify-center ring-4 ring-emerald-50">
+                                                                    <i data-lucide="check" class="w-6 h-6 text-white"></i>
+                                                                </div>
+                                                            @elseif($isActive)
+                                                                <div class="w-14 h-14 rounded-2xl bg-white border-2 border-{{ $step['color'] }}-400 shadow-lg shadow-{{ $step['color'] }}-100 flex items-center justify-center ring-4 ring-{{ $step['color'] }}-50">
+                                                                    <i data-lucide="{{ $step['icon'] }}" class="w-6 h-6 text-{{ $step['color'] }}-500"></i>
+                                                                </div>
+                                                                {{-- Pulse dot --}}
+                                                                <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                                    <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-400 border-2 border-white"></span>
+                                                                </span>
                                                             @else
-                                                                รอดำเนินการ
+                                                                <div class="w-14 h-14 rounded-2xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center">
+                                                                    <i data-lucide="{{ $step['icon'] }}" class="w-6 h-6 text-slate-300"></i>
+                                                                </div>
                                                             @endif
-                                                        </p>
-                                                        <p class="text-base font-black {{ $stepIdx <= $currentIndex ? 'text-slate-800' : 'text-slate-400' }}">
-                                                            {{ $step['label'] }}
-                                                        </p>
-                                                        @if($personName)
-                                                            <p class="text-sm mt-1 truncate {{ $stepIdx < $currentIndex 
-                                                                ? 'text-emerald-600 font-bold' 
-                                                                : ($stepIdx == $currentIndex 
-                                                                    ? 'text-' . $step['color'] . '-600 font-bold' 
-                                                                    : 'text-slate-400 font-medium') }}">
-                                                                @if($stepIdx < $currentIndex)
-                                                                    <i data-lucide="check" class="w-3.5 h-3.5 inline -mt-0.5 mr-1"></i>
-                                                                @elseif($stepIdx == $currentIndex)
-                                                                    <i data-lucide="loader-2" class="w-3.5 h-3.5 inline -mt-0.5 mr-1 animate-spin"></i>รอ
-                                                                @else
-                                                                    <i data-lucide="user" class="w-3.5 h-3.5 inline -mt-0.5 mr-1"></i>
-                                                                @endif
-                                                                {{ $personName }}
+                                                        </div>
+
+                                                        {{-- Step number badge --}}
+                                                        <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full
+                                                            {{ $isDone   ? 'bg-emerald-100 text-emerald-600'
+                                                            : ($isActive ? 'bg-' . $step['color'] . '-100 text-' . $step['color'] . '-600'
+                                                            : 'bg-slate-100 text-slate-400') }}">
+                                                            @if($isDone) อนุมัติแล้ว
+                                                            @elseif($isActive) กำลังรอ
+                                                            @else รอดำเนินการ
+                                                            @endif
+                                                        </span>
+
+                                                        {{-- Label --}}
+                                                        <div>
+                                                            <p class="text-sm font-black leading-tight {{ $isPending ? 'text-slate-400' : 'text-slate-800' }}">
+                                                                {{ $step['label'] }}
                                                             </p>
+                                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5">{{ $step['sublabel'] }}</p>
+                                                        </div>
+
+                                                        {{-- Approver name --}}
+                                                        @if($personName)
+                                                            <div class="w-full max-w-[140px] rounded-xl px-2.5 py-1.5
+                                                                {{ $isDone   ? 'bg-emerald-50 border border-emerald-100'
+                                                                : ($isActive ? 'bg-' . $step['color'] . '-50 border border-' . $step['color'] . '-100'
+                                                                : 'bg-slate-50 border border-slate-100') }}">
+                                                                <p class="text-[10px] font-bold truncate leading-tight
+                                                                    {{ $isDone   ? 'text-emerald-700'
+                                                                    : ($isActive ? 'text-' . $step['color'] . '-700'
+                                                                    : 'text-slate-400') }}">
+                                                                    {{ $personName }}
+                                                                </p>
+                                                                @if($approvedAt && $isDone)
+                                                                    <p class="text-[9px] text-emerald-500 font-medium mt-0.5">{{ $approvedAt }}</p>
+                                                                @endif
+                                                            </div>
                                                         @endif
                                                     </div>
-                                                    @if($stepIdx < $currentIndex)
-                                                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                                            <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
-                                                        </div>
-                                                    @elseif($stepIdx == $currentIndex)
-                                                        <div class="w-3 h-3 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></div>
-                                                    @endif
-                                                </div>
-                                            @endforeach
+                                                @endforeach
+                                            </div>
                                         </div>
 
                                         {{-- Reason --}}

@@ -536,9 +536,9 @@ class _NotificationScreenState extends State<NotificationScreen>
 
     if (titleLower.contains('leave') ||
         titleLower.contains('ลา') ||
-        titleLower.contains('approved'))
+        titleLower.contains('approved')) {
       category = 'การลา';
-    else if (titleLower.contains('shift') ||
+    } else if (titleLower.contains('shift') ||
         titleLower.contains('กะ') ||
         titleLower.contains('เวร') ||
         titleLower.contains('swap') ||
@@ -590,10 +590,12 @@ class _NotificationScreenState extends State<NotificationScreen>
     }
 
     final groups = <_NotificationGroup>[];
-    if (todayList.isNotEmpty)
+    if (todayList.isNotEmpty) {
       groups.add(_NotificationGroup('วันนี้', todayList));
-    if (yesterdayList.isNotEmpty)
+    }
+    if (yesterdayList.isNotEmpty) {
       groups.add(_NotificationGroup('เมื่อวาน', yesterdayList));
+    }
     if (earlierList.isNotEmpty) {
       // Maybe we want to group by date here? Or just keep it simple.
       // The user request was about DATE FORMAT.
