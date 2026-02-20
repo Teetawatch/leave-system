@@ -175,8 +175,8 @@
                                         {{-- Approval Chain Track --}}
                                         @php
                                             $steps = [
-                                                'pending_supervisor'     => ['label' => 'หัวหน้างาน',  'sublabel' => 'Supervisor',      'icon' => 'user-check', 'color' => 'emerald', 'step_key' => 'supervisor'],
-                                                'pending_manager'        => ['label' => 'ผู้จัดการ',    'sublabel' => 'Manager',          'icon' => 'users',      'color' => 'blue',    'step_key' => 'manager'],
+                                                'pending_supervisor'     => ['label' => 'หัวหน้าแผนก',  'sublabel' => 'Supervisor',      'icon' => 'user-check', 'color' => 'emerald', 'step_key' => 'supervisor'],
+                                                'pending_manager'        => ['label' => 'ผู้บังคับบัญชา',    'sublabel' => 'Manager',          'icon' => 'users',      'color' => 'blue',    'step_key' => 'manager'],
                                                 'pending_deputy_director'=> ['label' => 'รอง ผอ.',      'sublabel' => 'Deputy Director',  'icon' => 'shield',     'color' => 'violet',  'step_key' => 'deputy_director'],
                                                 'pending_director'       => ['label' => 'ผอ.',          'sublabel' => 'Director',         'icon' => 'crown',      'color' => 'rose',    'step_key' => 'director'],
                                             ];
