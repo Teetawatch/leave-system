@@ -27,10 +27,10 @@ class SendLineLeaveNotification implements ShouldQueue
     {
         $leaveRequest = $event->leaveRequest;
         $user = $leaveRequest->user;
-        
+
         // Find the next person to notify based on status
         $recipientId = null;
-        
+
         if ($leaveRequest->status === 'pending_supervisor') {
             $recipientId = $user->supervisor_id;
         } elseif ($leaveRequest->status === 'pending_head') {
@@ -39,14 +39,100 @@ class SendLineLeaveNotification implements ShouldQueue
             $recipientId = $user->manager_id;
         }
 
-        if (!$recipientId) return;
+        if (!$recipientId)
+            return;
 
         $recipient = User::find($recipientId);
-        if (!$recipient || !$recipient->line_user_id) return;
+        if (!$recipient || !$recipient->line_user_id)
+            return;
+
+        $detailsContents = [
+            [
+                'type' => 'box',
+                'layout' => 'horizontal',
+                'contents' => [
+                    ['type' => 'text', 'text' => 'ประเภท:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
+                    ['type' => 'text', 'text' => $leaveRequest->leaveType->name, 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
+                ]
+            ]
+        ];
+
+        if ($leaveRequest->temporary_leave_period) {
+            $periodText = $leaveRequest->temporary_leave_period;
+            if ($periodText === 'morning')
+                $periodText = 'ช่วงเช้า';
+            elseif ($periodText === 'afternoon')
+                $periodText = 'ช่วงบ่าย';
+
+            $detailsContents[] = [
+                'type' => 'box',
+                'layout' => 'horizontal',
+                'contents' => [
+                    ['type' => 'text', 'text' => 'ช่วงเวลา:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
+                    ['type' => 'text', 'text' => $periodText, 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
+                ]
+            ];
+        }
+
+        $detailsContents[] = [
+            'type' => 'box',
+            'layout' => 'horizontal',
+            'contents' => [
+                ['type' => 'text', 'text' => 'วันที่:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
+                ['type' => 'text', 'text' => $leaveRequest->start_date->format('d/m/Y') . ' - ' . $leaveRequest->end_date->format('d/m/Y'), 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
+            ]
+        ];
+
+        $detailsContents[] = [
+            'type' => 'box',
+            'layout' => 'horizontal',
+            'contents' => [
+                ['type' => 'text', 'text' => 'จำนวน:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
+                ['type' => 'text', 'text' => $leaveRequest->total_days . ' วัน', 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
+            ]
+        ];
+
+        $detailsContents[] = [
+            'type' => 'box',
+            'layout' => 'horizontal',
+            'contents' => [
+                ['type' => 'text', 'text' => 'เหตุผล:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
+                ['type' => 'text', 'text' => $leaveRequest->reason ?: '-', 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
+            ]
+        ];
+
+        if (!empty($leaveRequest->contact_address)) {
+            $contactText = is_array($leaveRequest->contact_address)
+                ? implode(', ', $leaveRequest->contact_address)
+                : (string) $leaveRequest->contact_address;
+
+            $detailsContents[] = [
+                'type' => 'box',
+                'layout' => 'horizontal',
+                'margin' => 'md',
+                'contents' => [
+                    ['type' => 'text', 'text' => 'เบอร์ติดต่อ:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
+                    ['type' => 'text', 'text' => $contactText, 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
+                ]
+            ];
+        }
+
+        if ($leaveRequest->attachment_path) {
+            $detailsContents[] = [
+                'type' => 'box',
+                'layout' => 'horizontal',
+                'margin' => 'md',
+                'contents' => [
+                    ['type' => 'text', 'text' => 'ไฟล์แนบ:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
+                    ['type' => 'text', 'text' => '📎 มีเอกสารแนบ (ดูในระบบ)', 'size' => 'sm', 'color' => '#10b981', 'flex' => 5, 'weight' => 'bold', 'wrap' => true],
+                ]
+            ];
+        }
 
         // Prepare Flex Message
         $flexContents = [
             'type' => 'bubble',
+            'size' => 'kilo',
             'header' => [
                 'type' => 'box',
                 'layout' => 'vertical',
@@ -67,15 +153,17 @@ class SendLineLeaveNotification implements ShouldQueue
                 'contents' => [
                     [
                         'type' => 'text',
-                        'text' => "{$user->rank} {$user->name}",
+                        'text' => trim("{$user->rank} {$user->name}"),
                         'weight' => 'bold',
                         'size' => 'lg',
+                        'wrap' => true,
                     ],
                     [
                         'type' => 'text',
                         'text' => "สังกัด: " . ($user->department ?: '-'),
                         'size' => 'sm',
                         'color' => '#666666',
+                        'wrap' => true,
                         'margin' => 'sm',
                     ],
                     [
@@ -87,32 +175,7 @@ class SendLineLeaveNotification implements ShouldQueue
                         'layout' => 'vertical',
                         'margin' => 'md',
                         'spacing' => 'sm',
-                        'contents' => [
-                            [
-                                'type' => 'box',
-                                'layout' => 'horizontal',
-                                'contents' => [
-                                    ['type' => 'text', 'text' => 'ประเภท:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                                    ['type' => 'text', 'text' => $leaveRequest->leaveType->name, 'size' => 'sm', 'color' => '#333333', 'flex' => 4],
-                                ]
-                            ],
-                            [
-                                'type' => 'box',
-                                'layout' => 'horizontal',
-                                'contents' => [
-                                    ['type' => 'text', 'text' => 'วันที่:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                                    ['type' => 'text', 'text' => $leaveRequest->start_date->format('d/m/Y') . ' - ' . $leaveRequest->end_date->format('d/m/Y'), 'size' => 'sm', 'color' => '#333333', 'flex' => 4],
-                                ]
-                            ],
-                            [
-                                'type' => 'box',
-                                'layout' => 'horizontal',
-                                'contents' => [
-                                    ['type' => 'text', 'text' => 'รวม:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                                    ['type' => 'text', 'text' => $leaveRequest->total_days . ' วัน', 'size' => 'sm', 'color' => '#333333', 'flex' => 4],
-                                ]
-                            ],
-                        ]
+                        'contents' => $detailsContents
                     ]
                 ]
             ],
