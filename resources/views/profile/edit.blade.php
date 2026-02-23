@@ -28,6 +28,18 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
 
+            @if(session('error'))
+                <div class="bg-rose-50 border-l-4 border-rose-500 p-4 mb-8 rounded-r-xl shadow-lg flex items-start gap-4 animate-fade-in relative z-20">
+                    <div class="flex-shrink-0">
+                        <i data-lucide="alert-circle" class="w-6 h-6 text-rose-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-rose-800 tracking-tight">ไม่สามารถเข้าใช้งานระบบได้</h3>
+                        <p class="text-sm font-bold text-rose-600 mt-1">{{ session('error') }}</p>
+                    </div>
+                </div>
+            @endif
+
             <!-- Quick Identity Summary Card -->
             <div
                 class="bg-white rounded-[3.5rem] shadow-2xl shadow-slate-200/50 border border-slate-50 p-8 mb-12 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden group">

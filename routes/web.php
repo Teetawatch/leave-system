@@ -86,7 +86,7 @@ Route::get('/test-pdf', function () {
     } catch (\Exception $e) {
         return '<pre>Error: ' . $e->getMessage() . "\n\n" . $e->getTraceAsString() . '</pre>';
     }
-})->middleware('auth');
+})->middleware(['auth', 'ensure.avatar']);
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -170,9 +170,9 @@ Route::get('/dashboard', function () {
         ->get();
 
     return view('dashboard', compact('vacationBalance', 'sickUsageDays', 'sickUsageCount', 'personalUsageDays', 'personalUsageCount', 'pendingCount', 'todayLeaves', 'recentRequests'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'ensure.avatar'])->name('dashboard');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'ensure.avatar'])->group(function () {
     // Calendar Routes (Shared Leave Calendar)
     Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/calendar/events', [App\Http\Controllers\CalendarController::class, 'events'])->name('calendar.events');
@@ -265,6 +265,28 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/executive-dashboard/department-stats', [ExecutiveDashboardController::class, 'departmentStats'])->name('executive.department-stats');
     });
 
+});
+
+// =============================================================================
+// External Cron Route (Shared Hosting Workaround)
+// =============================================================================
+Route::get('/queue-work/{secret}', function ($secret) {
+    // Check if the secret matches the one in .env
+    if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {
+        abort(403, 'Unauthorized');
+    }
+
+    // Run the queue worker for one job or until empty
+    $exitCode = Artisan::call('queue:work', [
+        '--stop-when-empty' => true,
+        '--tries' => 3
+    ]);
+
+    return response()->json([
+        'message' => 'Queue worker executed',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output()
+    ]);
 });
 
 require __DIR__ . '/auth.php';
