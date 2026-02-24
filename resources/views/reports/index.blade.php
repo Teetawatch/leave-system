@@ -221,10 +221,75 @@
                 </form>
             </div>
 
+            <!-- Monthly Trend Chart -->
+            @if(isset($monthlyTrend))
+            <div class="glass-panel rounded-[3.5rem] p-10 mb-12 animate-slide-up" style="animation-delay: 0.25s">
+                <div class="flex items-center gap-5 mb-10">
+                    <div class="w-14 h-14 rounded-[1.5rem] bg-violet-600 text-white flex items-center justify-center shadow-lg">
+                        <i data-lucide="bar-chart-2" class="w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-900 tracking-tight">แนวโน้มการลารายเดือน</h3>
+                        <p class="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">สถิติการลาตลอดปี {{ $currentYear + 543 }}</p>
+                    </div>
+                </div>
+                @php
+                    $thaiMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+                    $maxDays    = max($monthlyTrend->max('total_days'), 1);
+                    $maxCount   = max($monthlyTrend->max('count'), 1);
+                @endphp
+                <div class="flex items-end gap-3 h-40">
+                    @foreach($monthlyTrend as $m)
+                        @php $pct = round(($m['total_days'] / $maxDays) * 100); @endphp
+                        <div class="flex-1 flex flex-col items-center gap-2 group/bar">
+                            <span class="text-[9px] font-black text-slate-400 opacity-0 group-hover/bar:opacity-100 transition-opacity">
+                                {{ $m['total_days'] }}วัน
+                            </span>
+                            <div class="w-full relative rounded-t-xl overflow-hidden bg-slate-100 flex flex-col justify-end" style="height: 88px">
+                                <div class="w-full rounded-t-xl transition-all duration-700 ease-out
+                                    {{ $m['total_days'] > 0 ? 'bg-violet-500 group-hover/bar:bg-violet-600' : 'bg-slate-100' }}"
+                                    style="height: {{ max($pct, $m['total_days'] > 0 ? 6 : 0) }}%"></div>
+                            </div>
+                            <span class="text-[10px] font-black text-slate-500">{{ $thaiMonths[$m['month']-1] }}</span>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
+                    <div class="flex items-center gap-6">
+                        <div class="text-center">
+                            <p class="text-2xl font-black text-violet-600">{{ $monthlyTrend->sum('total_days') }}</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">วันรวม</p>
+                        </div>
+                        <div class="w-px h-10 bg-slate-100"></div>
+                        <div class="text-center">
+                            <p class="text-2xl font-black text-slate-800">{{ $monthlyTrend->sum('count') }}</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">ครั้งรวม</p>
+                        </div>
+                        <div class="w-px h-10 bg-slate-100"></div>
+                        <div class="text-center">
+                            <p class="text-2xl font-black text-emerald-600">
+                                {{ $monthlyTrend->filter(fn($m) => $m['total_days'] > 0)->count() }}
+                            </p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">เดือนที่มีการลา</p>
+                        </div>
+                    </div>
+                    @php
+                        $peakMonth = $monthlyTrend->sortByDesc('total_days')->first();
+                    @endphp
+                    @if($peakMonth['total_days'] > 0)
+                    <div class="bg-violet-50 border border-violet-100 rounded-2xl px-5 py-3 text-right">
+                        <p class="text-[10px] font-black text-violet-500 uppercase tracking-widest mb-1">เดือนที่ลามากสุด</p>
+                        <p class="text-lg font-black text-violet-800">{{ $thaiMonths[$peakMonth['month']-1] }} — {{ $peakMonth['total_days'] }} วัน</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             <!-- Insights Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12 animate-slide-up" style="animation-delay: 0.3s">
                 @if(isset($topLeavers) && $topLeavers->isNotEmpty())
-                    <!-- Leaderboard -->
+                    <!-- Leaderboard with leave type details -->
                     <div class="glass-panel rounded-[3.5rem] p-10 relative overflow-hidden group">
                         <div class="absolute inset-0 bg-slate-900 opacity-0 group-hover:opacity-[0.02] transition-opacity"></div>
                         <div class="flex items-center gap-5 mb-10">
@@ -232,30 +297,57 @@
                                 <i data-lucide="award" class="w-7 h-7"></i>
                             </div>
                             <div>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">การวิเคราะห์ผู้ใช้สิทธิ์ลาสูงสุด</h3>
-                                <p class="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">สถิติกำลังพลที่ใช้สิทธิ์การลาสูงสุด</p>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">ผู้ใช้สิทธิ์ลาสูงสุด</h3>
+                                <p class="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">กำลังพลที่ใช้วันลาสะสมสูงสุด</p>
                             </div>
                         </div>
 
-                        <div class="space-y-8">
-                            @foreach($topLeavers->take(4) as $index => $leaver)
-                                <div class="flex items-center gap-6 group/item">
-                                    <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-indigo-600 text-lg border border-slate-100 group-hover/item:bg-indigo-600 group-hover/item:text-white transition-all shadow-sm">
-                                        {{ $index + 1 }}
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-baseline mb-3">
-                                            <p class="font-black text-slate-800 text-lg group-hover/item:translate-x-1 transition-transform">{{ $leaver->user->rank }}{{ $leaver->user->name }}</p>
-                                            <div class="flex items-baseline gap-1">
-                                                <span class="text-indigo-600 font-black text-2xl leading-none">{{ $leaver->total_leave_days }}</span>
-                                                <span class="text-slate-400 text-[10px] font-black uppercase">วัน</span>
-                                            </div>
+                        <div class="space-y-6">
+                            @foreach($topLeavers->take(5) as $index => $leaver)
+                                @php
+                                    $leaverTypes = \App\Models\LeaveRequest::where('user_id', $leaver->user_id)
+                                        ->whereNotIn('status', ['cancelled','rejected'])
+                                        ->with('leaveType')
+                                        ->get()
+                                        ->groupBy(fn($r) => $r->leaveType->name ?? '-')
+                                        ->map(fn($g) => $g->sum('total_days'))
+                                        ->sortByDesc(fn($v) => $v)
+                                        ->take(3);
+                                @endphp
+                                <div class="rounded-2xl border border-slate-100 p-5 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group/item">
+                                    <div class="flex items-center gap-4 mb-3">
+                                        <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center font-black text-indigo-600 text-base border border-indigo-100 shrink-0">
+                                            {{ $index + 1 }}
                                         </div>
-                                        <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                                            <div class="bg-indigo-600 h-full rounded-full transition-all duration-[2s] ease-out-expo" 
-                                                 style="width: {{ ($leaver->total_leave_days / max($topLeavers->max('total_leave_days'), 1)) * 100 }}%"></div>
+                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-slate-200 shrink-0">
+                                            @if($leaver->user->avatar)
+                                                <img src="{{ asset('storage/' . $leaver->user->avatar) }}" class="w-full h-full object-cover">
+                                            @else
+                                                <div class="w-full h-full flex items-center justify-center font-black text-slate-500 text-sm">{{ mb_substr($leaver->user->name, 0, 1) }}</div>
+                                            @endif
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-black text-slate-800 text-base truncate">{{ $leaver->user->rank }}{{ $leaver->user->name }}</p>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ $leaver->user->department }}</p>
+                                        </div>
+                                        <div class="text-right shrink-0">
+                                            <p class="text-2xl font-black text-indigo-600 leading-none">{{ $leaver->total_leave_days }}</p>
+                                            <p class="text-[9px] font-black text-slate-400 uppercase">วัน / {{ $leaver->leave_count }} ครั้ง</p>
                                         </div>
                                     </div>
+                                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
+                                        <div class="bg-indigo-500 h-full rounded-full"
+                                             style="width: {{ ($leaver->total_leave_days / max($topLeavers->max('total_leave_days'), 1)) * 100 }}%"></div>
+                                    </div>
+                                    @if($leaverTypes->isNotEmpty())
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach($leaverTypes as $typeName => $days)
+                                            <span class="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">
+                                                {{ $typeName }}: {{ $days }}วัน
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -273,21 +365,28 @@
                             </div>
                         </div>
 
-                        <div class="space-y-8 pt-2">
-                            @foreach($popularLeaveTypes->take(4) as $type)
-                                <div class="space-y-3 group/type">
-                                    <div class="flex justify-between items-center px-2">
-                                        <span class="text-xs font-black uppercase tracking-[0.15em] text-slate-500 flex items-center gap-2">
-                                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 group-hover/type:scale-150 transition-transform"></div>
+                        <div class="space-y-6 pt-2">
+                            @php
+                                $typeColors = ['emerald','indigo','violet','amber','rose','sky','orange'];
+                            @endphp
+                            @foreach($popularLeaveTypes as $ti => $type)
+                                @php $color = $typeColors[$ti % count($typeColors)]; @endphp
+                                <div class="space-y-2 group/type">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs font-black uppercase tracking-[0.12em] text-slate-600 flex items-center gap-2">
+                                            <div class="w-2 h-2 rounded-full bg-{{ $color }}-500"></div>
                                             {{ $type->leaveType->name }}
                                         </span>
-                                        <div class="flex items-baseline gap-1">
-                                            <span class="text-emerald-500 font-black text-xl leading-none">{{ $type->usage_count }}</span>
-                                            <span class="text-slate-400 text-[10px] font-black uppercase">ครั้ง</span>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[10px] font-black text-slate-400 uppercase">{{ $type->total_days ?? 0 }} วัน</span>
+                                            <div class="flex items-baseline gap-1">
+                                                <span class="text-{{ $color }}-600 font-black text-lg leading-none">{{ $type->usage_count }}</span>
+                                                <span class="text-slate-400 text-[9px] font-black uppercase">ครั้ง</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="h-4 bg-slate-100 rounded-full overflow-hidden ring-6 ring-slate-50/50 shadow-inner">
-                                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-[2s] ease-out group-hover:brightness-110" 
+                                    <div class="h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                        <div class="bg-{{ $color }}-500 h-full rounded-full transition-all duration-[1.5s] ease-out"
                                              style="width: {{ ($type->usage_count / max($popularLeaveTypes->max('usage_count'), 1)) * 100 }}%"></div>
                                     </div>
                                 </div>
@@ -296,6 +395,126 @@
                     </div>
                 @endif
             </div>
+
+            <!-- Department Breakdown Section -->
+            @if(isset($departmentStats) && $departmentStats->isNotEmpty())
+            <div class="mb-12 animate-slide-up" style="animation-delay: 0.35s">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-14 h-14 rounded-[1.5rem] bg-rose-500 text-white flex items-center justify-center shadow-lg">
+                        <i data-lucide="building-2" class="w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-900 tracking-tight">สถิติแยกตามแผนก / หลักสูตร</h3>
+                        <p class="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">รายละเอียดการลา ผู้ลาสูงสุด และประเภทการลาในแต่ละหน่วย</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    @foreach($departmentStats as $dept)
+                    <div class="glass-panel rounded-[3rem] overflow-hidden shadow-xl shadow-slate-900/5">
+                        {{-- Department Header --}}
+                        <div class="bg-gradient-to-r from-slate-900 to-slate-800 px-8 py-6 flex items-center justify-between">
+                            <div class="flex items-center gap-4 min-w-0">
+                                <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                                    <i data-lucide="layers" class="w-5 h-5 text-white/70"></i>
+                                </div>
+                                <p class="font-black text-white text-base truncate">{{ $dept['name'] }}</p>
+                            </div>
+                            <div class="flex items-center gap-4 shrink-0 ml-4">
+                                <div class="text-right">
+                                    <p class="text-2xl font-black text-emerald-400 leading-none">{{ $dept['total_days'] }}</p>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">วัน</p>
+                                </div>
+                                <div class="w-px h-8 bg-white/10"></div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-black text-white leading-none">{{ $dept['total_count'] }}</p>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">ครั้ง</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-8 space-y-8">
+                            {{-- Top Leaver Badge --}}
+                            @if($dept['top_leaver'])
+                            <div class="flex items-center gap-4 bg-amber-50 border border-amber-100 rounded-2xl px-5 py-4">
+                                <div class="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
+                                    <i data-lucide="crown" class="w-4 h-4 text-white"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-0.5">ลาสูงสุดในหน่วย</p>
+                                    <p class="font-black text-slate-800 text-sm truncate">
+                                        {{ $dept['top_leaver']['user']->rank }}{{ $dept['top_leaver']['user']->name }}
+                                    </p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <p class="text-xl font-black text-amber-600 leading-none">{{ $dept['top_leaver']['days'] }}</p>
+                                    <p class="text-[9px] font-black text-amber-400 uppercase">วัน / {{ $dept['top_leaver']['count'] }} ครั้ง</p>
+                                </div>
+                            </div>
+                            @endif
+
+                            {{-- Leave Type Distribution --}}
+                            @if($dept['leave_type_breakdown']->isNotEmpty())
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4 flex items-center gap-2">
+                                    <i data-lucide="layers" class="w-3 h-3"></i> สัดส่วนประเภทการลา
+                                </p>
+                                @php $maxTypeDays = max($dept['leave_type_breakdown']->max('days'), 1); @endphp
+                                <div class="space-y-3">
+                                    @foreach($dept['leave_type_breakdown'] as $typeName => $typeData)
+                                    <div>
+                                        <div class="flex justify-between text-[10px] font-black mb-1">
+                                            <span class="text-slate-600 uppercase tracking-widest">{{ $typeName }}</span>
+                                            <span class="text-slate-500">{{ $typeData['days'] }} วัน · {{ $typeData['count'] }} ครั้ง</span>
+                                        </div>
+                                        <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                            <div class="h-full bg-indigo-500 rounded-full"
+                                                 style="width: {{ ($typeData['days'] / $maxTypeDays) * 100 }}%"></div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+
+                            {{-- Per-Person Ranking --}}
+                            @if($dept['person_ranking']->isNotEmpty())
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4 flex items-center gap-2">
+                                    <i data-lucide="users" class="w-3 h-3"></i> อันดับบุคคลในหน่วย
+                                </p>
+                                <div class="space-y-3">
+                                    @foreach($dept['person_ranking'] as $ri => $person)
+                                    <div class="flex items-start gap-3 group/row">
+                                        <span class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0 mt-0.5 group-hover/row:bg-indigo-600 group-hover/row:text-white transition-all">
+                                            {{ $ri + 1 }}
+                                        </span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex justify-between items-baseline mb-1">
+                                                <p class="font-black text-slate-700 text-sm truncate">{{ $person['user']->rank }}{{ $person['user']->name }}</p>
+                                                <span class="text-indigo-600 font-black text-sm leading-none ml-2 shrink-0">{{ $person['days'] }} วัน</span>
+                                            </div>
+                                            @if($person['types']->isNotEmpty())
+                                            <div class="flex flex-wrap gap-1.5">
+                                                @foreach($person['types'] as $tName => $tDays)
+                                                    <span class="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                                                        {{ $tName }}: {{ $tDays }}ว
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
 
             <!-- Main Data Table -->
             <div class="glass-panel rounded-[4rem] overflow-hidden animate-slide-up shadow-2xl shadow-slate-900/10" style="animation-delay: 0.4s">

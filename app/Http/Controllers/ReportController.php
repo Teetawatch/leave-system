@@ -119,7 +119,90 @@ class ReportController extends Controller
         }
         $totalApprovedLeaves = $totalApprovedLeaves->count();
 
-        return view('reports.index', compact('requests', 'departments', 'leaveTypes', 'topLeavers', 'popularLeaveTypes', 'totalApprovedLeaves'));
+        // Department breakdown: each department's total leave days, count, top leaver, and leave type distribution
+        $deptBreakdownQuery = LeaveRequest::with(['user', 'leaveType'])
+            ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->whereHas('leaveType', function ($q) {
+                $q->where('slug', '!=', 'temporary');
+            });
+        if (!$isCommander) {
+            $deptBreakdownQuery->whereHas('user', function ($q) use ($user) {
+                $q->where('department', $user->department);
+            });
+        }
+        $allApprovedLeaves = $deptBreakdownQuery->get();
+
+        $departmentStats = $allApprovedLeaves
+            ->groupBy(fn($r) => $r->user->department ?? 'ไม่ระบุ')
+            ->map(function ($leaves, $deptName) {
+                $totalDays  = $leaves->sum('total_days');
+                $totalCount = $leaves->count();
+
+                // Top leaver in this department
+                $topLeaver = $leaves->groupBy('user_id')
+                    ->map(fn($g) => ['user' => $g->first()->user, 'days' => $g->sum('total_days'), 'count' => $g->count()])
+                    ->sortByDesc('days')
+                    ->first();
+
+                // Leave type distribution in this department
+                $leaveTypeBreakdown = $leaves->groupBy(fn($r) => $r->leaveType->name ?? 'ไม่ระบุ')
+                    ->map(fn($g) => ['count' => $g->count(), 'days' => $g->sum('total_days')])
+                    ->sortByDesc('days')
+                    ->take(4);
+
+                // Per-person ranking
+                $personRanking = $leaves->groupBy('user_id')
+                    ->map(fn($g) => [
+                        'user'  => $g->first()->user,
+                        'days'  => $g->sum('total_days'),
+                        'count' => $g->count(),
+                        'types' => $g->groupBy(fn($r) => $r->leaveType->name ?? 'ไม่ระบุ')
+                                     ->map(fn($tg) => $tg->sum('total_days'))
+                                     ->sortByDesc(fn($v) => $v),
+                    ])
+                    ->sortByDesc('days')
+                    ->take(5)
+                    ->values();
+
+                return [
+                    'name'              => $deptName,
+                    'total_days'        => $totalDays,
+                    'total_count'       => $totalCount,
+                    'top_leaver'        => $topLeaver,
+                    'leave_type_breakdown' => $leaveTypeBreakdown,
+                    'person_ranking'    => $personRanking,
+                ];
+            })
+            ->sortByDesc('total_days')
+            ->values();
+
+        // Monthly trend for the current year
+        $currentYear = now()->year;
+        $monthlyTrendQuery = LeaveRequest::selectRaw('MONTH(start_date) as month, COUNT(*) as count, SUM(total_days) as total_days')
+            ->whereYear('start_date', $currentYear)
+            ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->whereHas('leaveType', function ($q) {
+                $q->where('slug', '!=', 'temporary');
+            })
+            ->groupBy('month')
+            ->orderBy('month');
+        if (!$isCommander) {
+            $monthlyTrendQuery->whereHas('user', function ($q) use ($user) {
+                $q->where('department', $user->department);
+            });
+        }
+        $monthlyRaw = $monthlyTrendQuery->get()->keyBy('month');
+        $monthlyTrend = collect(range(1, 12))->map(fn($m) => [
+            'month'      => $m,
+            'count'      => $monthlyRaw->get($m)?->count ?? 0,
+            'total_days' => $monthlyRaw->get($m)?->total_days ?? 0,
+        ]);
+
+        return view('reports.index', compact(
+            'requests', 'departments', 'leaveTypes',
+            'topLeavers', 'popularLeaveTypes', 'totalApprovedLeaves',
+            'departmentStats', 'monthlyTrend', 'currentYear'
+        ));
     }
 
     public function export(Request $request)
