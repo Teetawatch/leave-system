@@ -53,7 +53,7 @@ class ApprovalController extends Controller
             }
         })
             ->orderBy('created_at', 'desc')
-            ->with(['user.supervisor', 'user.manager', 'leaveType', 'approvals.approver'])
+            ->with(['user.supervisor', 'user.manager', 'user.deputy', 'leaveType', 'approvals.approver'])
             ->paginate(10);
 
         return view('approvals.index', compact('requests'));

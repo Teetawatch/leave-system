@@ -174,12 +174,66 @@
 
                                         {{-- Approval Chain Track --}}
                                         @php
-                                            $steps = [
-                                                'pending_supervisor'     => ['label' => 'หัวหน้าแผนก',  'sublabel' => 'Supervisor',      'icon' => 'user-check', 'color' => 'emerald', 'step_key' => 'supervisor'],
-                                                'pending_manager'        => ['label' => 'ผู้บังคับบัญชา',    'sublabel' => 'Manager',          'icon' => 'users',      'color' => 'blue',    'step_key' => 'manager'],
-                                                'pending_deputy_director'=> ['label' => 'รอง ผอ.',      'sublabel' => 'Deputy Director',  'icon' => 'shield',     'color' => 'violet',  'step_key' => 'deputy_director'],
-                                                'pending_director'       => ['label' => 'ผอ.',          'sublabel' => 'Director',         'icon' => 'crown',      'color' => 'rose',    'step_key' => 'director'],
+                                            $leaveSlug    = strtolower($req->leaveType->slug ?? '');
+                                            $isVacation   = $leaveSlug === 'vacation' || str_contains($req->leaveType->name ?? '', 'พักผ่อน');
+                                            $isTemporary  = $leaveSlug === 'temporary';
+                                            $isSickOrPersonal = in_array($leaveSlug, ['sick', 'personal']);
+                                            $studentCourses   = ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.'];
+                                            $isStudent = in_array($req->user->department, $studentCourses);
+
+                                            // Resolve actual approver users for this request
+                                            $supervisorUser = $req->user->supervisor;
+                                            $managerUser    = $req->user->manager;
+                                            // Use per-person deputy_id if set, otherwise fall back to role-based lookup
+                                            $deputyUser  = $req->user->deputy ?? \App\Models\User::where('role', 'deputy_director')->first();
+                                            $directorUser = \App\Models\User::where('role', 'director')->first();
+
+                                            // Build dynamic steps based on leave type and employee chain
+                                            $steps = [];
+                                            $steps['pending_supervisor'] = [
+                                                'label'    => 'ผู้อนุมัติขั้นที่ 1',
+                                                'sublabel' => 'หัวหน้าแผนก',
+                                                'icon'     => 'user-check',
+                                                'color'    => 'emerald',
+                                                'step_key' => 'supervisor',
+                                                'user'     => $supervisorUser,
                                             ];
+
+                                            if ($isTemporary) {
+                                                // Temporary leave: supervisor only, no more steps
+                                            } elseif ($isStudent && $isSickOrPersonal && $managerUser) {
+                                                // Student course sick/personal: goes through manager
+                                                $steps['pending_manager'] = [
+                                                    'label'    => 'ผู้อนุมัติขั้นที่ 2',
+                                                    'sublabel' => 'ผู้บังคับบัญชา',
+                                                    'icon'     => 'users',
+                                                    'color'    => 'blue',
+                                                    'step_key' => 'manager',
+                                                    'user'     => $managerUser,
+                                                ];
+                                            } else {
+                                                // Normal flow: deputy (รับทราบ) then director
+                                                $steps['pending_deputy_director'] = [
+                                                    'label'    => 'ผู้รับทราบ',
+                                                    'sublabel' => 'รอง ผอ.',
+                                                    'icon'     => 'shield',
+                                                    'color'    => 'violet',
+                                                    'step_key' => 'deputy_director',
+                                                    'user'     => $deputyUser,
+                                                ];
+                                                // Director step only for vacation leave
+                                                if ($isVacation) {
+                                                    $steps['pending_director'] = [
+                                                        'label'    => 'ผู้อนุมัติขั้นที่ 2',
+                                                        'sublabel' => 'ผอ.',
+                                                        'icon'     => 'crown',
+                                                        'color'    => 'rose',
+                                                        'step_key' => 'director',
+                                                        'user'     => $directorUser,
+                                                    ];
+                                                }
+                                            }
+
                                             $statusOrder  = array_keys($steps);
                                             $currentIndex = array_search($req->status, $statusOrder);
                                             if ($currentIndex === false) $currentIndex = -1;
@@ -200,13 +254,53 @@
                                                         return $req->user->manager
                                                             ? $req->user->manager->rank . $req->user->manager->name : null;
                                                     case 'deputy_director':
-                                                        $deputy = \App\Models\User::where('role', 'deputy_director')->first();
+                                                        $deputy = $req->user->deputy ?? \App\Models\User::where('role', 'deputy_director')->first();
                                                         return $deputy ? $deputy->rank . $deputy->name : null;
                                                     case 'director':
                                                         $director = \App\Models\User::where('role', 'director')->first();
                                                         return $director ? $director->rank . $director->name : null;
                                                 }
                                                 return null;
+                                            };
+
+                                            $getApproverAvatar = function($stepKey) use ($req) {
+                                                $approval = $req->approvals->where('step', $stepKey)->first();
+                                                if ($approval && $approval->approver) {
+                                                    return $approval->approver->avatar;
+                                                }
+                                                switch ($stepKey) {
+                                                    case 'supervisor':
+                                                        return $req->user->supervisor?->avatar;
+                                                    case 'manager':
+                                                        return $req->user->manager?->avatar;
+                                                    case 'deputy_director':
+                                                        $deputy = $req->user->deputy ?? \App\Models\User::where('role', 'deputy_director')->first();
+                                                        return $deputy?->avatar;
+                                                    case 'director':
+                                                        $director = \App\Models\User::where('role', 'director')->first();
+                                                        return $director?->avatar;
+                                                }
+                                                return null;
+                                            };
+
+                                            $getApproverInitial = function($stepKey) use ($req) {
+                                                $approval = $req->approvals->where('step', $stepKey)->first();
+                                                if ($approval && $approval->approver) {
+                                                    return mb_substr($approval->approver->name, 0, 1);
+                                                }
+                                                switch ($stepKey) {
+                                                    case 'supervisor':
+                                                        return $req->user->supervisor ? mb_substr($req->user->supervisor->name, 0, 1) : '?';
+                                                    case 'manager':
+                                                        return $req->user->manager ? mb_substr($req->user->manager->name, 0, 1) : '?';
+                                                    case 'deputy_director':
+                                                        $deputy = $req->user->deputy ?? \App\Models\User::where('role', 'deputy_director')->first();
+                                                        return $deputy ? mb_substr($deputy->name, 0, 1) : '?';
+                                                    case 'director':
+                                                        $director = \App\Models\User::where('role', 'director')->first();
+                                                        return $director ? mb_substr($director->name, 0, 1) : '?';
+                                                }
+                                                return '?';
                                             };
 
                                             $getApprovedAt = function($stepKey) use ($req) {
@@ -228,31 +322,52 @@
                                         </div>
 
                                         {{-- Stepper --}}
+                                        @php
+                                            $stepCount = count($steps);
+                                            $gridCols  = $stepCount === 1 ? 'grid-cols-1 max-w-[160px] mx-auto'
+                                                       : ($stepCount === 2 ? 'grid-cols-2'
+                                                       : ($stepCount === 3 ? 'grid-cols-3'
+                                                       : 'grid-cols-2 sm:grid-cols-4'));
+                                        @endphp
                                         <div class="relative mb-8">
                                             {{-- Connector line background --}}
-                                            <div class="hidden sm:block absolute top-7 left-[calc(12.5%+1.75rem)] right-[calc(12.5%+1.75rem)] h-0.5 bg-slate-100 z-0"></div>
+                                            @if($stepCount > 1)
+                                            <div class="hidden sm:block absolute top-7 left-[calc({{ 100 / ($stepCount * 2) }}%+1.75rem)] right-[calc({{ 100 / ($stepCount * 2) }}%+1.75rem)] h-0.5 bg-slate-100 z-0"></div>
+                                            @endif
 
-                                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-2 relative z-10">
+                                            <div class="grid {{ $gridCols }} gap-y-6 gap-x-2 relative z-10">
                                                 @foreach($steps as $key => $step)
                                                     @php
-                                                        $stepIdx    = array_search($key, $statusOrder);
-                                                        $isDone     = $isFullyApproved || $stepIdx < $currentIndex;
-                                                        $isActive   = !$isFullyApproved && $stepIdx == $currentIndex;
-                                                        $isPending  = !$isDone && !$isActive;
-                                                        $personName = $getApproverName($step['step_key']);
-                                                        $approvedAt = $getApprovedAt($step['step_key']);
-                                                        $isLast     = $stepIdx === count($steps) - 1;
+                                                        $stepIdx       = array_search($key, $statusOrder);
+                                                        $isDone        = $isFullyApproved || $stepIdx < $currentIndex;
+                                                        $isActive      = !$isFullyApproved && $stepIdx == $currentIndex;
+                                                        $isPending     = !$isDone && !$isActive;
+                                                        $personName    = $getApproverName($step['step_key']);
+                                                        $personAvatar  = $getApproverAvatar($step['step_key']);
+                                                        $personInitial = $getApproverInitial($step['step_key']);
+                                                        $approvedAt    = $getApprovedAt($step['step_key']);
                                                     @endphp
                                                     <div class="flex flex-col items-center text-center gap-2 px-1">
                                                         {{-- Step bubble --}}
                                                         <div class="relative">
                                                             @if($isDone)
-                                                                <div class="w-14 h-14 rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-200 flex items-center justify-center ring-4 ring-emerald-50">
-                                                                    <i data-lucide="check" class="w-6 h-6 text-white"></i>
+                                                                <div class="w-14 h-14 rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-200 flex items-center justify-center ring-4 ring-emerald-50 overflow-hidden relative">
+                                                                    @if($personAvatar)
+                                                                        <img src="{{ asset('storage/' . $personAvatar) }}" alt="{{ $personName }}" class="w-full h-full object-cover opacity-70">
+                                                                        <div class="absolute inset-0 flex items-center justify-center bg-emerald-500/50">
+                                                                            <i data-lucide="check" class="w-6 h-6 text-white drop-shadow"></i>
+                                                                        </div>
+                                                                    @else
+                                                                        <i data-lucide="check" class="w-6 h-6 text-white"></i>
+                                                                    @endif
                                                                 </div>
                                                             @elseif($isActive)
-                                                                <div class="w-14 h-14 rounded-2xl bg-white border-2 border-{{ $step['color'] }}-400 shadow-lg shadow-{{ $step['color'] }}-100 flex items-center justify-center ring-4 ring-{{ $step['color'] }}-50">
-                                                                    <i data-lucide="{{ $step['icon'] }}" class="w-6 h-6 text-{{ $step['color'] }}-500"></i>
+                                                                <div class="w-14 h-14 rounded-2xl bg-white border-2 border-{{ $step['color'] }}-400 shadow-lg shadow-{{ $step['color'] }}-100 flex items-center justify-center ring-4 ring-{{ $step['color'] }}-50 overflow-hidden">
+                                                                    @if($personAvatar)
+                                                                        <img src="{{ asset('storage/' . $personAvatar) }}" alt="{{ $personName }}" class="w-full h-full object-cover">
+                                                                    @else
+                                                                        <i data-lucide="{{ $step['icon'] }}" class="w-6 h-6 text-{{ $step['color'] }}-500"></i>
+                                                                    @endif
                                                                 </div>
                                                                 {{-- Pulse dot --}}
                                                                 <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5">
@@ -260,13 +375,18 @@
                                                                     <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-400 border-2 border-white"></span>
                                                                 </span>
                                                             @else
-                                                                <div class="w-14 h-14 rounded-2xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center">
-                                                                    <i data-lucide="{{ $step['icon'] }}" class="w-6 h-6 text-slate-300"></i>
+                                                                <div class="w-14 h-14 rounded-2xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center overflow-hidden">
+                                                                    @if($personAvatar)
+                                                                        <img src="{{ asset('storage/' . $personAvatar) }}" alt="{{ $personName }}" class="w-full h-full object-cover opacity-40 grayscale">
+                                                                    @else
+                                                                        <i data-lucide="{{ $step['icon'] }}" class="w-6 h-6 text-slate-300"></i>
+                                                                    @endif
                                                                 </div>
                                                             @endif
+                                                            {{-- Avatar initials fallback shown as small overlay when no avatar --}}
                                                         </div>
 
-                                                        {{-- Step number badge --}}
+                                                        {{-- Status badge --}}
                                                         <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full
                                                             {{ $isDone   ? 'bg-emerald-100 text-emerald-600'
                                                             : ($isActive ? 'bg-' . $step['color'] . '-100 text-' . $step['color'] . '-600'
@@ -285,7 +405,7 @@
                                                             <p class="text-[10px] font-medium text-slate-400 mt-0.5">{{ $step['sublabel'] }}</p>
                                                         </div>
 
-                                                        {{-- Approver name --}}
+                                                        {{-- Approver name card --}}
                                                         @if($personName)
                                                             <div class="w-full max-w-[140px] rounded-xl px-2.5 py-1.5
                                                                 {{ $isDone   ? 'bg-emerald-50 border border-emerald-100'
