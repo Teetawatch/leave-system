@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+﻿﻿<x-app-layout>
     @section('title', 'ขออนุญาตเปลี่ยนยาม')
 
     <div class="min-h-screen bg-[#f8fafc] pb-20" x-data="guardChangeForm()">

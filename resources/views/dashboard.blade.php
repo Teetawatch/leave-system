@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'แผงควบคุมอัจฉริยะ (Dashboard)')
+    @section('title', 'แผงควบคุมหลัก (Smart Dashboard)')
 
     @push('styles')
         <style>
@@ -7,183 +7,123 @@
 
             :root {
                 --dashboard-bg: #f8fafc;
-                --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-                --emerald-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                --rose-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
-                --amber-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-                --glass-bg: rgba(255, 255, 255, 0.7);
-                --glass-border: rgba(255, 255, 255, 0.5);
+                --brand-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+                --brand-glow: 0 0 20px rgba(14, 165, 233, 0.3);
             }
 
-            body {
-                font-family: 'Outfit', 'IBM Plex Sans Thai', sans-serif;
-                background-color: var(--dashboard-bg);
+            .font-outfit { font-family: 'Outfit', sans-serif; }
+            .font-thai { font-family: 'IBM Plex Sans Thai', 'Sarabun', sans-serif; }
+
+            .glass-panel {
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
             }
 
-            .premium-card {
+            .bento-card {
                 background: white;
-                border-radius: 2rem;
+                border-radius: 2.5rem;
+                padding: 2rem;
                 border: 1px solid #f1f5f9;
-                box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
                 transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
                 overflow: hidden;
             }
 
-            .premium-card:hover {
-                transform: translateY(-5px);
+            .bento-card:hover {
+                transform: translateY(-8px);
                 box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
                 border-color: #e2e8f0;
             }
 
-            .glass-card {
-                background: var(--glass-bg);
-                backdrop-filter: blur(12px);
-                border: 1px solid var(--glass-border);
-                border-radius: 2rem;
-            }
-
-            .stat-value {
+            .stat-number {
                 font-family: 'Outfit', sans-serif;
                 letter-spacing: -0.05em;
+                line-height: 1;
             }
 
-            .floating-dot {
+            .glow-dot {
                 position: absolute;
                 border-radius: 50%;
-                filter: blur(60px);
+                filter: blur(80px);
                 z-index: 0;
                 pointer-events: none;
+                opacity: 0.15;
             }
 
-            @keyframes slow-rotate {
-                from {
-                    transform: rotate(0deg) scale(1);
-                }
-
-                to {
-                    transform: rotate(360deg) scale(1.1);
-                }
+            @keyframes ripple {
+                0% { transform: scale(1); opacity: 0.4; }
+                100% { transform: scale(1.5); opacity: 0; }
             }
 
-            .animate-slow-rotate {
-                animation: slow-rotate 20s linear infinite alternate;
+            .ripple-effect {
+                position: absolute;
+                border-radius: 50%;
+                background: white;
+                animation: ripple 1s infinite;
             }
 
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 4px;
-            }
+            .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+            .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
-            .custom-scrollbar::-webkit-scrollbar-track {
-                background: transparent;
-            }
-
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #e2e8f0;
-                border-radius: 10px;
-            }
-
-            /* FullCalendar Customization */
-            .fc .fc-toolbar-title {
-                font-size: 1.25rem !important;
-                font-weight: 800 !important;
-                color: #1e293b !important;
-            }
-
-            .fc .fc-button-primary {
-                background: white !important;
-                border: 1px solid #e2e8f0 !important;
-                color: #64748b !important;
-                border-radius: 12px !important;
-                font-weight: 700 !important;
-                padding: 0.5rem 0.75rem !important;
-                font-size: 0.875rem !important;
-            }
-
-            .fc .fc-button-primary:hover {
-                background: #f8fafc !important;
-                color: #0f172a !important;
-            }
-
-            .fc .fc-day-today {
-                background: #f1f5f9 !important;
-            }
-
-            .fc-theme-standard td,
-            .fc-theme-standard th {
-                border-color: #f1f5f9 !important;
-            }
-
-            .fc .fc-daygrid-day-number {
-                font-weight: 600;
-                color: #94a3b8;
-                padding: 8px !important;
-            }
+            /* FullCalendar Modernization */
+            #dashboardCalendar .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 800 !important; color: #0f172a !important; text-transform: uppercase; letter-spacing: 0.05em; }
+            #dashboardCalendar .fc-button { background: #f1f5f9 !important; border: none !important; color: #64748b !important; border-radius: 12px !important; font-weight: 700 !important; font-size: 0.75rem !important; transition: all 0.2s; }
+            #dashboardCalendar .fc-button:hover { background: #e2e8f0 !important; color: #0f172a !important; }
+            #dashboardCalendar .fc-day-today { background: #f0f9ff !important; }
+            #dashboardCalendar .fc-daygrid-day-number { font-weight: 700; color: #94a3b8; font-size: 0.8rem; padding: 10px !important; }
+            #dashboardCalendar .fc-theme-standard td, #dashboardCalendar .fc-theme-standard th { border-color: #f1f5f9 !important; }
+            #dashboardCalendar .fc-scrollgrid { border: none !important; }
         </style>
     @endpush
 
-    <div class="relative min-h-screen pt-4 pb-20 px-4 md:px-8 max-w-[1600px] mx-auto overflow-hidden">
+    <div class="relative min-h-screen bg-slate-50/30 overflow-hidden font-thai">
+        <!-- Background Elements -->
+        <div class="glow-dot w-[600px] h-[600px] bg-sky-400 -top-48 -left-48 animate-pulse"></div>
+        <div class="glow-dot w-[500px] h-[500px] bg-indigo-400 bottom-0 -right-24" style="animation-delay: -3s"></div>
 
-        <!-- Decorative Glows -->
-        <div class="floating-dot w-[500px] h-[500px] bg-indigo-500/10 -top-48 -left-24 animate-slow-rotate"></div>
-        <div class="floating-dot w-[400px] h-[400px] bg-emerald-500/10 top-1/2 -right-48 animate-slow-rotate"
-            style="animation-delay: -5s"></div>
+        <div class="relative z-10 max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
+            
+            <!-- Header Section -->
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-12 items-center">
+                <div class="xl:col-span-7 space-y-4">
+                    <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/80 border border-brand-100 shadow-sm backdrop-blur-md">
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
+                        </span>
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">ระบบอัจฉริยะกำลังออนไลน์</span>
+                    </div>
+                    
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                        ยินดีต้อนรับกลับมา,<br>
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-brand-500 to-sky-400 inline-block mt-2">
+                             {{ Auth::user()->rank }} {{ Auth::user()->name }}
+                        </span>
+                    </h1>
+                    
+                    <p class="text-slate-400 font-bold text-lg flex items-center gap-3">
+                        <i data-lucide="building-2" class="w-5 h-5 text-brand-500/50"></i>
+                        {{ Auth::user()->department ?? 'ไม่มีสังกัด' }} • โรงเรียนพลาธิการ กองเรือยุทธการ
+                    </p>
+                </div>
 
-        <div class="relative z-10 space-y-8">
-
-            <!-- Top Alert Section (Consolidated) -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-8">
-                    @if(session('status'))
-                        <div x-data="{ show: true }" x-show="show" x-transition
-                            class="glass-card p-6 mb-6 flex items-center gap-4 border-l-4 border-l-emerald-500 shadow-lg shadow-emerald-500/5">
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                                <i data-lucide="check-circle" class="w-6 h-6"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-bold text-slate-900 leading-none">ทำรายการสำเร็จ</h4>
-                                <p class="text-sm text-slate-500 mt-1 font-medium">{{ session('status') }}</p>
-                            </div>
-                            <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                                <i data-lucide="x" class="w-5 h-5"></i>
-                            </button>
+                <div class="xl:col-span-5">
+                    <div class="glass-panel rounded-[3rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 group">
+                        <div class="text-center md:text-left space-y-2">
+                            <p class="text-[10px] font-black text-brand-500 uppercase tracking-[0.3em]">เวลาปัจจุบัน</p>
+                            <div id="liveClock" class="font-outfit text-5xl font-black text-slate-900 tabular-nums">00:00:00</div>
+                            <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">@thaidatefull(now())</p>
                         </div>
-                    @endif
-
-                    <!-- User Welcome Section -->
-                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
-                        <div class="space-y-2">
-                            <div
-                                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                ระบบบริหารจัดการงานธุรการด้านกำลังพล
-                            </div>
-                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-                                สวัสดีครับ, {{ Auth::user()->rank }}<br class="hidden md:block">
-                                <span
-                                    class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-400">{{ Auth::user()->name }}</span>
-                            </h1>
-                            <p class="text-slate-400 font-bold text-sm tracking-wide">
-                                <i data-lucide="map-pin" class="w-4 h-4 inline-block -mt-1 mr-1"></i>
-                                {{ Auth::user()->department ?? 'ไม่มีสังกัด' }} • โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="hidden sm:block text-right">
-                                <p
-                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
-                                    สถานะปัจจุบัน</p>
-                                <p class="text-sm font-bold text-emerald-600">พร้อมปฏิบัติหน้าที่</p>
-                            </div>
-                            <div
-                                class="w-14 h-14 rounded-2xl bg-white p-1 shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-brand-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                            <div class="relative w-24 h-24 rounded-[2.5rem] bg-indigo-50 border-4 border-white shadow-xl overflow-hidden">
                                 @if(Auth::user()->avatar)
-                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}"
-                                        class="w-full h-full object-cover rounded-xl">
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="w-full h-full object-cover">
                                 @else
-                                    <div
-                                        class="w-full h-full rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center font-bold text-xl uppercase">
+                                    <div class="w-full h-full flex items-center justify-center font-bold text-3xl text-brand-500 uppercase">
                                         {{ substr(Auth::user()->name, 0, 1) }}
                                     </div>
                                 @endif
@@ -191,205 +131,181 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="lg:col-span-4 flex flex-col justify-end gap-3 pb-2">
-                    <a href="{{ route('leave-request.create') }}"
-                        class="flex items-center justify-between p-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[1.5rem] transition-all transform hover:-translate-y-1 shadow-xl shadow-indigo-600/20 group">
-                        <div class="flex items-center gap-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <i data-lucide="plus" class="w-6 h-6"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-lg leading-none">ยื่นใบลาใหม่</h4>
-                                <p class="text-xs text-white/60 mt-1 font-medium">ทำรายการในระบบอัจฉริยะ</p>
-                            </div>
-                        </div>
-                        <i data-lucide="arrow-right"
-                            class="w-5 h-5 text-white/40 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-
-                    <a href="{{ route('guard-change.create') }}"
-                        class="flex items-center justify-between p-5 bg-slate-900 hover:bg-black text-white rounded-[1.5rem] transition-all transform hover:-translate-y-1 shadow-xl shadow-slate-900/20 group">
-                        <div class="flex items-center gap-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <i data-lucide="corner-up-right" class="w-6 h-6"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-lg leading-none">ขอเปลี่ยนยาม</h4>
-                                <p class="text-xs text-white/40 mt-1 font-medium">ส่งรายการเปลี่ยนเวรยาม</p>
-                            </div>
-                        </div>
-                        <i data-lucide="arrow-right"
-                            class="w-5 h-5 text-white/20 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div>
             </div>
 
-            <!-- Dashboard Body -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-                <!-- Left Section: Stats & Timeline (8 cols) -->
+            <!-- Main Dashboard Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left: Stats & Actions (8 cols) -->
                 <div class="lg:col-span-8 space-y-8">
+                    
+                    <!-- Quick Actions Bento Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <a href="{{ route('leave-request.create') }}" class="group relative bg-brand-600 rounded-[2.5rem] p-8 text-white overflow-hidden shadow-2xl shadow-brand-600/30 transition-all hover:scale-[1.02] hover:-rotate-1 active:scale-95">
+                            <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-[40px] group-hover:scale-150 transition-transform"></div>
+                            <div class="relative z-10 flex items-center justify-between">
+                                <div class="space-y-4">
+                                    <div class="w-16 h-16 rounded-[1.5rem] bg-white text-brand-600 flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
+                                        <i data-lucide="plus-circle" class="w-8 h-8"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-black tracking-tight leading-none mb-2">ยื่นใบลาใหม่</h3>
+                                        <p class="text-brand-100/70 text-sm font-medium">ทำรายการขออนุญาตลาหยุดระบบดิจิทัล</p>
+                                    </div>
+                                </div>
+                                <i data-lucide="arrow-up-right" class="w-10 h-10 text-white/30 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform"></i>
+                            </div>
+                        </a>
+
+                        <a href="{{ route('guard-change.create') }}" class="group relative bg-slate-900 rounded-[2.5rem] p-8 text-white overflow-hidden shadow-2xl shadow-slate-900/30 transition-all hover:scale-[1.02] hover:rotate-1 active:scale-95">
+                            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-[40px] group-hover:scale-150 transition-transform"></div>
+                            <div class="relative z-10 flex items-center justify-between">
+                                <div class="space-y-4">
+                                    <div class="w-16 h-16 rounded-[1.5rem] bg-white/10 text-brand-400 flex items-center justify-center shadow-lg group-hover:-rotate-12 transition-transform">
+                                        <i data-lucide="shield-check" class="w-8 h-8"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-black tracking-tight leading-none mb-2">ขอเปลี่ยนยาม</h3>
+                                        <p class="text-slate-400 text-sm font-medium">ส่งรายการขอแลกเปลี่ยนเวรยามรักษาการณ์</p>
+                                    </div>
+                                </div>
+                                <i data-lucide="arrow-up-right" class="w-10 h-10 text-white/20 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform"></i>
+                            </div>
+                        </a>
+                    </div>
 
                     <!-- Statistics Grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-
-                        <!-- Vacation Balance Card -->
-                        <div class="premium-card p-6 group">
-                            <div class="flex items-center justify-between mb-8 text-indigo-500">
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <i data-lucide="palmtree" class="w-6 h-6"></i>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Vacation Card -->
+                        <div class="bento-card group">
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="palm-tree" class="w-7 h-7"></i>
                                 </div>
-                                <span
-                                    class="text-[10px] font-black uppercase tracking-[0.2em] bg-indigo-50 px-3 py-1 rounded-full">พักผ่อนคงเหลือ</span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em] bg-brand-50 text-brand-600 px-4 py-1.5 rounded-full">พักผ่อนคงเหลือ</span>
                             </div>
-                            <div class="flex items-end gap-2 mb-4">
-                                <span class="stat-value text-5xl font-black text-slate-800">
+                            <div class="flex items-baseline gap-3 mb-6">
+                                <span class="stat-number text-6xl font-black text-slate-900">
                                     {{ $vacationBalance ? ($vacationBalance->remaining_days + 0) : 0 }}
                                 </span>
-                                <span class="text-slate-300 font-bold mb-1">/
-                                    {{ $vacationBalance ? ($vacationBalance->total_days + 0) : 0 }} วัน</span>
+                                <span class="text-slate-300 font-bold text-lg">/ {{ $vacationBalance ? ($vacationBalance->total_days + 0) : 0 }} วัน</span>
                             </div>
                             @php
                                 $vTotal = ($vacationBalance && $vacationBalance->total_days > 0) ? $vacationBalance->total_days : 1;
-                                $vRem = $vacationBalance ? $vacationBalance->remaining_days : 0;
-                                $vPerc = min(100, max(0, ($vRem / $vTotal) * 100));
+                                $vPerc = min(100, max(0, (($vacationBalance ? $vacationBalance->remaining_days : 0) / $vTotal) * 100));
                             @endphp
-                            <div class="h-2 bg-slate-50 rounded-full overflow-hidden mb-2">
-                                <div class="h-full bg-indigo-500 transition-all duration-1000 shadow-[0_0_10px_#6366f1]"
-                                    style="width: {{ $vPerc }}%"></div>
+                            <div class="h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                <div class="h-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(14,165,233,0.4)]"
+                                     style="width: {{ $vPerc }}%"></div>
                             </div>
-                            <p class="text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">
-                                สิทธิ์ใช้งานในปีนี้</p>
                         </div>
 
-                        <!-- Sick Usage Card -->
-                        <div class="premium-card p-6 group">
+                        <!-- Sick Leave Card -->
+                        <div class="bento-card group">
                             <div class="flex items-center justify-between mb-8 text-rose-500">
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <i data-lucide="thermometer" class="w-6 h-6"></i>
+                                <div class="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="thermometer-sun" class="w-7 h-7"></i>
                                 </div>
-                                <span
-                                    class="text-[10px] font-black uppercase tracking-[0.2em] bg-rose-50 px-3 py-1 rounded-full">สถิติลาป่วย</span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em] bg-rose-50 text-rose-500 px-4 py-1.5 rounded-full">ลาป่วยปีนี้</span>
                             </div>
-                            <div class="flex items-end gap-2 mb-4">
-                                <span class="stat-value text-5xl font-black text-slate-800">{{ $sickUsageCount }}</span>
-                                <span class="text-slate-300 font-bold mb-1">ครั้ง</span>
+                            <div class="flex items-baseline gap-3 mb-2">
+                                <span class="stat-number text-6xl font-black text-slate-800">{{ $sickUsageCount }}</span>
+                                <span class="text-slate-300 font-bold text-lg">ครั้ง</span>
                             </div>
-                            <div class="flex items-center justify-between text-xs font-bold text-slate-400">
-                                <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> รวม
-                                    {{ $sickUsageDays + 0 }} วัน</span>
-                                <span class="text-rose-400 opacity-60">ปีปัจจุบัน</span>
-                            </div>
+                            <p class="text-xs font-bold text-slate-400 flex items-center gap-2">
+                                <i data-lucide="clock-3" class="w-3.5 h-3.5 opacity-50"></i>
+                                รวมระยะเวลา {{ $sickUsageDays + 0 }} วัน
+                            </p>
                         </div>
 
-                        <!-- Personal Usage Card -->
-                        <div class="premium-card p-6 group">
+                        <!-- Personal Leave Card -->
+                        <div class="bento-card group">
                             <div class="flex items-center justify-between mb-8 text-amber-500">
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <i data-lucide="briefcase" class="w-6 h-6"></i>
+                                <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="award" class="w-7 h-7"></i>
                                 </div>
-                                <span
-                                    class="text-[10px] font-black uppercase tracking-[0.2em] bg-amber-50 px-3 py-1 rounded-full">ลากิจส่วนตัว</span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em] bg-amber-50 text-amber-600 px-4 py-1.5 rounded-full">ลากิจส่วนตัว</span>
                             </div>
-                            <div class="flex items-end gap-2 mb-4">
-                                <span
-                                    class="stat-value text-5xl font-black text-slate-800">{{ $personalUsageCount }}</span>
-                                <span class="text-slate-300 font-bold mb-1">ครั้ง</span>
+                            <div class="flex items-baseline gap-3 mb-2">
+                                <span class="stat-number text-6xl font-black text-slate-800">{{ $personalUsageCount }}</span>
+                                <span class="text-slate-300 font-bold text-lg">ครั้ง</span>
                             </div>
-                            <div class="flex items-center justify-between text-xs font-bold text-slate-400">
-                                <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> รวม
-                                    {{ $personalUsageDays + 0 }} วัน</span>
-                                <span class="text-amber-500 opacity-60">ปีปัจจุบัน</span>
-                            </div>
+                            <p class="text-xs font-bold text-slate-400 flex items-center gap-2">
+                                <i data-lucide="clock-3" class="w-3.5 h-3.5 opacity-50"></i>
+                                รวมระยะเวลา {{ $personalUsageDays + 0 }} วัน
+                            </p>
                         </div>
-
                     </div>
 
-                    <!-- Timeline Card -->
-                    <div class="premium-card">
-                        <div class="p-8 border-b border-slate-50 flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center rotate-3">
-                                    <i data-lucide="activity" class="w-6 h-6"></i>
+                    <!-- Activity List Card -->
+                    <div class="bento-card !p-0">
+                        <div class="p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50/50">
+                            <div class="flex items-center gap-5">
+                                <div class="w-16 h-16 rounded-3xl bg-slate-900 text-white flex items-center justify-center shadow-xl rotate-3 shrink-0">
+                                    <i data-lucide="layout-list" class="w-8 h-8"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-slate-900 tracking-tight leading-none">
-                                        ความเคลื่อนไหวล่าสุด</h3>
-                                    <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">
-                                        รายการประวัติการลาล่าสุดของคุณ</p>
+                                    <h3 class="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">ความเคลื่อนไหวล่าสุด</h3>
+                                    <p class="text-xs text-slate-400 uppercase tracking-[0.2em] font-black">ประวัติการทำรายการของคุณ</p>
                                 </div>
                             </div>
-                            <a href="{{ route('leave-request.index') }}"
-                                class="px-5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                                ประวัติทั้งหมด
-                                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                            <a href="{{ route('leave-request.index') }}" class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white text-brand-600 font-black text-xs uppercase tracking-widest shadow-sm hover:shadow-md hover:-translate-y-1 transition-all border border-slate-100 active:scale-95">
+                                <span>ดูประวัติทั้งหมด</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
                             </a>
                         </div>
 
-                        <div class="p-4 max-h-[500px] overflow-y-auto custom-scrollbar">
+                        <div class="p-6 max-h-[600px] overflow-y-auto custom-scrollbar">
                             @if($recentRequests->isEmpty())
-                                <div class="py-20 text-center space-y-4">
-                                    <div
-                                        class="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto text-slate-200">
-                                        <i data-lucide="inbox" class="w-10 h-10"></i>
+                                <div class="py-24 text-center">
+                                    <div class="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mx-auto text-slate-200 mb-6">
+                                        <i data-lucide="inbox" class="w-12 h-12"></i>
                                     </div>
-                                    <p class="text-slate-400 font-bold uppercase tracking-widest text-sm">
-                                        ไม่พบข้อมูลการทำรายการล่าสุด</p>
+                                    <p class="text-slate-400 font-black uppercase tracking-widest text-sm">ยังไม่มีความเคลื่อนไหวในขณะนี้</p>
                                 </div>
                             @else
                                 <div class="space-y-4">
-                                    @foreach($recentRequests->take(8) as $req)
-                                        <div class="group flex items-center gap-5 p-4 hover:bg-slate-50 rounded-3xl transition-all cursor-pointer border border-transparent hover:border-slate-100"
-                                            onclick="window.location='{{ route('leave-request.show', $req->id) }}'">
-
+                                    @foreach($recentRequests as $req)
+                                        <div onclick="window.location='{{ route('leave-request.show', $req->id) }}'" 
+                                             class="group flex flex-col sm:flex-row sm:items-center gap-6 p-6 hover:bg-slate-50 rounded-[2rem] transition-all cursor-pointer border-2 border-transparent hover:border-slate-100 relative overflow-hidden">
+                                            
                                             @php
-                                                $cat = match ($req->leaveType->slug) {
+                                                $meta = match ($req->leaveType->slug) {
                                                     'sick' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-500', 'icon' => 'thermometer'],
-                                                    'vacation' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-500', 'icon' => 'palmtree'],
-                                                    default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-500', 'icon' => 'briefcase'],
+                                                    'vacation' => ['bg' => 'bg-brand-50', 'text' => 'text-brand-500', 'icon' => 'palm-tree'],
+                                                    default => ['bg' => 'bg-amber-50', 'text' => 'text-amber-500', 'icon' => 'briefcase-business'],
                                                 };
                                                 $status = match ($req->status) {
-                                                    'approved' => ['class' => 'text-emerald-500 bg-emerald-50', 'label' => 'อนุมัติแล้ว'],
-                                                    'rejected' => ['class' => 'text-rose-500 bg-rose-50', 'label' => 'ปฏิเสธแล้ว'],
-                                                    'cancelled' => ['class' => 'text-slate-400 bg-slate-50', 'label' => 'ยกเลิก'],
-                                                    default => ['class' => 'text-amber-500 bg-amber-50 animate-pulse', 'label' => 'รออนุมัติ'],
+                                                    'approved' => ['class' => 'bg-emerald-500 text-white', 'label' => 'อนุมัติเรียบร้อย', 'dot' => 'bg-emerald-200'],
+                                                    'rejected' => ['class' => 'bg-rose-500 text-white', 'label' => 'ปฏิเสธคำขอ', 'dot' => 'bg-rose-200'],
+                                                    'cancelled' => ['class' => 'bg-slate-200 text-slate-500', 'label' => 'ยกเลิกรายการ', 'dot' => 'bg-slate-300'],
+                                                    default => ['class' => 'bg-amber-100 text-amber-700 animate-pulse', 'label' => 'รอการตรวจสอบ', 'dot' => 'bg-amber-400'],
                                                 };
                                             @endphp
 
-                                            <div
-                                                class="w-14 h-14 rounded-2xl {{ $cat['bg'] }} {{ $cat['text'] }} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105">
-                                                <i data-lucide="{{ $cat['icon'] }}" class="w-6 h-6"></i>
+                                            <div class="w-16 h-16 rounded-[1.5rem] {{ $meta['bg'] }} {{ $meta['text'] }} flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                                                <i data-lucide="{{ $meta['icon'] }}" class="w-8 h-8"></i>
                                             </div>
 
                                             <div class="flex-1 min-w-0">
-                                                <h4
-                                                    class="font-bold text-slate-800 text-lg tracking-tight truncate leading-tight">
-                                                    {{ $req->leaveType->name }} <span
-                                                        class="text-slate-300 ml-1 font-medium italic">({{ $req->total_days + 0 }}
-                                                        วัน)</span>
-                                                </h4>
-                                                <p
-                                                    class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mt-1">
-                                                    <i data-lucide="calendar" class="w-3 h-3 shrink-0"></i>
-                                                    @thaidate($req->start_date) - @thaidate($req->end_date)
-                                                </p>
+                                                <div class="flex flex-wrap items-center gap-3 mb-2">
+                                                    <h4 class="font-black text-slate-800 text-xl tracking-tight leading-none">{{ $req->leaveType->name }}</h4>
+                                                    <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-wider">
+                                                        {{ $req->total_days + 0 }} วัน
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center gap-4 text-xs font-bold text-slate-400">
+                                                    <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> @thaidate($req->start_date) - @thaidate($req->end_date)</span>
+                                                    <span class="hidden sm:inline w-1 h-1 rounded-full bg-slate-200"></span>
+                                                    <span class="hidden sm:flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5"></i> {{ $req->created_at->diffForHumans() }}</span>
+                                                </div>
                                             </div>
 
-                                            <div class="text-right shrink-0">
-                                                <span
-                                                    class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest {{ $status['class'] }} shadow-sm">
+                                            <div class="sm:text-right flex items-center sm:block justify-between mt-4 sm:mt-0">
+                                                <span class="inline-flex items-center gap-2 px-5 py-2 rounded-2xl {{ $status['class'] }} text-[10px] font-black uppercase tracking-widest shadow-lg shadow-opacity-10">
+                                                    <span class="w-1.5 h-1.5 rounded-full {{ $status['dot'] }}"></span>
                                                     {{ $status['label'] }}
                                                 </span>
-                                                <p class="text-[9px] text-slate-300 mt-2 font-bold">
-                                                    {{ $req->created_at->diffForHumans() }}
-                                                </p>
                                             </div>
                                         </div>
                                     @endforeach
@@ -399,99 +315,100 @@
                     </div>
                 </div>
 
-                <!-- Right Section: Sidebar Elements (4 cols) -->
+                <!-- Right: Content Sidebar (4 cols) -->
                 <div class="lg:col-span-4 space-y-8">
+                    
+                    <!-- Smart Calendar Bento -->
+                    <div class="bento-card group">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xl font-black text-slate-900 tracking-tight uppercase">ปฏิทินปฏิบัติงาน</h3>
+                            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center group-hover:rotate-12 transition-transform">
+                                <i data-lucide="calendar-heart" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="rounded-3xl overflow-hidden bg-white border border-slate-50 p-2 shadow-inner">
+                            <div id="dashboardCalendar" class="font-thai"></div>
+                        </div>
 
-                    <!-- Calendar Widget -->
-                    <div class="premium-card">
-                        <div class="p-6 border-b border-slate-50 text-center">
-                            <h3 class="text-lg font-black text-slate-900 tracking-tight uppercase">ปฏิทินของหน่วยงาน
-                            </h3>
-                        </div>
-                        <div class="p-4 bg-slate-50/30">
-                            <div id="dashboardCalendar"></div>
-                        </div>
-                        <div class="p-6 border-t border-slate-50 flex items-center justify-between">
-                            <div class="flex items-center -space-x-3">
+                        <div class="mt-8 pt-8 border-t border-slate-50 flex items-center justify-between">
+                            <div class="flex items-center -space-x-4">
                                 @foreach($todayLeaves->take(4) as $leave)
-                                    <div class="w-10 h-10 rounded-full border-4 border-white bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-500 uppercase overflow-hidden ring-1 ring-slate-100"
-                                        title="{{ $leave->user->name }}">
+                                    <div class="w-12 h-12 rounded-[1.2rem] border-4 border-white bg-slate-100 flex items-center justify-center overflow-hidden shadow-md ring-1 ring-slate-100" title="{{ $leave->user->name }}">
                                         @if($leave->user->avatar)
-                                            <img src="{{ asset('storage/' . $leave->user->avatar) }}"
-                                                class="w-full h-full object-cover">
+                                            <img src="{{ asset('storage/' . $leave->user->avatar) }}" class="w-full h-full object-cover">
                                         @else
-                                            {{ substr($leave->user->name, 0, 1) }}
+                                            <span class="font-black text-slate-400 text-sm">{{ substr($leave->user->name, 0, 1) }}</span>
                                         @endif
                                     </div>
                                 @endforeach
                                 @if($todayLeaves->count() > 4)
-                                    <div
-                                        class="w-10 h-10 rounded-full border-4 border-white bg-indigo-600 text-white flex items-center justify-center font-black text-[10px] ring-1 ring-slate-100">
+                                    <div class="w-12 h-12 rounded-[1.2rem] border-4 border-white bg-brand-600 text-white flex items-center justify-center font-black text-xs shadow-md ring-1 ring-slate-100">
                                         +{{ $todayLeaves->count() - 4 }}
                                     </div>
                                 @endif
                             </div>
-                            <span
-                                class="text-xs font-black text-slate-400 uppercase tracking-widest">กำลังลาวันนี้</span>
+                            <div class="text-right">
+                                <p class="text-[10px] font-black text-brand-500 uppercase tracking-widest leading-none mb-1">สถานะวันนี้</p>
+                                <p class="text-sm font-bold text-slate-500">มียอดลา {{ $todayLeaves->count() }} นาย</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Smart Tips/Regulation Card -->
-                    <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
-                        <div
-                            class="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500 rounded-full blur-[100px] opacity-20">
-                        </div>
-                        <div class="relative z-10 space-y-6">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-indigo-400">
-                                    <i data-lucide="info" class="w-6 h-6"></i>
+                    <!-- Regulation Card -->
+                    <div class="relative bg-slate-900 rounded-[3rem] p-10 text-white overflow-hidden shadow-2xl">
+                        <div class="absolute -top-10 -right-10 w-48 h-48 bg-brand-500 rounded-full blur-[100px] opacity-30"></div>
+                        <div class="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-500 rounded-full blur-[100px] opacity-20"></div>
+                        
+                        <div class="relative z-10 space-y-8">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-brand-400">
+                                    <i data-lucide="bookmark-check" class="w-7 h-7"></i>
                                 </div>
-                                <h4 class="font-black text-xl tracking-tight uppercase">เกร็ดน่ารู้และระเบียบการลา</h4>
-                            </div>
-
-                            <div class="space-y-4">
-                                <div
-                                    class="p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-                                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">
-                                        ลาสะสม</p>
-                                    <p class="text-xs text-slate-400 font-medium leading-relaxed">
-                                        วันลาพักผ่อนสะสมปีปัจจุบัน สามารถสะสมได้สูงสุดไม่เกิน 20-30 วัน
-                                        ตามอายุการรับราชการ</p>
-                                </div>
-                                <div
-                                    class="p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-                                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400 mb-1">
-                                        ใบรับรองแพทย์</p>
-                                    <p class="text-xs text-slate-400 font-medium leading-relaxed">
-                                        กรณีลาป่วยติดต่อกันเกิน 3 วันทำการ จำเป็นต้องแนบใบรับรองแพทย์ประกอบการพิจารณา
-                                    </p>
+                                <div>
+                                    <h4 class="text-xl font-black tracking-tight leading-none mb-1">สาระน่ารู้</h4>
+                                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">กฎระเบียบและข้อแนะนำ</p>
                                 </div>
                             </div>
 
-                            <button onclick="window.location='{{ route('calendar.index') }}'"
-                                class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 transition-all text-white font-black rounded-2xl shadow-xl shadow-indigo-600/20 active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-widest">
-                                <span>ดูปฏิทินแบบละเอียด</span>
-                                <i data-lucide="maximize" class="w-4 h-4"></i>
+                            <div class="space-y-6">
+                                <div class="flex gap-4 group cursor-help">
+                                    <div class="w-1 h-12 bg-brand-500 rounded-full group-hover:scale-y-125 transition-transform"></div>
+                                    <div>
+                                        <p class="text-xs font-black text-brand-400 uppercase tracking-widest mb-1">การลาพักผ่อนสะสม</p>
+                                        <p class="text-xs text-slate-400 leading-relaxed font-medium">วันลาพักผ่อนสามารถสะสมไปปีถัดไปได้ รวมไม่เกิน 20 วันทำการ (30 วันสำหรับผู้รับราชการ 10 ปีขึ้นไป)</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 group cursor-help">
+                                    <div class="w-1 h-12 bg-rose-500 rounded-full group-hover:scale-y-125 transition-transform"></div>
+                                    <div>
+                                        <p class="text-xs font-black text-rose-400 uppercase tracking-widest mb-1">หลักฐานการลาป่วย</p>
+                                        <p class="text-xs text-slate-400 leading-relaxed font-medium">กรณีลาป่วยเกิน 3 วันทำการ ต้องแนบใบรับรองแพทย์จากสถานพยาบาลทางทหารหรือที่รัฐบาลรับรอง</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="window.location='{{ route('calendar.index') }}'" 
+                                    class="w-full py-5 bg-brand-600 hover:bg-brand-500 transition-all text-white font-black rounded-3xl shadow-xl shadow-brand-600/30 active:scale-95 flex items-center justify-center gap-4 text-xs uppercase tracking-[0.2em]">
+                                <span>ภาพรวมปฏิบัติงาน</span>
+                                <i data-lucide="layout-grid" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Contact/Support Link -->
-                    <div
-                        class="p-8 rounded-[2.5rem] bg-indigo-50 border border-indigo-100 flex flex-col items-center text-center space-y-4">
-                        <div
-                            class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg border border-indigo-200 group hover:rotate-12 transition-transform">
-                            <i data-lucide="help-circle" class="w-10 h-10 text-indigo-500"></i>
+                    <!-- Support Card -->
+                    <div class="bento-card bg-gradient-to-br from-brand-50 to-white flex flex-col items-center text-center !p-12">
+                        <div class="relative mb-6">
+                            <div class="absolute inset-0 bg-brand-500 blur-2xl opacity-10"></div>
+                            <div class="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center shadow-xl border border-brand-100 rotate-6 group-hover:rotate-0 transition-transform">
+                                <i data-lucide="message-square-heart" class="w-12 h-12 text-brand-500"></i>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="font-black text-slate-900 uppercase">ต้องการความช่วยเหลือ?</h4>
-                            <p class="text-xs text-slate-500 mt-2 font-medium">ติดต่อฝ่ายกำลังพล โรงเรียนพลาธิการ
-                                หากพบปัญหาในการใช้งานระบบ</p>
-                        </div>
-                        <a href="tel:023456789"
-                            class="text-indigo-600 font-black text-sm uppercase tracking-widest hover:underline decoration-2 underline-offset-4">
-                            ติดต่อเจ้าหน้าที่
+                        <h4 class="text-xl font-black text-slate-900 tracking-tight leading-none mb-3">ต้องการความช่วยเหลือ?</h4>
+                        <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">หากท่านมีข้อสงสัยหรือพบปัญหาในการใช้งานระบบ สามารถติดต่อฝ่ายกำลังพลได้ทันที</p>
+                        <a href="tel:023456789" class="inline-flex items-center gap-3 text-brand-600 font-black text-sm uppercase tracking-[0.2em] border-b-4 border-brand-200 hover:border-brand-500 transition-all pb-1 group">
+                            <span>ติดต่อเจ้าหน้าที่</span>
+                            <i data-lucide="phone-call" class="w-4 h-4 group-hover:animate-bounce"></i>
                         </a>
                     </div>
 
@@ -504,51 +421,61 @@
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                // Live Clock
+                function updateClock() {
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    document.getElementById('liveClock').textContent = `${hours}:${minutes}:${seconds}`;
+                }
+                setInterval(updateClock, 1000);
+                updateClock();
+
+                // FullCalendar
                 const calendarEl = document.getElementById('dashboardCalendar');
-                if (!calendarEl) return;
+                if (calendarEl) {
+                    const calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        locale: 'th',
+                        headerToolbar: {
+                            left: 'prev',
+                            center: 'title',
+                            right: 'next'
+                        },
+                        height: 'auto',
+                        aspectRatio: 1.1,
+                        dayMaxEvents: 1,
+                        fixedWeekCount: false,
+                        showNonCurrentDates: false,
+                        events: function (info, successCallback, failureCallback) {
+                            const params = new URLSearchParams({
+                                start: info.startStr,
+                                end: info.endStr,
+                                department: 'all'
+                            });
+                            fetch(`{{ route('calendar.events') }}?${params}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    successCallback(data.map(event => ({
+                                        ...event,
+                                        backgroundColor: event.extendedProps.type === 'vacation' ? '#0ea5e9' :
+                                                        event.extendedProps.type === 'sick' ? '#f43f5e' : '#f59e0b',
+                                        borderColor: 'transparent'
+                                    })));
+                                })
+                                .catch(error => failureCallback(error));
+                        },
+                        eventClick: function () { window.location.href = '{{ route("calendar.index") }}'; }
+                    });
+                    calendar.render();
+                }
 
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    locale: 'th',
-                    headerToolbar: {
-                        left: 'prev',
-                        center: 'title',
-                        right: 'next'
-                    },
-                    height: 'auto',
-                    aspectRatio: 1.1,
-                    dayMaxEvents: 1,
-                    fixedWeekCount: false,
-                    showNonCurrentDates: false,
-                    events: function (info, successCallback, failureCallback) {
-                        const params = new URLSearchParams({
-                            start: info.startStr,
-                            end: info.endStr,
-                            department: 'all'
-                        });
-
-                        fetch(`{{ route('calendar.events') }}?${params}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                successCallback(data.map(event => ({
-                                    ...event,
-                                    backgroundColor: event.extendedProps.type === 'vacation' ? '#6366f1' :
-                                        event.extendedProps.type === 'sick' ? '#f43f5e' : '#f59e0b',
-                                    borderColor: 'transparent'
-                                })));
-                            })
-                            .catch(error => failureCallback(error));
-                    },
-                    eventClick: function () { window.location.href = '{{ route("calendar.index") }}'; }
-                });
-
-                calendar.render();
+                // Re-init Lucide Icons
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
             });
-
-            // Re-init Lucide
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
         </script>
     @endpush
 </x-app-layout>

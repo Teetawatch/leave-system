@@ -60,6 +60,35 @@
             .ticket-gradient {
                 background: linear-gradient(165deg, #1e293b 0%, #0f172a 100%);
             }
+
+            .balance-card {
+                background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(248,250,252,0.9) 100%);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(226, 232, 240, 0.6);
+            }
+
+            .balance-progress {
+                transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            @keyframes count-up {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .animate-count-up {
+                animation: count-up 0.4s ease-out forwards;
+            }
+
+            @keyframes fade-in-scale {
+                from { opacity: 0; transform: scale(0.95) translateY(8px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+
+            .animate-fade-in-scale {
+                animation: fade-in-scale 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            }
         </style>
     @endpush
 
@@ -167,6 +196,60 @@
                                     </div>
                                 </label>
                             @endforeach
+                        </div>
+
+                        <!-- Leave Balance Info Card -->
+                        <div x-show="leaveType && !isTemporary" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-4 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100" class="mt-8">
+                            <div class="balance-card rounded-[2.5rem] p-8 animate-fade-in-scale">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg">
+                                        <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-black text-slate-800 tracking-tight">สถิติการลา <span class="text-indigo-600" x-text="getLeaveTypeName()"></span></h4>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">ปีงบประมาณ {{ now()->year + 543 }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-4 mb-6">
+                                    <!-- Used Days -->
+                                    <div class="bg-white rounded-[1.5rem] p-5 text-center border border-slate-100 shadow-sm group hover:shadow-md hover:border-rose-100 transition-all">
+                                        <div class="w-10 h-10 mx-auto rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                            <i data-lucide="calendar-minus" class="w-5 h-5"></i>
+                                        </div>
+                                        <p class="text-3xl font-black text-rose-500 animate-count-up" x-text="getUsedDays()">0</p>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">ลาไปแล้ว (วัน)</p>
+                                    </div>
+                                    <!-- Remaining Days -->
+                                    <div class="bg-white rounded-[1.5rem] p-5 text-center border border-slate-100 shadow-sm group hover:shadow-md hover:border-emerald-100 transition-all">
+                                        <div class="w-10 h-10 mx-auto rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                                        </div>
+                                        <p class="text-3xl font-black text-emerald-500 animate-count-up" x-text="getRemainingDays()">0</p>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">คงเหลือ (วัน)</p>
+                                    </div>
+                                    <!-- Total Quota -->
+                                    <div class="bg-white rounded-[1.5rem] p-5 text-center border border-slate-100 shadow-sm group hover:shadow-md hover:border-indigo-100 transition-all">
+                                        <div class="w-10 h-10 mx-auto rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                            <i data-lucide="calendar-range" class="w-5 h-5"></i>
+                                        </div>
+                                        <p class="text-3xl font-black text-indigo-500 animate-count-up" x-text="getTotalDays()">0</p>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">สิทธิ์ทั้งปี (วัน)</p>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar -->
+                                <div class="bg-slate-100 rounded-full h-3 overflow-hidden">
+                                    <div class="h-full rounded-full balance-progress"
+                                         :class="getUsagePercent() > 80 ? 'bg-gradient-to-r from-rose-400 to-rose-500' : (getUsagePercent() > 50 ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500')"
+                                         :style="'width: ' + getUsagePercent() + '%'">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-2">
+                                    <span class="text-[10px] font-bold text-slate-400">ใช้ไป <span x-text="getUsagePercent()"></span>%</span>
+                                    <span class="text-[10px] font-bold text-slate-400">คงเหลือ <span x-text="(100 - getUsagePercent())"></span>%</span>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -544,6 +627,7 @@
                     temporaryPeriod: '{{ old('temporary_leave_period', 'morning') }}',
                     todayDate: new Date().toLocaleDateString('en-CA'),
                     leaveTypes: @json($leaveTypes),
+                    leaveBalances: @json($leaveBalances),
                     fileName: '',
                     steps: [
                         { name: 'เลือกประเภท' },
@@ -618,6 +702,38 @@
                     getLeaveTypeName() {
                         const type = this.leaveTypes.find(t => t.id == this.leaveType);
                         return type ? type.name : null;
+                    },
+
+                    getBalance() {
+                        if (!this.leaveType) return null;
+                        return this.leaveBalances[this.leaveType] || null;
+                    },
+
+                    getUsedDays() {
+                        const balance = this.getBalance();
+                        return balance ? balance.used_days : 0;
+                    },
+
+                    getRemainingDays() {
+                        const balance = this.getBalance();
+                        if (balance) return balance.remaining_days;
+                        // If no balance record, show max from leave type
+                        const type = this.leaveTypes.find(t => t.id == this.leaveType);
+                        return type ? type.max_days_per_year : 0;
+                    },
+
+                    getTotalDays() {
+                        const balance = this.getBalance();
+                        if (balance) return balance.total_days;
+                        const type = this.leaveTypes.find(t => t.id == this.leaveType);
+                        return type ? type.max_days_per_year : 0;
+                    },
+
+                    getUsagePercent() {
+                        const total = this.getTotalDays();
+                        if (total <= 0) return 0;
+                        const used = this.getUsedDays();
+                        return Math.min(Math.round((used / total) * 100), 100);
                     },
 
                     formatDate(dateString) {
