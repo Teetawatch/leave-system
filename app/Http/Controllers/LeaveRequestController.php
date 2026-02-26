@@ -49,7 +49,15 @@ class LeaveRequestController extends Controller
     {
         // Exclude 'official-duty' from standard leave request form
         $leaveTypes = LeaveType::where('slug', '!=', 'official-duty')->get();
-        return view('leave_request.create', compact('leaveTypes'));
+
+        // Get leave balances for the current user this year, keyed by leave_type_id
+        $currentYear = now()->year;
+        $leaveBalances = LeaveBalance::where('user_id', Auth::id())
+            ->where('year', $currentYear)
+            ->get()
+            ->keyBy('leave_type_id');
+
+        return view('leave_request.create', compact('leaveTypes', 'leaveBalances'));
     }
 
     public function store(Request $request)
