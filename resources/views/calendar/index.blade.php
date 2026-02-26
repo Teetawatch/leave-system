@@ -4,413 +4,362 @@
     @push('styles')
         <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
-
-            :root {
-                --primary: #7C3AED;
-                --primary-glow: rgba(124, 58, 237, 0.15);
-                --secondary: #A78BFA;
-                --cta: #F97316;
-                --bg-main: #FAF5FF;
-                --text-main: #4C1D95;
-                --glass-bg: rgba(255, 255, 255, 0.6);
-                --glass-border: rgba(255, 255, 255, 0.4);
-                --card-shadow: 0 20px 40px -12px rgba(76, 29, 149, 0.08);
+            /* Glassmorphism Panel */
+            .glass-panel {
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            }
+            
+            .glass-panel:hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
             }
 
-            body {
-                font-family: 'Fira Sans', 'Sarabun', sans-serif;
-                background-color: var(--bg-main);
-            }
-
-            h1, h2, h3, h4, .font-display {
-                font-family: 'Fira Code', monospace;
-            }
-
-            /* Liquid Glass Utility */
-            .liquid-glass {
-                background: var(--glass-bg);
-                backdrop-filter: blur(16px) saturate(180%);
-                -webkit-backdrop-filter: blur(16px) saturate(180%);
-                border: 1px solid var(--glass-border);
-            }
-
-            .glass-card {
-                background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4));
-                backdrop-filter: blur(12px);
-                border: 1px solid rgba(255, 255, 255, 0.5);
-                box-shadow: var(--card-shadow);
-                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .glass-card:hover {
-                transform: translateY(-4px) scale(1.01);
-                box-shadow: 0 30px 60px -12px rgba(76, 29, 149, 0.12);
-                border-color: rgba(124, 58, 237, 0.3);
-            }
-
-            /* Animated Background Blobs */
-            .blob-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: -1;
-                overflow: hidden;
-                pointer-events: none;
-            }
-
-            .blob {
-                position: absolute;
-                border-radius: 50%;
-                filter: blur(80px);
-                opacity: 0.2;
-                animation: float 20s infinite alternate ease-in-out;
-            }
-
-            @keyframes float {
-                0% { transform: translate(0, 0) scale(1); }
-                100% { transform: translate(100px, 100px) scale(1.2); }
-            }
-
-            /* Custom Calendar Styles */
+            /* FullCalendar Customization */
             .fc {
                 font-family: inherit;
-                --fc-border-color: rgba(124, 58, 237, 0.05);
-                --fc-daygrid-event-dot-width: 8px;
-                --fc-today-bg-color: rgba(124, 58, 237, 0.08);
             }
-
             .fc .fc-toolbar-title {
-                font-family: 'Fira Code', monospace;
-                font-weight: 700;
-                color: var(--text-main);
                 font-size: 1.5rem !important;
+                font-weight: 700 !important;
+                color: #1e293b; /* slate-800 */
+                letter-spacing: -0.025em;
             }
-
-            .fc .fc-button {
-                background: var(--primary);
-                border: none;
-                border-radius: 12px;
-                padding: 8px 16px;
-                font-weight: 600;
-                font-size: 0.875rem;
-                transition: all 0.2s;
-                text-transform: capitalize;
+            .fc .fc-button-primary {
+                background-color: #6366f1 !important; /* indigo-500 */
+                border-color: #6366f1 !important;
+                border-radius: 0.75rem !important;
+                padding: 0.5rem 1.25rem !important;
+                font-weight: 600 !important;
+                font-size: 0.875rem !important;
+                text-transform: capitalize !important;
+                transition: all 0.2s ease !important;
             }
-
-            .fc .fc-button:hover {
-                background: #6D28D9;
+            .fc .fc-button-primary:hover {
+                background-color: #4f46e5 !important; /* indigo-600 */
+                border-color: #4f46e5 !important;
                 transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
             }
-
-            .fc .fc-button-primary:not(:disabled).fc-button-active {
-                background: #4C1D95;
+            .fc .fc-button-primary:not(:disabled).fc-button-active,
+            .fc .fc-button-primary:not(:disabled):active {
+                background-color: #4338ca !important; /* indigo-700 */
+                border-color: #4338ca !important;
             }
-
+            .fc-theme-standard td, .fc-theme-standard th {
+                border-color: #f1f5f9 !important; /* slate-100 */
+            }
             .fc .fc-col-header-cell {
-                padding: 12px 0;
-                background: rgba(124, 58, 237, 0.03);
+                background-color: #f8fafc; /* slate-50 */
+                padding: 1rem 0 !important;
             }
-
             .fc .fc-col-header-cell-cushion {
-                font-family: 'Fira Code', monospace;
-                font-size: 0.75rem;
+                font-weight: 700 !important;
+                color: #64748b !important; /* slate-500 */
+                font-size: 0.875rem;
                 text-transform: uppercase;
-                letter-spacing: 0.1em;
-                color: var(--text-main);
-                opacity: 0.7;
+                letter-spacing: 0.05em;
             }
-
             .fc .fc-daygrid-day-number {
-                font-family: 'Fira Code', monospace;
-                color: var(--text-main);
-                font-weight: 500;
-                padding: 8px;
+                font-weight: 600 !important;
+                color: #475569 !important; /* slate-600 */
+                padding: 0.5rem !important;
             }
-
+            .fc .fc-day-today {
+                background-color: #f8fafc !important; /* slate-50 */
+            }
             .fc .fc-day-today .fc-daygrid-day-number {
-                background: var(--primary);
-                color: white;
-                border-radius: 8px;
-                margin: 4px;
+                background-color: #6366f1 !important; /* indigo-500 */
+                color: white !important;
+                border-radius: 0.5rem;
+                padding: 0.25rem 0.5rem !important;
+                margin: 0.25rem !important;
+                display: inline-block;
             }
-
-            .fc-event {
-                border: none !important;
-                padding: 4px 8px !important;
-                border-radius: 8px !important;
+            .fc .fc-event {
+                border-radius: 0.5rem !important;
+                padding: 0.25rem 0.5rem !important;
                 font-size: 0.75rem !important;
                 font-weight: 600 !important;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                transition: transform 0.2s, box-shadow 0.2s !important;
+                border: none !important;
+                margin: 1px 2px !important;
+                cursor: pointer;
+                transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            }
+            .fc .fc-event:hover {
+                transform: translateY(-2px) !important;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+                z-index: 10 !important;
+                filter: brightness(0.95);
             }
 
-            .fc-event:hover {
-                transform: scale(1.03) translateY(-1px) !important;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-                z-index: 5;
+            /* Animations */
+            @keyframes slideInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
             }
-
-            /* Custom Skeleton */
-            .skeleton {
-                background: linear-gradient(90deg, #f3e8ff 25%, #faf5ff 50%, #f3e8ff 75%);
-                background-size: 200% 100%;
-                animation: skeleton-loading 1.5s infinite;
+            .animate-slide-in-up {
+                animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             }
-
-            @keyframes skeleton-loading {
-                0% { background-position: 200% 0; }
-                100% { background-position: -200% 0; }
+            
+            /* Custom Scrollbar for Modal */
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
             }
-
-            /* Modal Glass */
-            .modal-glass {
-                background: rgba(255, 255, 255, 0.8);
-                backdrop-filter: blur(24px);
-                border: 1px solid rgba(255, 255, 255, 0.6);
-                box-shadow: 0 50px 100px -20px rgba(76, 29, 149, 0.25);
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: rgba(0,0,0,0.05);
+                border-radius: 10px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: rgba(0,0,0,0.1);
+                border-radius: 10px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: rgba(0,0,0,0.2);
             }
         </style>
     @endpush
 
-    <div class="relative min-h-screen overflow-x-hidden pt-6 pb-12">
-        <!-- Background Orbs -->
-        <div class="blob-container">
-            <div class="blob bg-purple-400 w-[500px] h-[500px] -top-24 -left-24"></div>
-            <div class="blob bg-indigo-400 w-[600px] h-[600px] top-1/2 -right-32"></div>
-            <div class="blob bg-orange-300 w-[400px] h-[400px] -bottom-24 left-1/4"></div>
-        </div>
+    <div class="min-h-screen pb-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-slide-in-up">
+            
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                <div class="flex items-start gap-4">
+                    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-slate-100 flex-shrink-0">
+                        <i data-lucide="calendar-days" class="w-7 h-7 text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">ปฏิทินการลา</h1>
+                        <p class="text-sm text-slate-500 font-medium mt-1">ภาพรวมและปฏิทินแสดงการลาของกำลังพลในหน่วย</p>
+                    </div>
+                </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Header Section -->
-            <div class="relative mb-10">
-                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div class="flex items-start gap-5">
-                        <div class="relative group">
-                            <div class="absolute -inset-1 bg-gradient-to-r from-primary to-cta rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                            <div class="relative w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-2xl glass-card">
-                                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                    </path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div>
-                            <h1 class="text-4xl font-extrabold text-text-main tracking-tight mb-2">
-                                ปฏิทิน<span class="text-primary italic">การลา</span>
-                            </h1>
-                            <div class="flex items-center gap-2 text-primary/70 font-medium">
-                                <span class="w-8 h-[2px] bg-primary/30"></span>
-                                <p class="text-sm">ภาพรวมความเคลื่อนไหวของกำลังพล</p>
-                            </div>
+                <!-- Quick Header Stats -->
+                <div class="flex items-center gap-3">
+                    <div class="glass-panel px-4 py-2 rounded-xl flex items-center gap-3">
+                        <span class="flex h-2.5 w-2.5 relative">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                        </span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest leading-none">ลาวันนี้</span>
+                            <span class="text-base font-bold text-slate-800 leading-none mt-1" id="headerOnLeaveToday">-</span>
                         </div>
                     </div>
-
-                    <!-- Header Stats -->
-                    <div class="flex items-center gap-3">
-                        <div class="glass-card px-5 py-3 rounded-2xl flex items-center gap-3">
-                            <div class="w-2 h-2 bg-rose-500 rounded-full animate-ping"></div>
-                            <div>
-                                <p class="text-[10px] uppercase tracking-widest text-text-main/50 font-bold">ลาวันนี้</p>
-                                <p class="text-lg font-bold text-text-main font-display" id="headerOnLeaveToday">-</p>
-                            </div>
-                        </div>
-                        <div class="glass-card px-5 py-3 rounded-2xl flex items-center gap-3 border-primary/10">
-                            <div class="w-2 h-2 bg-primary rounded-full"></div>
-                            <div>
-                                <p class="text-[10px] uppercase tracking-widest text-text-main/50 font-bold">เดือนนี้</p>
-                                <p class="text-lg font-bold text-text-main font-display" id="headerMonthlyTotal">-</p>
-                            </div>
+                    <div class="glass-panel px-4 py-2 rounded-xl flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest leading-none">เดือนนี้</span>
+                            <span class="text-base font-bold text-slate-800 leading-none mt-1" id="headerMonthlyTotal">-</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Dashboard Stats Bento Grid -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Stat 1 -->
-                <div class="glass-card p-6 relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500">
-                        <svg class="w-24 h-24 text-text-main" fill="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <!-- Dashboard Stats Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                
+                <!-- On Leave Today -->
+                <div class="glass-panel p-5 rounded-3xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-300">
+                        <i data-lucide="users" class="w-28 h-28 text-slate-900"></i>
                     </div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <i data-lucide="users" class="w-5 h-5 text-primary"></i>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
+                        <div class="w-12 h-12 rounded-[1rem] bg-rose-50 flex items-center justify-center border border-rose-100">
+                            <i data-lucide="user-minus" class="w-6 h-6 text-rose-500"></i>
                         </div>
                     </div>
-                    <p class="text-xs font-bold text-text-main/50 uppercase tracking-widest mb-1">ลาวันนี้</p>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-4xl font-extrabold text-text-main font-display" id="onLeaveTodayCount">-</span>
-                        <span class="text-sm font-medium text-text-main/40 uppercase">คน</span>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">กำลังลาวันนี้</p>
+                    <div class="flex items-baseline gap-2 relative z-10">
+                        <span class="text-4xl font-extrabold text-slate-800 tabular-nums" id="onLeaveTodayCount">-</span>
+                        <span class="text-sm font-medium text-slate-400">คน</span>
                     </div>
                 </div>
 
-                <!-- Stat 2 -->
-                <div class="glass-card p-6 relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500">
-                        <svg class="w-24 h-24 text-text-main" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h.01a1 1 0 100-2H10zm3 0a1 1 0 000 2h.01a1 1 0 100-2H13zM7 13a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h.01a1 1 0 100-2H10zm3 0a1 1 0 000 2h.01a1 1 0 100-2H13z" clip-rule="evenodd"></path></svg>
+                <!-- Monthly Requests -->
+                <div class="glass-panel p-5 rounded-3xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-300">
+                        <i data-lucide="file-spreadsheet" class="w-28 h-28 text-slate-900"></i>
                     </div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-cta"></i>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
+                        <div class="w-12 h-12 rounded-[1rem] bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                            <i data-lucide="calendar-check" class="w-6 h-6 text-indigo-500"></i>
                         </div>
                     </div>
-                    <p class="text-xs font-bold text-text-main/50 uppercase tracking-widest mb-1">คำขอเดือนนี้</p>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-4xl font-extrabold text-text-main font-display" id="monthlyRequestsCount">-</span>
-                        <span class="text-sm font-medium text-text-main/40 uppercase">รายการ</span>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">คำขอลาเดือนนี้</p>
+                    <div class="flex items-baseline gap-2 relative z-10">
+                        <span class="text-4xl font-extrabold text-slate-800 tabular-nums" id="monthlyRequestsCount">-</span>
+                        <span class="text-sm font-medium text-slate-400">รายการ</span>
                     </div>
                 </div>
 
-                <!-- Stat 3 -->
-                <div class="glass-card p-6 relative overflow-hidden group">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                            <i data-lucide="palm-tree" class="w-5 h-5 text-emerald-600"></i>
+                <!-- Vacation Leave -->
+                <div class="glass-panel p-5 rounded-3xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div class="flex items-center justify-between mb-4 relative z-10">
+                        <div class="w-12 h-12 rounded-[1rem] bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                            <i data-lucide="palm-tree" class="w-6 h-6 text-emerald-500"></i>
                         </div>
                     </div>
-                    <p class="text-xs font-bold text-text-main/50 uppercase tracking-widest mb-1">ลาพักร้อน</p>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-4xl font-extrabold text-text-main font-display" id="vacationCount">-</span>
-                        <span class="text-sm font-medium text-text-main/40 uppercase">รายการ</span>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">ลาพักร้อน</p>
+                    <div class="flex items-baseline gap-2 relative z-10">
+                        <span class="text-4xl font-extrabold text-slate-800 tabular-nums" id="vacationCount">-</span>
+                        <span class="text-sm font-medium text-slate-400">รายการ</span>
                     </div>
                 </div>
 
-                <!-- Stat 4 -->
-                <div class="glass-card p-6 relative overflow-hidden group">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
-                            <i data-lucide="thermometer" class="w-5 h-5 text-rose-600"></i>
+                <!-- Sick Leave -->
+                <div class="glass-panel p-5 rounded-3xl relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div class="flex items-center justify-between mb-4 relative z-10">
+                        <div class="w-12 h-12 rounded-[1rem] bg-amber-50 flex items-center justify-center border border-amber-100">
+                            <i data-lucide="thermometer-sun" class="w-6 h-6 text-amber-500"></i>
                         </div>
                     </div>
-                    <p class="text-xs font-bold text-text-main/50 uppercase tracking-widest mb-1">ลาป่วย</p>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-4xl font-extrabold text-text-main font-display" id="sickCount">-</span>
-                        <span class="text-sm font-medium text-text-main/40 uppercase">รายการ</span>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">ลาป่วย</p>
+                    <div class="flex items-baseline gap-2 relative z-10">
+                        <span class="text-4xl font-extrabold text-slate-800 tabular-nums" id="sickCount">-</span>
+                        <span class="text-sm font-medium text-slate-400">รายการ</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Filter & Legend Strip -->
-            <div class="glass-card p-4 rounded-[2rem] mb-8 bg-white/40 border-white/60">
-                <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
+            <!-- Filters & Legend Area -->
+            <div class="glass-panel p-4 rounded-[2rem] mb-8 relative z-20">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+                    
                     <!-- Filters -->
-                    <div class="flex flex-wrap items-center gap-4">
-                        <div class="relative group">
+                    <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 w-full lg:w-auto">
+                        <div class="relative group w-full sm:w-auto">
                             <select id="departmentFilter"
-                                class="appearance-none bg-white border-2 border-primary/10 rounded-2xl px-6 py-3 pr-12 text-sm font-bold text-text-main focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer min-w-[200px] hover:bg-slate-50 shadow-sm">
+                                class="w-full sm:w-auto appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 pr-10 text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all cursor-pointer min-w-[220px] hover:bg-white hover:border-slate-300 shadow-sm">
                                 <option value="all">ทุกแผนก / ทั้งหน่วย</option>
                                 @foreach($departments as $dept)
                                     <option value="{{ $dept }}">{{ $dept }}</option>
                                 @endforeach
                             </select>
-                            <i data-lucide="chevron-down" class="w-5 h-5 text-primary absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50"></i>
+                            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-slate-600 transition-colors"></i>
                         </div>
 
-                        <label class="group relative flex items-center gap-4 bg-white/50 px-6 py-3 rounded-2xl border-2 border-primary/5 hover:border-primary/20 transition-all cursor-pointer shadow-sm">
-                            <input type="checkbox" id="showGuardChange" checked class="sr-only peer">
-                            <div class="w-10 h-6 bg-slate-200 rounded-full peer-checked:bg-primary transition-colors relative ring-4 ring-transparent peer-focus:ring-primary/10">
-                                <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-lg transition-transform peer-checked:translate-x-4"></div>
+                        <label class="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-3 cursor-pointer select-none bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 transition-colors shadow-sm">
+                            <span class="text-sm font-bold text-slate-700">แสดงวันเปลี่ยนเวร</span>
+                            <div class="relative">
+                                <input type="checkbox" id="showGuardChange" checked class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
                             </div>
-                            <span class="text-sm font-bold text-text-main/80 select-none">แสดงการเปลี่ยนเวร</span>
                         </label>
                     </div>
 
                     <!-- Legend -->
-                    <div class="flex flex-wrap items-center gap-6 px-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20"></span>
-                            <span class="text-xs font-bold text-text-main/60 uppercase tracking-wider">พักร้อน</span>
+                    <div class="flex flex-wrap items-center justify-center gap-4 px-2">
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
+                            <span class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">พักร้อน</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="w-3 h-3 rounded-full bg-rose-500 shadow-lg shadow-rose-500/20"></span>
-                            <span class="text-xs font-bold text-text-main/60 uppercase tracking-wider">ลาป่วย</span>
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                            <span class="w-3 h-3 rounded-full bg-rose-500 shadow-sm"></span>
+                            <span class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">ลาป่วย</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="w-3 h-3 rounded-full bg-amber-500 shadow-lg shadow-amber-500/20"></span>
-                            <span class="text-xs font-bold text-text-main/60 uppercase tracking-wider">ลากิจ</span>
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                            <span class="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></span>
+                            <span class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">ลากิจ</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="w-3 h-3 rounded-full bg-indigo-500 shadow-lg shadow-indigo-500/20"></span>
-                            <span class="text-xs font-bold text-text-main/60 uppercase tracking-wider">เปลี่ยนเวร</span>
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                            <span class="w-3 h-3 rounded-full bg-indigo-500 shadow-sm"></span>
+                            <span class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">เปลี่ยนเวร</span>
                         </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Calendar Container -->
+            <div class="glass-panel rounded-[2rem] overflow-hidden p-2 sm:p-4 md:p-6 mb-8 relative z-10">
+                <!-- Loading Overlay -->
+                <div id="calendarLoading" class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm z-30 flex items-center justify-center rounded-[2rem] transition-opacity duration-300">
+                    <div class="flex flex-col items-center gap-4 bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+                        <div class="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                        <p class="text-sm font-bold text-indigo-900">กำลังอัปเดตข้อมูล...</p>
+                    </div>
+                </div>
+                
+                <div id="calendar" class="bg-white rounded-[1.5rem] p-4 sm:p-6 shadow-sm border border-slate-100"></div>
+            </div>
+
+            <!-- Helpful Tips -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-panel p-5 rounded-3xl flex items-start gap-4 hover:bg-white/90 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 text-slate-500 border border-slate-100">
+                        <i data-lucide="pointer" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-1">ดูรายละเอียดรวดเร็ว</h4>
+                        <p class="text-xs text-slate-500 font-medium leading-relaxed">คลิกที่แถบสีในปฏิทินเพื่อดูข้อมูลผู้ลา แผนก และเหตุผลอย่างละเอียด</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 rounded-3xl flex items-start gap-4 hover:bg-white/90 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 text-slate-500 border border-slate-100">
+                        <i data-lucide="calendar-range" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-1">ปรับเปลี่ยนมุมมอง</h4>
+                        <p class="text-xs text-slate-500 font-medium leading-relaxed">เลือกแสดงผลแบบ เดือน, สัปดาห์ หรือ รายการ เพื่อการตรวจสอบที่แม่นยำขึ้น</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-5 rounded-3xl flex items-start gap-4 hover:bg-white/90 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 text-slate-500 border border-slate-100">
+                        <i data-lucide="filter" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-1">คัดกรองข้อมูล</h4>
+                        <p class="text-xs text-slate-500 font-medium leading-relaxed">เลือกดูเฉพาะแผนกของคุณ หรือซ่อนรายการเปลี่ยนเวรเพื่อลดความซ้ำซ้อน</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Calendar Card -->
-            <div class="glass-card rounded-[2.5rem] overflow-hidden bg-white/50 border-white/40 p-1">
-                <div class="bg-white/90 rounded-[2.4rem] p-6 lg:p-10 relative">
-                    <!-- Loader Overlay -->
-                    <div id="calendarLoading" class="hidden absolute inset-0 bg-white/60 backdrop-blur-md z-30 flex items-center justify-center rounded-[2.4rem] transition-opacity duration-300">
-                        <div class="flex flex-col items-center gap-4">
-                            <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                            <p class="text-sm font-bold text-primary animate-pulse">กำลังดึงข้อมูลระบบ...</p>
-                        </div>
-                    </div>
-                    <div id="calendar" class="min-h-[600px]"></div>
-                </div>
-            </div>
-
-            <!-- Interactive Guide Section -->
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 border-white/40 group">
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <i data-lucide="mouse-pointer-2" class="w-6 h-6 text-primary"></i>
-                    </div>
-                    <h4 class="font-bold text-text-main mb-2">ดูรายละเอียด</h4>
-                    <p class="text-xs text-text-main/60 leading-relaxed font-medium">คลิกที่รายการบนปฏิทินเพื่อเรียกดูข้อมูลผู้ลา และสาเหตุการลาอย่างง่ายดาย</p>
-                </div>
-                <div class="glass-card p-6 border-white/40 group">
-                    <div class="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <i data-lucide="layers" class="w-6 h-6 text-cta"></i>
-                    </div>
-                    <h4 class="font-bold text-text-main mb-2">สลับมุมมอง</h4>
-                    <p class="text-xs text-text-main/60 leading-relaxed font-medium">เปลี่ยนการแสดงผลระหว่าง เดือน, สัปดาห์ หรือ รายการ เพื่อความชัดเจนในการวิเคราะห์</p>
-                </div>
-                <div class="glass-card p-6 border-white/40 group">
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <i data-lucide="filter" class="w-6 h-6 text-emerald-600"></i>
-                    </div>
-                    <h4 class="font-bold text-text-main mb-2">กรองตามทีม</h4>
-                    <p class="text-xs text-text-main/60 leading-relaxed font-medium">เลือกแผนกเฉพาะเพื่อตรวจสอบความพร้อมในการปฏิบัติงานของคนในสังกัด</p>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Liquid Modal -->
+    <!-- Event Detail Modal -->
     <div id="eventModal" class="fixed inset-0 z-[100] hidden overflow-hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="min-h-screen px-4 flex items-center justify-center">
-            <div class="fixed inset-0 bg-text-main/40 backdrop-blur-sm transition-opacity" onclick="closeEventModal()"></div>
+        <div class="min-h-screen px-4 flex items-center justify-center py-10">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeEventModal()" aria-hidden="true"></div>
 
-            <div class="relative w-full max-w-lg mx-auto transform transition-all animate-modal-in">
-                <div class="modal-glass rounded-[3rem] overflow-hidden border-2 border-white/60">
-                    <!-- Modal Header with Dynamic Color -->
-                    <div id="modalHeader" class="relative px-8 pt-10 pb-12 transition-colors duration-500">
-                        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,white,transparent)]"></div>
-                        <button onclick="closeEventModal()"
-                            class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/40 rounded-full transition-all text-white backdrop-blur-md cursor-pointer">
-                            <i data-lucide="x" class="w-5 h-5"></i>
+            <!-- Modal Panel -->
+            <div class="relative w-full max-w-lg mx-auto transform transition-all animate-slide-in-up">
+                <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+                    
+                    <!-- Dynamic Header -->
+                    <div id="modalHeader" class="relative px-6 pt-8 pb-10 transition-colors duration-300">
+                        <!-- BG pattern overlay -->
+                        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+                        
+                        <button onclick="closeEventModal()" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors text-white cursor-pointer z-10 backdrop-blur-md">
+                            <i data-lucide="x" class="w-4 h-4"></i>
                         </button>
                         
-                        <div id="modalHeaderIcon" class="w-20 h-20 mx-auto bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl border border-white/30">
-                            <i data-lucide="clipboard-list" class="w-10 h-10 text-white"></i>
-                        </div>
-                        
-                        <h3 id="modalTitle" class="text-2xl font-bold text-white text-center font-display">รายละเอียด</h3>
-                        <div class="flex justify-center mt-3">
-                            <span id="modalSubtitle" class="px-4 py-1 bg-white/20 backdrop-blur rounded-full text-white text-xs font-bold tracking-widest uppercase"></span>
+                        <div class="relative z-10 flex flex-col items-center">
+                            <div id="modalIconContainer" class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-[1.25rem] border border-white/30 flex items-center justify-center mb-4 shadow-lg">
+                                <i data-lucide="clipboard-list" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h3 id="modalTitle" class="text-xl md:text-2xl font-extrabold text-white text-center">รายละเอียดการลา</h3>
+                            <div class="mt-2">
+                                <span id="modalSubtitle" class="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider border border-white/20"></span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Modal Body -->
-                    <div id="modalContent" class="p-8">
-                        <!-- Content injected via JS -->
+                    <div id="modalContent" class="p-6 md:p-8 bg-white custom-scrollbar overflow-y-auto max-h-[60vh]">
+                        <!-- Injected by JavaScript -->
+                    </div>
+                    
+                    <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                        <button onclick="closeEventModal()" class="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl shadow-sm hover:bg-slate-50 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            ปิดหน้าต่าง
+                        </button>
                     </div>
                 </div>
             </div>
@@ -421,7 +370,7 @@
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // Initialize Lucide Icons
+                // Initialize Lucide Icons globally for the page
                 if (typeof lucide !== 'undefined') {
                     lucide.createIcons();
                 }
@@ -442,18 +391,22 @@
                 }
 
                 function fetchEvents(info, successCallback, failureCallback) {
-                    loadingEl.classList.remove('hidden');
+                    if (loadingEl) loadingEl.classList.remove('hidden');
+
                     const url = getEventsUrl(info.startStr, info.endStr);
 
                     fetch(url)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network error');
+                            return response.json();
+                        })
                         .then(data => {
-                            loadingEl.classList.add('hidden');
+                            if (loadingEl) loadingEl.classList.add('hidden');
                             successCallback(data);
                         })
                         .catch(error => {
-                            loadingEl.classList.add('hidden');
-                            console.error('Error fetching events:', error);
+                            if (loadingEl) loadingEl.classList.add('hidden');
+                            console.error('Error fetching calendar events:', error);
                             failureCallback(error);
                         });
                 }
@@ -473,8 +426,7 @@
                         list: 'รายการ'
                     },
                     height: 'auto',
-                    dayMaxEvents: 4,
-                    moreLinkClick: 'popover',
+                    dayMaxEvents: 3,
                     eventDisplay: 'block',
                     lazyFetching: false,
                     events: fetchEvents,
@@ -483,19 +435,32 @@
                     },
                     datesSet: function (info) {
                         updateSummary(info.view.currentStart, info.view.currentEnd);
-                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                        // Re-initialize icons just in case toolbar buttons were re-rendered
+                        setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
                     },
-                    eventDidMount: function (info) {
-                        // Custom styling for specific types
-                        if (info.event.extendedProps.type === 'guard_change') {
-                            info.el.style.backgroundColor = '#6366f1'; // Indigo-500
+                    eventDidMount: function(info) {
+                        // Tailwind colors mapping for events
+                        const type = info.event.extendedProps.type;
+                        const leaveSlug = info.event.extendedProps.leaveTypeSlug;
+                        
+                        let bgColor = '#6366f1'; // default indigo-500
+                        
+                        if (type === 'guard_change') {
+                            bgColor = '#6366f1'; // indigo-500
+                        } else if (type === 'leave') {
+                            if (leaveSlug === 'vacation') bgColor = '#10b981'; // emerald-500
+                            else if (leaveSlug === 'sick') bgColor = '#f43f5e'; // rose-500
+                            else if (leaveSlug === 'personal') bgColor = '#f59e0b'; // amber-500
                         }
+                        
+                        info.el.style.backgroundColor = bgColor;
+                        info.el.title = info.event.title; // Add tooltip natively
                     }
                 });
 
                 calendar.render();
 
-                // Filters
+                // Listeners for filters
                 if (departmentFilter) {
                     departmentFilter.addEventListener('change', () => {
                         calendar.refetchEvents();
@@ -504,11 +469,14 @@
                 }
 
                 if (showGuardChangeCheckbox) {
-                    showGuardChangeCheckbox.addEventListener('change', () => calendar.refetchEvents());
+                    showGuardChangeCheckbox.addEventListener('change', () => {
+                        calendar.refetchEvents();
+                    });
                 }
 
                 function updateSummary(start, end) {
                     if (!start || !end) return;
+                    
                     const params = new URLSearchParams({
                         start: start.toISOString().split('T')[0],
                         end: end.toISOString().split('T')[0],
@@ -516,8 +484,9 @@
                     });
 
                     fetch(`{{ route('calendar.summary') }}?${params}`)
-                        .then(response => response.json())
+                        .then(res => res.json())
                         .then(data => {
+                            // Update dom mapping
                             const mapping = {
                                 'headerOnLeaveToday': data.onLeaveToday || 0,
                                 'headerMonthlyTotal': data.totalRequests || 0,
@@ -526,11 +495,13 @@
                                 'vacationCount': data.byType['ลาพักร้อน'] || data.byType['Vacation'] || 0,
                                 'sickCount': data.byType['ลาป่วย'] || data.byType['Sick Leave'] || 0
                             };
+                            
                             Object.entries(mapping).forEach(([id, val]) => {
                                 const el = document.getElementById(id);
                                 if (el) el.textContent = val;
                             });
-                        });
+                        })
+                        .catch(err => console.error('Error fetching summary:', err));
                 }
             });
 
@@ -542,111 +513,124 @@
                 const content = document.getElementById('modalContent');
                 const props = event.extendedProps;
 
-                const themes = {
+                // Color mappings using Tailwind bg logic for the header gradient
+                const themeClasses = {
                     'vacation': 'bg-gradient-to-br from-emerald-500 to-teal-600',
                     'sick': 'bg-gradient-to-br from-rose-500 to-pink-600',
-                    'personal': 'bg-gradient-to-br from-amber-500 to-orange-600',
+                    'personal': 'bg-gradient-to-br from-amber-500 to-orange-500',
                     'guard_change': 'bg-gradient-to-br from-indigo-500 to-blue-600',
-                    'default': 'bg-gradient-to-br from-primary to-purple-600'
+                    'default': 'bg-gradient-to-br from-slate-700 to-slate-900'
                 };
 
-                let html = '';
+                // Clear previous content
+                content.innerHTML = '';
 
                 if (props.type === 'leave') {
-                    const themeClass = themes[props.leaveTypeSlug] || themes['default'];
-                    modalHeader.className = `relative px-8 pt-10 pb-12 ${themeClass}`;
+                    const theme = themeClasses[props.leaveTypeSlug] || themeClasses['default'];
+                    modalHeader.className = `relative px-6 pt-8 pb-10 transition-colors duration-300 ${theme}`;
                     modalTitle.textContent = props.leaveType;
-                    modalSubtitle.textContent = `${props.totalDays} วัน`;
+                    modalSubtitle.textContent = `จำนวน ${props.totalDays} วัน`;
 
-                    html = `
-                        <div class="space-y-6">
-                            <div class="flex items-center gap-5 p-5 bg-purple-50 rounded-[2rem] border-2 border-purple-100/50">
-                                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary font-bold text-xl shadow-lg font-display border-2 border-primary/5">
+                    content.innerHTML = `
+                        <div class="space-y-5">
+                            <!-- User Card -->
+                            <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center text-slate-800 font-extrabold text-lg shadow-sm border border-slate-200">
                                     ${props.userName.charAt(0)}
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-bold text-lg text-text-main">${props.userName}</p>
-                                    <p class="text-xs font-bold text-primary uppercase tracking-widest opacity-70">${props.department || 'ไม่ระบุแผนก'}</p>
+                                    <p class="font-bold text-slate-800 text-lg truncate">${props.userName}</p>
+                                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate mt-0.5">${props.department || 'ไม่ระบุแผนก'}</p>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 gap-4">
-                                <div class="flex items-center gap-4 p-5 bg-white rounded-3xl border-2 border-slate-100 shadow-sm relative overflow-hidden group">
-                                    <div class="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150"></div>
-                                    <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                        <i data-lucide="calendar" class="w-6 h-6 text-primary"></i>
+                            <!-- Details -->
+                            <div class="space-y-3">
+                                <div class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 bg-white shadow-sm">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex flex-shrink-0 items-center justify-center border border-slate-100 mt-1">
+                                        <i data-lucide="calendar" class="w-5 h-5 text-slate-600"></i>
                                     </div>
-                                    <div class="relative">
-                                        <p class="text-[10px] font-bold text-text-main/40 uppercase tracking-[0.2em] mb-1">ระยะเวลา</p>
-                                        <p class="font-bold text-text-main">${props.startDate} ถึง ${props.endDate}</p>
+                                    <div class="flex-1">
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ระยะเวลาการลา</p>
+                                        <p class="text-sm font-bold text-slate-800">${props.startDate}</p>
+                                        <p class="text-xs font-semibold text-slate-500 mt-0.5">ถึง ${props.endDate}</p>
                                     </div>
                                 </div>
 
                                 ${props.reason ? `
-                                <div class="p-6 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
-                                    <p class="text-[10px] font-bold text-text-main/40 uppercase tracking-[0.2em] mb-3">หมายเหตุ / เหตุผล</p>
-                                    <p class="text-sm text-text-main/80 leading-relaxed font-medium">${props.reason}</p>
+                                <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-100">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                        <i data-lucide="align-left" class="w-3 h-3"></i> เหตุผล/หมายเหตุ
+                                    </p>
+                                    <p class="text-sm text-slate-700 font-medium leading-relaxed">${props.reason}</p>
                                 </div>
                                 ` : ''}
                             </div>
                         </div>
                     `;
                 } else if (props.type === 'guard_change') {
-                    modalHeader.className = `relative px-8 pt-10 pb-12 ${themes['guard_change']}`;
-                    modalTitle.textContent = 'เปลี่ยนเวรยาม';
-                    modalSubtitle.textContent = 'ยืนยันการปฏิบัติแทน';
+                    modalHeader.className = `relative px-6 pt-8 pb-10 transition-colors duration-300 ${themeClasses['guard_change']}`;
+                    modalTitle.textContent = 'ขอเปลี่ยนเวรยาม';
+                    modalSubtitle.textContent = 'รายการปฏิบัติหน้าที่แทน';
 
-                    html = `
-                        <div class="space-y-6">
-                            <div class="flex items-center gap-5 p-5 bg-indigo-50 rounded-[2rem] border-2 border-indigo-100/50">
-                                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-xl shadow-lg font-display border-2 border-indigo-500/5">
+                    content.innerHTML = `
+                        <div class="space-y-5">
+                            <!-- Requester -->
+                            <div class="flex items-center gap-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                                <div class="w-12 h-12 bg-white rounded-[10px] flex items-center justify-center text-indigo-600 font-extrabold text-lg shadow-sm border border-indigo-100">
                                     ${props.userName.charAt(0)}
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-bold text-lg text-text-main">${props.userName}</p>
-                                    <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest opacity-70">${props.department || 'ไม่ระบุแผนก'}</p>
+                                    <p class="font-bold text-slate-800 text-lg truncate">${props.userName}</p>
+                                    <p class="text-[11px] font-bold text-indigo-500 uppercase tracking-widest truncate mt-0.5">${props.department || 'ผู้ขอเปลี่ยนเวร'}</p>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="p-5 bg-rose-50 rounded-3xl border-2 border-rose-100 text-center relative overflow-hidden">
-                                    <div class="absolute top-0 right-0 p-2 opacity-10"><i data-lucide="calendar-x" class="w-8 h-8"></i></div>
-                                    <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1">วันเดิม</p>
-                                    <p class="font-extrabold text-text-main">${props.originalDate}</p>
+                            <!-- Date Compare -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-100 text-center relative">
+                                    <div class="absolute top-2 right-2 opacity-20"><i data-lucide="calendar-off" class="w-6 h-6 text-rose-600"></i></div>
+                                    <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1.5">เวรเดิม</p>
+                                    <p class="text-sm font-extrabold text-slate-800">${props.originalDate}</p>
                                 </div>
-                                <div class="p-5 bg-emerald-50 rounded-3xl border-2 border-emerald-100 text-center relative overflow-hidden">
-                                    <div class="absolute top-0 right-0 p-2 opacity-10"><i data-lucide="calendar-check" class="w-8 h-8"></i></div>
-                                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">วันใหม่</p>
-                                    <p class="font-extrabold text-text-main">${props.newDate}</p>
+                                <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-center relative">
+                                    <div class="absolute top-2 right-2 opacity-20"><i data-lucide="calendar-check" class="w-6 h-6 text-emerald-600"></i></div>
+                                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1.5">วันที่เปลี่ยน</p>
+                                    <p class="text-sm font-extrabold text-slate-800">${props.newDate}</p>
                                 </div>
                             </div>
 
                             ${props.substituteUser ? `
-                            <div class="flex items-center gap-4 p-5 bg-white rounded-3xl border-2 border-slate-100 group">
-                                <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-amber-200 transition-colors">
-                                    <i data-lucide="user-check" class="w-6 h-6 text-amber-600"></i>
+                            <div class="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-slate-200 shadow-sm flex-shrink-0">
+                                    <i data-lucide="user-check" class="w-5 h-5 text-indigo-500"></i>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] font-bold text-text-main/40 uppercase tracking-[0.2em] mb-1">ผู้เข้าเวรแทน</p>
-                                    <p class="font-extrabold text-text-main">${props.substituteUser}</p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">ผู้เข้าเวรแทน (รับมอบ)</p>
+                                    <p class="text-sm font-bold text-slate-800">${props.substituteUser}</p>
                                 </div>
                             </div>
                             ` : ''}
 
                             ${props.reason ? `
-                             <div class="p-6 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
-                                <p class="text-[10px] font-bold text-text-main/40 uppercase tracking-[0.2em] mb-3">สาเหตุการเปลี่ยน</p>
-                                <p class="text-sm text-text-main/80 leading-relaxed font-medium">${props.reason}</p>
+                             <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-100">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                    <i data-lucide="message-square" class="w-3 h-3"></i> เหตุผล
+                                </p>
+                                <p class="text-sm text-slate-700 font-medium leading-relaxed">${props.reason}</p>
                             </div>
                             ` : ''}
                         </div>
                     `;
                 }
 
-                content.innerHTML = html;
                 modal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                
+                // Initialize icons inside the dynamically injected modal content
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
             }
 
             function closeEventModal() {
@@ -654,8 +638,9 @@
                 document.body.style.overflow = '';
             }
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeEventModal();
+            // Close modal on ESC key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === "Escape") closeEventModal();
             });
         </script>
     @endpush
