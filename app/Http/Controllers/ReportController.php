@@ -123,7 +123,8 @@ class ReportController extends Controller
         $deptBreakdownQuery = LeaveRequest::with(['user', 'leaveType'])
             ->whereNotIn('status', ['cancelled', 'rejected'])
             ->whereHas('leaveType', function ($q) {
-                $q->where('slug', '!=', 'temporary');
+                $q->where('slug', '!=', 'temporary')
+                  ->where('slug', '!=', 'official-duty');
             });
         if (!$isCommander) {
             $deptBreakdownQuery->whereHas('user', function ($q) use ($user) {

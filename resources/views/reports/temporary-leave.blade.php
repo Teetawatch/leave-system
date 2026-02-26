@@ -27,6 +27,11 @@
                     </div>
 
                     <div class="flex items-center gap-4">
+                        <button type="submit" form="filter-form" formaction="{{ route('reports.temporary-leave.export') }}"
+                            class="px-8 py-4 bg-emerald-600 text-white hover:bg-emerald-700 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all font-bold uppercase tracking-widest text-xs flex items-center gap-3 group">
+                            <i data-lucide="download" class="w-5 h-5 group-hover:-translate-y-1 transition-transform"></i>
+                            ส่งออกรายงาน (Excel)
+                        </button>
                         <button type="button" onclick="window.print()" class="px-8 py-4 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-2xl shadow-sm transition-all font-bold uppercase tracking-widest text-xs flex items-center gap-3 group">
                             <i data-lucide="printer" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                             พิมพ์รายงาน

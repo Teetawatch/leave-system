@@ -218,6 +218,7 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
         Route::get('/reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
         Route::get('/reports/temporary-leave', [App\Http\Controllers\TemporaryLeaveReportController::class, 'index'])->name('reports.temporary-leave');
+        Route::get('/reports/temporary-leave/export', [App\Http\Controllers\TemporaryLeaveReportController::class, 'export'])->name('reports.temporary-leave.export');
 
         // Attendance Reports (from Face Attendance API)
         Route::get('/attendance-reports', [App\Http\Controllers\AttendanceReportController::class, 'index'])->name('attendance-reports.index');

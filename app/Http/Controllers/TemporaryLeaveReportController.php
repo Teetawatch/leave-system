@@ -95,4 +95,13 @@ class TemporaryLeaveReportController extends Controller
             'afternoonCount'
         ));
     }
+
+    public function export(Request $request)
+    {
+        $filters = $request->only(['start_date', 'end_date', 'department', 'period', 'status']);
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\TemporaryLeaveExport($filters), 
+            'temporary-leave-report-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
 }
