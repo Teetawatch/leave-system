@@ -81,32 +81,22 @@
 
     <div class="relative min-h-screen bg-slate-50/30 overflow-hidden font-thai">
         <!-- Background Elements -->
-        <div class="glow-dot w-[600px] h-[600px] bg-sky-400 -top-48 -left-48 animate-pulse"></div>
-        <div class="glow-dot w-[500px] h-[500px] bg-indigo-400 bottom-0 -right-24" style="animation-delay: -3s"></div>
 
         <div class="relative z-10 max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
             
             <!-- Header Section -->
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-12 items-center">
                 <div class="xl:col-span-7 space-y-4">
-                    <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/80 border border-brand-100 shadow-sm backdrop-blur-md">
-                        <span class="relative flex h-3 w-3">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
-                        </span>
-                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">ระบบอัจฉริยะกำลังออนไลน์</span>
-                    </div>
-                    
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
                         ยินดีต้อนรับกลับมา,<br>
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-brand-500 to-sky-400 inline-block mt-2">
+                        <span class="text-slate-900">
                              {{ Auth::user()->rank }} {{ Auth::user()->name }}
                         </span>
                     </h1>
                     
                     <p class="text-slate-400 font-bold text-lg flex items-center gap-3">
                         <i data-lucide="building-2" class="w-5 h-5 text-brand-500/50"></i>
-                        {{ Auth::user()->department ?? 'ไม่มีสังกัด' }} • โรงเรียนพลาธิการ กองเรือยุทธการ
+                        {{ Auth::user()->department ?? 'ไม่มีสังกัด' }} • โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ
                     </p>
                 </div>
 
