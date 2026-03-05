@@ -30,13 +30,19 @@ class LeaveApprovalService
             throw new Exception("คุณไม่มีสิทธิ์อนุมัติใบลาของ {$requester->name} ในขั้นตอนนี้");
         }
 
+        // 0.5 Check signature for LINE approvals (no inline drawing on LINE)
+        if (!$signaturePath && !$actor->signature && $actor->line_user_id) {
+            $profileUrl = url('/profile');
+            throw new Exception("⚠️ คุณยังไม่มีลายเซ็นในระบบ\n\nกรุณาอัปโหลดรูปภาพลายเซ็นที่หน้าโปรไฟล์ก่อนอนุมัติผ่าน LINE\n\n👉 {$profileUrl}");
+        }
+
         // 1. Determine which step we are at
         $status = $leaveRequest->status;
         $nextStatus = null;
         $stepName = '';
 
-        if ($status === 'pending_supervisor') {
-            $stepName = 'supervisor';
+        if ($status === 'pending_supervisor' || $status === 'pending_head') {
+            $stepName = $status === 'pending_head' ? 'head' : 'supervisor';
             if ($isTemporary) {
                 $nextStatus = 'approved';
             } else {
@@ -72,7 +78,7 @@ class LeaveApprovalService
         }
 
         // 2. Handle Signature if not provided but saved exists
-        if (!$signaturePath && $actor->signature && in_array($stepName, ['supervisor', 'manager', 'director'])) {
+        if (!$signaturePath && $actor->signature && in_array($stepName, ['supervisor', 'head', 'manager', 'director'])) {
             $extension = pathinfo($actor->signature, PATHINFO_EXTENSION);
             $fileName = 'signatures/sig_auto_' . time() . '_' . $leaveRequest->id . '_' . $actor->id . '.' . $extension;
             if (Storage::disk('public')->exists($actor->signature)) {
@@ -147,7 +153,13 @@ class LeaveApprovalService
 
         switch ($status) {
             case 'pending_supervisor':
-                return $requester->supervisor_id === $actor->id;
+                // Allow supervisor_id OR department_head in same department
+                return $requester->supervisor_id === $actor->id
+                    || ($actor->role === 'department_head' && $actor->department === $requester->department);
+            case 'pending_head':
+                // Allow supervisor_id OR department_head in same department
+                return $requester->supervisor_id === $actor->id
+                    || ($actor->role === 'department_head' && $actor->department === $requester->department);
             case 'pending_manager':
                 return $requester->manager_id === $actor->id;
             case 'pending_deputy_director':

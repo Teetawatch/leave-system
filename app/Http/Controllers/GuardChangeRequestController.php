@@ -7,12 +7,20 @@ use App\Models\User;
 use App\Notifications\NewGuardChangeNotification;
 use App\Notifications\GuardChangeStatusUpdated;
 use App\Services\FCMService;
+use App\Services\GuardChangeApprovalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class GuardChangeRequestController extends Controller
 {
+    protected $guardChangeService;
+
+    public function __construct(GuardChangeApprovalService $guardChangeService)
+    {
+        $this->guardChangeService = $guardChangeService;
+    }
+
     /**
      * Display a listing of guard change requests.
      */
@@ -92,6 +100,10 @@ class GuardChangeRequestController extends Controller
                 );
             }
         }
+
+        // Send LINE notification to replacement user
+        $guardChangeRequest->load(['user', 'replacementUser']);
+        $this->guardChangeService->sendNewRequestNotification($guardChangeRequest);
 
         return redirect()->route('guard-change.show', $guardChangeRequest)
             ->with('status', 'ส่งคำขอเปลี่ยนยามเรียบร้อยแล้ว');

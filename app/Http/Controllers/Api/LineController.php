@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\LeaveRequest;
+use App\Models\GuardChangeRequest;
 use App\Services\LeaveApprovalService;
+use App\Services\GuardChangeApprovalService;
 use GuzzleHttp\Client;
 
 class LineController extends Controller
@@ -15,12 +17,14 @@ class LineController extends Controller
     private $channelSecret;
     private $channelAccessToken;
     protected $approvalService;
+    protected $guardChangeService;
     
-    public function __construct(LeaveApprovalService $approvalService)
+    public function __construct(LeaveApprovalService $approvalService, GuardChangeApprovalService $guardChangeService)
     {
         $this->channelSecret = env('LINE_CHANNEL_SECRET');
         $this->channelAccessToken = env('LINE_CHANNEL_ACCESS_TOKEN');
         $this->approvalService = $approvalService;
+        $this->guardChangeService = $guardChangeService;
     }
     
     public function webhook(Request $request)
@@ -86,7 +90,7 @@ class LineController extends Controller
     
     private function handlePostback($lineUserId, $dataString, $replyToken)
     {
-        // Parse data: action=approve&id=123
+        // Parse data: action=approve&id=123 OR action=gc_approve&id=123
         parse_str($dataString, $params);
         $action = $params['action'] ?? null;
         $requestId = $params['id'] ?? null;
@@ -100,14 +104,26 @@ class LineController extends Controller
             return;
         }
 
-        // 2. Find Leave Request
+        // 2. Route to correct handler based on action prefix
+        if (in_array($action, ['gc_approve', 'gc_reject'])) {
+            $this->handleGuardChangePostback($user, $action, $requestId, $replyToken);
+        } else {
+            $this->handleLeavePostback($user, $action, $requestId, $replyToken);
+        }
+    }
+
+    /**
+     * Handle leave request postback (existing logic)
+     */
+    private function handleLeavePostback(User $user, $action, $requestId, $replyToken)
+    {
         $leaveRequest = LeaveRequest::with('user')->find($requestId);
         if (!$leaveRequest) {
             $this->replyText($replyToken, "ไม่พบข้อมูลใบลา หรือข้อมูลอาจถูกลบไปแล้ว");
             return;
         }
 
-        // 3. Check if already processed
+        // Check if already processed
         if ($leaveRequest->status === 'approved' || $leaveRequest->status === 'rejected') {
             $this->replyText($replyToken, "ใบลานี้ได้รับการดำเนินการไปแล้ว (สถานะ: " . $leaveRequest->status . ")");
             return;
@@ -120,6 +136,53 @@ class LineController extends Controller
             } elseif ($action === 'reject') {
                 $this->approvalService->reject($leaveRequest, $user, 'ปฏิเสธผ่าน LINE');
                 $this->replyText($replyToken, "❌ ปฏิเสธใบลาของ " . $leaveRequest->user->name . " แล้วครับ");
+            }
+        } catch (\Exception $e) {
+            $this->replyText($replyToken, "เกิดข้อผิดพลาด: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Handle guard change request postback (new)
+     */
+    private function handleGuardChangePostback(User $user, $action, $requestId, $replyToken)
+    {
+        $guardChange = GuardChangeRequest::with(['user', 'replacementUser'])->find($requestId);
+        if (!$guardChange) {
+            $this->replyText($replyToken, "ไม่พบข้อมูลคำขอเปลี่ยนเวร หรือข้อมูลอาจถูกลบไปแล้ว");
+            return;
+        }
+
+        // Check if already fully processed or rejected
+        if (in_array($guardChange->status, ['fully_approved', 'rejected', 'cancelled'])) {
+            $statusLabel = $this->guardChangeService->getStatusLabel($guardChange->status);
+            $this->replyText($replyToken, "คำขอเปลี่ยนเวรนี้ดำเนินการไปแล้ว (สถานะ: {$statusLabel})");
+            return;
+        }
+
+        $statusLabels = [
+            'pending' => 'ขั้นตอนที่ 1: ผู้เปลี่ยนแทนตอบรับ',
+            'approved' => 'ขั้นตอนที่ 2: รอง ผอ. อนุมัติ',
+            'director_approved' => 'ขั้นตอนที่ 3: ผอ. อนุมัติ (สุดท้าย)',
+        ];
+
+        $currentStep = $statusLabels[$guardChange->status] ?? $guardChange->status;
+
+        try {
+            if ($action === 'gc_approve') {
+                $this->guardChangeService->approve($guardChange, $user, null, true);
+
+                // Refresh to get updated status
+                $guardChange->refresh();
+                $newStatusLabel = $this->guardChangeService->getStatusLabel($guardChange->status);
+
+                $this->replyText($replyToken, 
+                    "✅ อนุมัติคำขอเปลี่ยนเวรของ " . $guardChange->user->name . " สำเร็จครับ\n" .
+                    "📍 สถานะ: {$newStatusLabel}"
+                );
+            } elseif ($action === 'gc_reject') {
+                $this->guardChangeService->reject($guardChange, $user, 'ปฏิเสธผ่าน LINE');
+                $this->replyText($replyToken, "❌ ปฏิเสธคำขอเปลี่ยนเวรของ " . $guardChange->user->name . " แล้วครับ");
             }
         } catch (\Exception $e) {
             $this->replyText($replyToken, "เกิดข้อผิดพลาด: " . $e->getMessage());

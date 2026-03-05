@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\NewGuardChangeNotification;
 use App\Notifications\GuardChangeStatusUpdated;
 use App\Services\FCMService;
+use App\Services\GuardChangeApprovalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -16,6 +17,13 @@ use Illuminate\Support\Facades\Log;
 
 class GuardChangeRequestController extends Controller
 {
+    protected $guardChangeService;
+
+    public function __construct(GuardChangeApprovalService $guardChangeService)
+    {
+        $this->guardChangeService = $guardChangeService;
+    }
+
     /**
      * Display a listing of guard change requests for the authenticated user.
      */
@@ -71,6 +79,10 @@ class GuardChangeRequestController extends Controller
         } else {
             Log::error("Guard Change Request: Replacement user ID {$validated['replacement_user_id']} not found.");
         }
+
+        // Send LINE notification to replacement user
+        $guardChangeRequest->load(['user', 'replacementUser']);
+        $this->guardChangeService->sendNewRequestNotification($guardChangeRequest);
 
         return response()->json([
             'success' => true,
