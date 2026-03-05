@@ -53,6 +53,14 @@ class LineController extends Controller
         foreach ($events as $event) {
             $replyToken = $event['replyToken'] ?? null;
             $userId = $event['source']['userId'] ?? null;
+            $sourceType = $event['source']['type'] ?? 'user';
+            
+            // ❌ ไม่ตอบโต้ใดๆ ในกลุ่ม (กลุ่มใช้แค่ส่งรายงานอย่างเดียว)
+            if ($sourceType === 'group' || $sourceType === 'room') {
+                continue;
+            }
+            
+            // --- ด้านล่างนี้เป็นแชทส่วนตัวเท่านั้น ---
             
             // A. Handle Postback (Approval/Rejection)
             if ($event['type'] === 'postback') {
@@ -61,21 +69,10 @@ class LineController extends Controller
             // B. Handle Text Messages
             elseif ($event['type'] === 'message' && $event['message']['type'] === 'text') {
                 $text = trim($event['message']['text']);
-                $sourceType = $event['source']['type'] ?? 'user';
                 
-                // คำสั่งพิเศษสำหรับหา ID (ทำงานทั้งในกลุ่มและ chat ส่วนตัว)
                 if (strtolower($text) === 'get id') {
-                    $id = ($sourceType === 'group') ? ($event['source']['groupId'] ?? 'Unknown Group') : $userId;
-                    $this->replyText($replyToken, "Source Type: {$sourceType}\nID: {$id}");
-                    continue;
-                }
-
-                // ไม่ตอบกลับข้อความใดๆ ในกลุ่ม (เฉพาะแจ้งเตือนอย่างเดียว)
-                if ($sourceType === 'group') {
-                    continue;
-                }
-                
-                if (str_starts_with(strtolower($text), 'register ')) {
+                    $this->replyText($replyToken, "User ID: {$userId}");
+                } elseif (str_starts_with(strtolower($text), 'register ')) {
                     $email = trim(substr($text, 9));
                     $this->handleRegistration($userId, $email, $replyToken);
                 } else {
@@ -99,7 +96,7 @@ class LineController extends Controller
         // 1. Find User
         $user = User::where('line_user_id', $lineUserId)->first();
         if (!$user) {
-            $this->replyText($replyToken, "Account not found. Please register first.");
+            $this->replyText($replyToken, "กรุณาลงทะเบียนก่อนใช้งาน พิมพ์ 'Register [Email]' ครับ");
             return;
         }
 
