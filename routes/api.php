@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\GuardChangeRequestController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/line/webhook', [\App\Http\Controllers\Api\LineController::class, 'webhook']);
+Route::get('/line/daily-summary-trigger', [\App\Http\Controllers\Api\LineController::class, 'triggerDailyNotification']);
 
 // =============================================================================
 // PROTECTED ROUTES (Require Sanctum Token)

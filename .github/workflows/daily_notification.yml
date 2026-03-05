@@ -1,0 +1,71 @@
+# ═══════════════════════════════════════════════════════════════
+# 📋 Daily Leave Summary - LINE Notification
+# ═══════════════════════════════════════════════════════════════
+# 
+# Workflow นี้จะรันทุกวัน เวลา 01:30 UTC (08:30 เวลาไทย)
+# เพื่อเรียก API ให้ส่งสรุปการลาประจำวันเข้ากลุ่ม LINE
+#
+# ⚙️ ต้องตั้งค่า Repository Secrets:
+#   - APP_URL: URL ของเว็บไซต์ (เช่น https://your-domain.com)
+#   - CRON_TOKEN: รหัสลับสำหรับยืนยันตัวตน (ต้องตรงกับในไฟล์ .env)
+# ═══════════════════════════════════════════════════════════════
+
+name: 📋 Daily Leave Summary Notification
+
+on:
+  schedule:
+    # ═══════════════════════════════════════
+    # ⏰ เวลา UTC → เวลาไทย (UTC+7)
+    # ═══════════════════════════════════════
+    # 01:00 UTC = 08:00 เวลาไทย (ส่งตอนเช้าก่อนเข้างาน)
+    - cron: '0 1 * * 1-5'  # จันทร์-ศุกร์ เวลา 08:00 น. (เวลาไทย)
+  
+  # อนุญาตให้กดรันมือได้จากหน้า GitHub Actions
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'วันที่ต้องการสรุป (YYYY-MM-DD), เว้นว่างไว้ = วันนี้'
+        required: false
+        default: ''
+
+jobs:
+  send-notification:
+    name: 📤 Send Daily Leave Summary to LINE
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🔔 Trigger Daily Leave Summary
+        run: |
+          echo "══════════════════════════════════════"
+          echo "📋 Triggering Daily Leave Summary..."
+          echo "⏰ Time (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "⏰ Time (TH):  $(TZ='Asia/Bangkok' date '+%Y-%m-%d %H:%M:%S')"
+          echo "══════════════════════════════════════"
+          
+          # สร้าง URL พร้อม token
+          TRIGGER_URL="${{ secrets.APP_URL }}/api/line/daily-summary-trigger?token=${{ secrets.CRON_TOKEN }}"
+          
+          # เรียก API
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$TRIGGER_URL")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          
+          echo ""
+          echo "📡 Response Code: $HTTP_CODE"
+          echo "📄 Response Body: $BODY"
+          echo ""
+          
+          # เช็คผลลัพธ์
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Daily leave summary sent successfully!"
+          else
+            echo "❌ Failed to send daily leave summary (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+      
+      - name: 📊 Summary
+        if: always()
+        run: |
+          echo "══════════════════════════════════════"
+          echo "📊 Job finished at: $(TZ='Asia/Bangkok' date '+%Y-%m-%d %H:%M:%S') (Thailand)"
+          echo "══════════════════════════════════════"
