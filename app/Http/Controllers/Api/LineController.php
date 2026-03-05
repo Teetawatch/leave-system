@@ -61,6 +61,19 @@ class LineController extends Controller
             // B. Handle Text Messages
             elseif ($event['type'] === 'message' && $event['message']['type'] === 'text') {
                 $text = trim($event['message']['text']);
+                $sourceType = $event['source']['type'] ?? 'user';
+                
+                // คำสั่งพิเศษสำหรับหา ID (ทำงานทั้งในกลุ่มและ chat ส่วนตัว)
+                if (strtolower($text) === 'get id') {
+                    $id = ($sourceType === 'group') ? ($event['source']['groupId'] ?? 'Unknown Group') : $userId;
+                    $this->replyText($replyToken, "Source Type: {$sourceType}\nID: {$id}");
+                    continue;
+                }
+
+                // ไม่ตอบกลับข้อความใดๆ ในกลุ่ม (เฉพาะแจ้งเตือนอย่างเดียว)
+                if ($sourceType === 'group') {
+                    continue;
+                }
                 
                 if (str_starts_with(strtolower($text), 'register ')) {
                     $email = trim(substr($text, 9));

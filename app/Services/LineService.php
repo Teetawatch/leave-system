@@ -82,4 +82,34 @@ class LineService
             return false;
         }
     }
+
+    /**
+     * Send a text message to a LINE group
+     */
+    public function sendGroupTextMessage($text)
+    {
+        $groupId = env('LINE_GROUP_ID');
+
+        if (!$groupId || !$this->channelAccessToken) {
+            Log::warning('LINE Group ID or Channel Access Token not configured.');
+            return false;
+        }
+
+        return $this->sendTextMessage($groupId, $text);
+    }
+
+    /**
+     * Send a Flex Message to a LINE group
+     */
+    public function sendGroupFlexMessage($altText, $flexContents)
+    {
+        $groupId = env('LINE_GROUP_ID');
+
+        if (!$groupId || !$this->channelAccessToken) {
+            Log::warning('LINE Group ID or Channel Access Token not configured.');
+            return false;
+        }
+
+        return $this->sendFlexMessage($groupId, $altText, $flexContents);
+    }
 }

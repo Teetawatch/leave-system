@@ -269,8 +269,24 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
 });
 
 // =============================================================================
-// External Cron Route (Shared Hosting Workaround)
+// External Cron Routes (Shared Hosting Workaround)
 // =============================================================================
+
+// Trigger daily leave summary to LINE group
+Route::get('/cron/daily-leave-summary/{secret}', function ($secret) {
+    if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {
+        abort(403, 'Unauthorized');
+    }
+
+    $exitCode = Artisan::call('line:daily-leave-summary');
+
+    return response()->json([
+        'message' => 'Daily leave summary executed',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output()
+    ]);
+});
+
 Route::get('/queue-work/{secret}', function ($secret) {
     // Check if the secret matches the one in .env
     if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {

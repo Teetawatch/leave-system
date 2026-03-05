@@ -12,7 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // ส่งสรุปการลาประจำวันเข้ากลุ่ม LINE ทุกวัน เวลา 08:00 น.
+        $schedule->command('line:daily-leave-summary')
+                 ->dailyAt('08:00')
+                 ->timezone('Asia/Bangkok')
+                 ->withoutOverlapping()
+                 ->onOneServer();
     }
 
     /**
