@@ -2,12 +2,12 @@
 # 📋 Daily Leave Summary - LINE Notification
 # ═══════════════════════════════════════════════════════════════
 # 
-# Workflow นี้จะรันทุกวัน เวลา 01:30 UTC (08:30 เวลาไทย)
+# Workflow นี้จะรันทุกวัน จันทร์-ศุกร์ เวลา 01:00 UTC (08:00 เวลาไทย)
 # เพื่อเรียก API ให้ส่งสรุปการลาประจำวันเข้ากลุ่ม LINE
 #
 # ⚙️ ต้องตั้งค่า Repository Secrets:
 #   - APP_URL: URL ของเว็บไซต์ (เช่น https://your-domain.com)
-#   - CRON_TOKEN: รหัสลับสำหรับยืนยันตัวตน (ต้องตรงกับในไฟล์ .env)
+#   - QUEUE_WORKER_SECRET: รหัสลับ (ตรงกับ QUEUE_WORKER_SECRET ในไฟล์ .env)
 # ═══════════════════════════════════════════════════════════════
 
 name: 📋 Daily Leave Summary Notification
@@ -22,11 +22,6 @@ on:
   
   # อนุญาตให้กดรันมือได้จากหน้า GitHub Actions
   workflow_dispatch:
-    inputs:
-      date:
-        description: 'วันที่ต้องการสรุป (YYYY-MM-DD), เว้นว่างไว้ = วันนี้'
-        required: false
-        default: ''
 
 jobs:
   send-notification:
@@ -42,24 +37,44 @@ jobs:
           echo "⏰ Time (TH):  $(TZ='Asia/Bangkok' date '+%Y-%m-%d %H:%M:%S')"
           echo "══════════════════════════════════════"
           
-          # สร้าง URL พร้อม token
-          TRIGGER_URL="${{ secrets.APP_URL }}/api/line/daily-summary-trigger?token=${{ secrets.CRON_TOKEN }}"
+          # ใช้ Route เดิมใน web.php: /cron/daily-leave-summary/{secret}
+          TRIGGER_URL="${{ secrets.APP_URL }}/cron/daily-leave-summary/${{ secrets.QUEUE_WORKER_SECRET }}"
           
-          # เรียก API
-          RESPONSE=$(curl -s -w "\n%{http_code}" "$TRIGGER_URL")
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | head -n -1)
-          
-          echo ""
-          echo "📡 Response Code: $HTTP_CODE"
-          echo "📄 Response Body: $BODY"
+          echo "📡 Calling: ${{ secrets.APP_URL }}/cron/daily-leave-summary/***"
           echo ""
           
-          # เช็คผลลัพธ์
-          if [ "$HTTP_CODE" -eq 200 ]; then
+          # เรียก API พร้อม timeout 30 วินาที และลอง 3 ครั้ง
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          SUCCESS=false
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "🔄 Attempt $RETRY_COUNT of $MAX_RETRIES..."
+            
+            RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 30 "$TRIGGER_URL" 2>&1)
+            HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+            BODY=$(echo "$RESPONSE" | head -n -1)
+            
+            echo "📡 Response Code: $HTTP_CODE"
+            echo "📄 Response Body: $BODY"
+            echo ""
+            
+            if [ "$HTTP_CODE" -eq 200 ]; then
+              SUCCESS=true
+              break
+            fi
+            
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "⏳ Waiting 10 seconds before retry..."
+              sleep 10
+            fi
+          done
+          
+          if [ "$SUCCESS" = true ]; then
             echo "✅ Daily leave summary sent successfully!"
           else
-            echo "❌ Failed to send daily leave summary (HTTP $HTTP_CODE)"
+            echo "❌ Failed to send daily leave summary after $MAX_RETRIES attempts (HTTP $HTTP_CODE)"
             exit 1
           fi
       

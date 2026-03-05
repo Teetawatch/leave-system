@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Artisan;
 use App\Models\User;
 use App\Models\LeaveRequest;
 use App\Services\LeaveApprovalService;
@@ -22,59 +21,6 @@ class LineController extends Controller
         $this->channelSecret = env('LINE_CHANNEL_SECRET');
         $this->channelAccessToken = env('LINE_CHANNEL_ACCESS_TOKEN');
         $this->approvalService = $approvalService;
-    }
-
-    /**
-     * ═══════════════════════════════════════════════════════════════
-     * Trigger Daily Leave Summary (สำหรับ GitHub Actions / Web Cron)
-     * ═══════════════════════════════════════════════════════════════
-     * 
-     * URL: GET /api/line/daily-summary-trigger?token=xxx
-     * ใช้สำหรับให้ GitHub Actions หรือ Web Cron เรียกเข้ามา
-     * เพื่อส่งสรุปการลาประจำวันเข้ากลุ่ม LINE
-     */
-    public function triggerDailyNotification(Request $request)
-    {
-        // ── เช็ค Token เพื่อความปลอดภัย ──
-        $token = $request->query('token');
-        $expectedToken = config('app.cron_token', env('CRON_TOKEN'));
-
-        if (empty($expectedToken) || $token !== $expectedToken) {
-            Log::warning('Unauthorized cron trigger attempt', [
-                'ip' => $request->ip(),
-                'token_provided' => !empty($token),
-            ]);
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        // ── รัน Artisan Command ──
-        try {
-            Log::info('Daily leave summary triggered via API', ['ip' => $request->ip()]);
-
-            $exitCode = Artisan::call('line:daily-leave-summary');
-            $output = Artisan::output();
-
-            Log::info('Daily leave summary completed', [
-                'exit_code' => $exitCode,
-                'output' => $output,
-            ]);
-
-            return response()->json([
-                'message' => 'Daily leave summary sent successfully!',
-                'exit_code' => $exitCode,
-                'output' => trim($output),
-                'triggered_at' => now()->toDateTimeString(),
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Daily leave summary trigger failed', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Failed to send daily leave summary',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
     }
     
     public function webhook(Request $request)
