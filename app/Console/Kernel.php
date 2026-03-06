@@ -12,6 +12,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // ส่งแจ้งเตือนเวรยามประจำวันเข้ากลุ่ม LINE ทุกวัน เวลา 07:00 น.
+        $schedule->command('line:daily-duty-roster')
+                 ->dailyAt('07:00')
+                 ->timezone('Asia/Bangkok')
+                 ->withoutOverlapping()
+                 ->onOneServer();
+
         // ส่งสรุปการลาประจำวันเข้ากลุ่ม LINE ทุกวัน เวลา 08:00 น.
         $schedule->command('line:daily-leave-summary')
                  ->dailyAt('08:00')

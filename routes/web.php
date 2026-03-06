@@ -302,6 +302,21 @@ Route::get('/cron/daily-leave-summary/{secret}', function ($secret) {
     ]);
 });
 
+// Trigger daily duty roster notification to LINE group
+Route::get('/cron/daily-duty-roster/{secret}', function ($secret) {
+    if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {
+        abort(403, 'Unauthorized');
+    }
+
+    $exitCode = Artisan::call('line:daily-duty-roster');
+
+    return response()->json([
+        'message' => 'Daily duty roster notification executed',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output()
+    ]);
+});
+
 Route::get('/queue-work/{secret}', function ($secret) {
     // Check if the secret matches the one in .env
     if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {
