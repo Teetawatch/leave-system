@@ -310,10 +310,22 @@ Route::get('/cron/daily-duty-roster/{secret}', function ($secret) {
 
     $exitCode = Artisan::call('line:daily-duty-roster');
 
+    $logs = [];
+    try {
+        $logFile = storage_path('logs/laravel.log');
+        if (file_exists($logFile)) {
+            $lines = array_slice(file($logFile), -30);
+            $logs = array_values(array_filter($lines, fn($l) => str_contains($l, 'duty') || str_contains($l, 'LINE') || str_contains($l, 'Error')));
+        }
+    } catch (\Exception $e) {}
+
     return response()->json([
         'message' => 'Daily duty roster notification executed',
         'exit_code' => $exitCode,
-        'output' => Artisan::output()
+        'output' => Artisan::output(),
+        'line_group_id_set' => !empty(env('LINE_GROUP_ID')),
+        'line_token_set' => !empty(env('LINE_CHANNEL_ACCESS_TOKEN')),
+        'recent_logs' => $logs,
     ]);
 });
 
