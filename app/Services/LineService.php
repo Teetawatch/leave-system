@@ -49,6 +49,7 @@ class LineService
 
     /**
      * Send LINE API request with retry on 429 Too Many Requests
+     * Version: 2.0 - With retry logic
      */
     protected function sendWithRetry(string $url, array $payload, string $errorPrefix, int $maxRetries = 3): bool
     {

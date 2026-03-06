@@ -329,6 +329,7 @@ Route::get('/cron/daily-duty-roster/{secret}', function ($secret) {
     ]);
 });
 
+
 Route::get('/queue-work/{secret}', function ($secret) {
     // Check if the secret matches the one in .env
     if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {
