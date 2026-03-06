@@ -96,51 +96,60 @@ class LeaveRequestController extends Controller
 
         // Business Rules Validation
 
-        // 1. Advance Notice Check
-        if ($leaveType->requires_advance_notice && $leaveType->slug !== 'personal') {
-            $daysInAdvance = now()->diffInDays($startDate, false);
-            if ($daysInAdvance < $leaveType->advance_notice_days) {
+        $nowBkk = Carbon::now('Asia/Bangkok');
+        $today = $nowBkk->copy()->startOfDay();
+        $start = Carbon::parse($request->start_date)->setTimezone('Asia/Bangkok')->startOfDay();
+
+        // 1. Advance Notice Check (using database settings)
+        if ($leaveType->requires_advance_notice && $leaveType->enforce_advance_notice && $leaveType->advance_notice_days > 0) {
+            $minDate = $today->copy()->addDays($leaveType->advance_notice_days);
+            if ($start->lessThan($minDate)) {
                 return response()->json([
                     'success' => false,
-                    'message' => "ประเภทการลานี้ต้องยื่นล่วงหน้าอย่างน้อย {$leaveType->advance_notice_days} วัน",
+                    'message' => "{$leaveType->name} ต้องยื่นล่วงหน้าอย่างน้อย {$leaveType->advance_notice_days} วัน",
                 ], 422);
             }
         }
 
-        // 2. Retroactive Check
-        if (!$leaveType->allows_retroactive) {
-            if ($startDate->isPast() && !$startDate->isToday()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "ประเภทการลานี้ไม่สามารถยื่นย้อนหลังได้",
-                ], 422);
-            }
-        } else {
-            $daysPast = $startDate->diffInDays(now(), false);
-            if ($daysPast > 7) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "ไม่สามารถยื่นย้อนหลังเกิน 7 วันได้",
-                ], 422);
+        // 2. Retroactive Check (using database settings)
+        if ($leaveType->enforce_retroactive_check) {
+            if (!$leaveType->allows_retroactive) {
+                if ($start->isPast() && !$start->isSameDay($today)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "{$leaveType->name} ไม่สามารถยื่นย้อนหลังได้",
+                    ], 422);
+                }
+            } else {
+                $maxRetro = $leaveType->max_retroactive_days ?? 7;
+                $daysPast = $start->diffInDays($today, false);
+                if ($daysPast > $maxRetro) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "ไม่สามารถยื่นย้อนหลังเกิน {$maxRetro} วันได้",
+                    ], 422);
+                }
             }
         }
 
-        // 3. Check Balance
-        $currentYear = now()->year;
-        $balance = LeaveBalance::firstOrCreate(
-            ['user_id' => $user->id, 'leave_type_id' => $leaveType->id, 'year' => $currentYear],
-            [
-                'total_days' => $leaveType->max_days_per_year,
-                'used_days' => 0,
-                'remaining_days' => $leaveType->max_days_per_year
-            ]
-        );
+        // 3. Check Balance (using database settings)
+        if ($leaveType->slug !== 'temporary' && $leaveType->enforce_balance_check) {
+            $currentYear = now()->year;
+            $balance = LeaveBalance::firstOrCreate(
+                ['user_id' => $user->id, 'leave_type_id' => $leaveType->id, 'year' => $currentYear],
+                [
+                    'total_days' => $leaveType->max_days_per_year,
+                    'used_days' => 0,
+                    'remaining_days' => $leaveType->max_days_per_year
+                ]
+            );
 
-        if ($balance->remaining_days < $diffDays) {
-            return response()->json([
-                'success' => false,
-                'message' => "วันลาคงเหลือไม่เพียงพอ (เหลือ {$balance->remaining_days} วัน, ต้องการ {$diffDays} วัน)",
-            ], 422);
+            if ($balance->remaining_days < $diffDays) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "วันลาคงเหลือไม่เพียงพอ (เหลือ {$balance->remaining_days} วัน, ต้องการ {$diffDays} วัน)",
+                ], 422);
+            }
         }
 
         // Create Leave Request

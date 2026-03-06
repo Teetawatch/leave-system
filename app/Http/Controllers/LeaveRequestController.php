@@ -91,48 +91,31 @@ class LeaveRequestController extends Controller
 
         // --- Business Rules Validation ---
 
-        // 1. Check specific Leave Type rules
-        // Advance Notice
-        // 1. Check specific Leave Type rules
-        // Advance Notice
-        // 1. Check specific Leave Type rules
-        // Advance Notice
         $nowBkk = Carbon::now('Asia/Bangkok');
         $today = $nowBkk->copy()->startOfDay();
-        // Parse input strictly
         $start = Carbon::parse($request->start_date)->setTimezone('Asia/Bangkok')->startOfDay();
 
-        if ($leaveType->slug === 'personal') {
-            // ลากิจ: ต้องลาล่วงหน้า 1 วัน (อย่างน้อยเริ่มวันพรุ่งนี้)
-            // ตัวอย่าง: ยื่นวันที่ 1, ลาได้เร็วสุดวันที่ 2
-            $minDate = $today->copy()->addDays(1);
-            if ($start->lessThan($minDate)) {
-                return back()->withErrors(['start_date' => "ลากิจต้องยื่นล่วงหน้าอย่างน้อย 1 วัน (ยื่นวันนี้ ลาได้ตั้งแต่วันที่ {$minDate->format('d/m/Y')} เป็นต้นไป)"]);
-            }
-        } elseif ($leaveType->slug === 'vacation') {
-            // ลาพักผ่อน: ต้องลาล่วงหน้า 3 วัน
-            // ตัวอย่าง: ยื่นวันที่ 1, ลาได้เร็วสุดวันที่ 4
-            $minDate = $today->copy()->addDays(3);
-            if ($start->lessThan($minDate)) {
-                return back()->withErrors(['start_date' => "ลาพักผ่อนต้องยื่นล่วงหน้าอย่างน้อย 3 วัน (ยื่นวันนี้ ลาได้ตั้งแต่วันที่ {$minDate->format('d/m/Y')} เป็นต้นไป)"]);
-            }
-        } elseif ($leaveType->requires_advance_notice) {
+        // 1. Advance Notice Check (using database settings)
+        if ($leaveType->requires_advance_notice && $leaveType->enforce_advance_notice && $leaveType->advance_notice_days > 0) {
             $minDate = $today->copy()->addDays($leaveType->advance_notice_days);
             if ($start->lessThan($minDate)) {
-                return back()->withErrors(['start_date' => "ประเภทการลานี้ ({$leaveType->name}) ต้องยื่นล่วงหน้าอย่างน้อย {$leaveType->advance_notice_days} วัน (ยื่นวันนี้ ลาได้ตั้งแต่วันที่ {$minDate->format('d/m/Y')} เป็นต้นไป)"]);
+                return back()->withErrors(['start_date' => "{$leaveType->name} ต้องยื่นล่วงหน้าอย่างน้อย {$leaveType->advance_notice_days} วัน (ยื่นวันนี้ ลาได้ตั้งแต่วันที่ {$minDate->format('d/m/Y')} เป็นต้นไป)"]);
             }
         }
 
-        // Retroactive Check
-        if (!in_array($leaveType->slug, ['personal', 'vacation']) && !$leaveType->allows_retroactive) {
-            if ($start->isPast() && !$start->isSameDay($today)) {
-                return back()->withErrors(['start_date' => "ประเภทการลานี้ ({$leaveType->name}) ไม่สามารถยื่นย้อนหลังได้"]);
-            }
-        } elseif (!in_array($leaveType->slug, ['personal', 'vacation'])) {
-            // Retroactive limit
-            $daysPast = $start->diffInDays($today, false);
-            if ($daysPast > 7) {
-                return back()->withErrors(['start_date' => "ไม่สามารถยื่นย้อนหลังเกิน 7 วันได้"]);
+        // 2. Retroactive Check (using database settings)
+        if ($leaveType->enforce_retroactive_check) {
+            if (!$leaveType->allows_retroactive) {
+                if ($start->isPast() && !$start->isSameDay($today)) {
+                    return back()->withErrors(['start_date' => "{$leaveType->name} ไม่สามารถยื่นย้อนหลังได้"]);
+                }
+            } else {
+                // Retroactive limit from database
+                $maxRetro = $leaveType->max_retroactive_days ?? 7;
+                $daysPast = $start->diffInDays($today, false);
+                if ($daysPast > $maxRetro) {
+                    return back()->withErrors(['start_date' => "ไม่สามารถยื่นย้อนหลังเกิน {$maxRetro} วันได้"]);
+                }
             }
         }
 
@@ -172,7 +155,7 @@ class LeaveRequestController extends Controller
             }
         }
         // 4. Check Balance (Skip for temporary leave - no balance deduction)
-        if ($leaveType->slug !== 'temporary') {
+        if ($leaveType->slug !== 'temporary' && $leaveType->enforce_balance_check) {
             // Ensure Balance record exists
             $currentYear = now()->year;
             $balance = LeaveBalance::firstOrCreate(
