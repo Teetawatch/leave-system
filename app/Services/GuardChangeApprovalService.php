@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\GuardChangeRequest;
+use App\Models\DutyRoster;
+use App\Models\SeniorDutyRoster;
 use App\Models\User;
 use App\Notifications\GuardChangeStatusUpdated;
 use App\Notifications\NewGuardChangeNotification;
@@ -670,5 +672,56 @@ class GuardChangeApprovalService
     public function sendNewRequestNotification(GuardChangeRequest $guardChange)
     {
         $this->notifyNextApproverViaLine($guardChange, 'pending');
+    }
+
+    /**
+     * อัปเดตตารางเวร (Duty Roster) ทันทีเมื่อส่งคำขอเปลี่ยนเวร
+     * สลับผู้เข้าเวรเดิมเป็นผู้เข้าเวรแทน
+     */
+    public function updateDutyRosterOnRequest(GuardChangeRequest $guardChange)
+    {
+        $originalUserId = $guardChange->user_id;
+        $replacementUserId = $guardChange->replacement_user_id;
+        $dutyPosition = $guardChange->duty_position;
+
+        // กรณีนายทหารเวรอาวุโส → อัปเดต senior_duty_rosters
+        if ($dutyPosition === 'senior_duty_officer') {
+            $seniorRoster = SeniorDutyRoster::where('senior_officer_id', $originalUserId)
+                ->where('start_date', '<=', $guardChange->duty_date)
+                ->where('end_date', '>=', $guardChange->duty_date)
+                ->first();
+
+            if ($seniorRoster) {
+                $seniorRoster->update(['senior_officer_id' => $replacementUserId]);
+            }
+            return;
+        }
+
+        // กรณีนายทหารเวร / ผู้ช่วยนายทหารเวร → อัปเดต duty_rosters
+        $roster = DutyRoster::where('duty_date', $guardChange->duty_date)->first();
+
+        if (!$roster) {
+            return;
+        }
+
+        if ($dutyPosition === 'duty_officer') {
+            if ($roster->duty_officer_id == $originalUserId) {
+                $roster->update(['duty_officer_id' => $replacementUserId]);
+            }
+        }
+
+        if ($dutyPosition === 'assistant_duty_officer') {
+            if ($roster->assistant_duty_officer_id == $originalUserId) {
+                $roster->update(['assistant_duty_officer_id' => $replacementUserId]);
+            }
+        }
+
+        Log::info("Duty Roster updated on guard change request", [
+            'guard_change_id' => $guardChange->id,
+            'duty_date' => $guardChange->duty_date->format('Y-m-d'),
+            'original_user' => $originalUserId,
+            'replacement_user' => $replacementUserId,
+            'position' => $dutyPosition,
+        ]);
     }
 }

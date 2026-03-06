@@ -299,9 +299,9 @@
             <nav class="flex-1 px-3 space-y-1.5 overflow-y-auto custom-scrollbar py-6" x-data="{ 
                 openMenus: {
                     leave: {{ request()->routeIs('leave-request.*') ? 'true' : 'false' }},
-                    guard: {{ request()->routeIs('guard-change.*') ? 'true' : 'false' }},
+                    guard: {{ request()->routeIs('guard-change.*') || request()->routeIs('duty-roster.index') ? 'true' : 'false' }},
                     approval: {{ request()->routeIs('approvals.*') || request()->routeIs('reports.*') ? 'true' : 'false' }},
-                    admin: {{ request()->routeIs('employees.*') || request()->routeIs('settings.*') || request()->routeIs('departments.*') || request()->routeIs('leave-entitlements.*') ? 'true' : 'false' }}
+                    admin: {{ request()->routeIs('employees.*') || request()->routeIs('settings.*') || request()->routeIs('departments.*') || request()->routeIs('leave-entitlements.*') || request()->routeIs('duty-roster.manage') ? 'true' : 'false' }}
                 }
             }">
                 <!-- Dashboard - Always visible -->
@@ -414,6 +414,12 @@
                                 <span
                                     class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-rose-500/20 animate-pulse">{{ $navGuardChangePendingMe }}</span>
                             @endif
+                        </a>
+                        <a href="{{ route('duty-roster.index') }}"
+                            class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('duty-roster.index') ? 'bg-teal-50 text-teal-700 shadow-sm shadow-teal-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-teal-600' }}">
+                            <i data-lucide="calendar-days"
+                                class="w-4 h-4 {{ request()->routeIs('duty-roster.index') ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-600' }}"></i>
+                            <span class="ml-3 text-sm font-bold tracking-tight">ตารางเวร</span>
                         </a>
                     </div>
                 </div>
@@ -562,15 +568,21 @@
                             </a>
                             <a href="{{ route('settings.index') }}"
                                 class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('settings.*') ? 'bg-brand-50 text-brand-700 shadow-sm shadow-brand-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand-600' }}">
-                                <i data-lucide="settings-2"
+                                <i data-lucide="sliders-horizontal"
                                     class="w-4 h-4 {{ request()->routeIs('settings.*') ? 'text-brand-600' : 'text-slate-400 group-hover:text-brand-600' }}"></i>
-                                <span class="ml-3 text-sm font-bold tracking-tight">ตั้งค่าระบบ</span>
+                                <span class="ml-3 text-sm font-bold tracking-tight">ตั้งค่าเงื่อนไขการลา</span>
                             </a>
                             <a href="{{ route('leave-entitlements.index') }}"
                                 class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('leave-entitlements.*') ? 'bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-emerald-600' }}">
                                 <i data-lucide="calendar-plus"
                                     class="w-4 h-4 {{ request()->routeIs('leave-entitlements.*') ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600' }}"></i>
                                 <span class="ml-3 text-sm font-bold tracking-tight">จัดการสิทธิ์วันลา</span>
+                            </a>
+                            <a href="{{ route('duty-roster.manage') }}"
+                                class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('duty-roster.manage') ? 'bg-teal-50 text-teal-700 shadow-sm shadow-teal-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-teal-600' }}">
+                                <i data-lucide="shield-plus"
+                                    class="w-4 h-4 {{ request()->routeIs('duty-roster.manage') ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-600' }}"></i>
+                                <span class="ml-3 text-sm font-bold tracking-tight">จัดการตารางเวร</span>
                             </a>
                         </div>
                     </div>

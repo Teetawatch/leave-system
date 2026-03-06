@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\GuardChangeRequest;
+use App\Models\DutyRoster;
+use App\Models\SeniorDutyRoster;
 use App\Models\User;
 use App\Notifications\NewGuardChangeNotification;
 use App\Notifications\GuardChangeStatusUpdated;
@@ -104,6 +106,9 @@ class GuardChangeRequestController extends Controller
         // Send LINE notification to replacement user
         $guardChangeRequest->load(['user', 'replacementUser']);
         $this->guardChangeService->sendNewRequestNotification($guardChangeRequest);
+
+        // อัปเดตตารางเวร (Duty Roster) ทันทีเมื่อส่งคำขอ
+        $this->updateDutyRosterOnRequest($guardChangeRequest);
 
         return redirect()->route('guard-change.show', $guardChangeRequest)
             ->with('status', 'ส่งคำขอเปลี่ยนยามเรียบร้อยแล้ว');
@@ -451,5 +456,48 @@ class GuardChangeRequestController extends Controller
 
         return redirect()->route('guard-change.final-approvals')
             ->with('success', 'อนุมัติคำขอเปลี่ยนยามเรียบร้อยแล้ว (เสร็จสมบูรณ์)');
+    }
+
+    /**
+     * อัปเดตตารางเวร (Duty Roster) ทันทีเมื่อส่งคำขอเปลี่ยนเวร
+     * สลับผู้เข้าเวรเดิมเป็นผู้เข้าเวรแทน
+     */
+    private function updateDutyRosterOnRequest(GuardChangeRequest $guardChange)
+    {
+        $originalUserId = $guardChange->user_id;
+        $replacementUserId = $guardChange->replacement_user_id;
+        $dutyPosition = $guardChange->duty_position;
+
+        // กรณีนายทหารเวรอาวุโส → อัปเดต senior_duty_rosters
+        if ($dutyPosition === 'senior_duty_officer') {
+            $seniorRoster = SeniorDutyRoster::where('senior_officer_id', $originalUserId)
+                ->where('start_date', '<=', $guardChange->duty_date)
+                ->where('end_date', '>=', $guardChange->duty_date)
+                ->first();
+
+            if ($seniorRoster) {
+                $seniorRoster->update(['senior_officer_id' => $replacementUserId]);
+            }
+            return;
+        }
+
+        // กรณีนายทหารเวร / ผู้ช่วยนายทหารเวร → อัปเดต duty_rosters
+        $roster = DutyRoster::where('duty_date', $guardChange->duty_date)->first();
+
+        if (!$roster) {
+            return; // ไม่มีข้อมูลเวรในวันนี้
+        }
+
+        if ($dutyPosition === 'duty_officer') {
+            if ($roster->duty_officer_id == $originalUserId) {
+                $roster->update(['duty_officer_id' => $replacementUserId]);
+            }
+        }
+
+        if ($dutyPosition === 'assistant_duty_officer') {
+            if ($roster->assistant_duty_officer_id == $originalUserId) {
+                $roster->update(['assistant_duty_officer_id' => $replacementUserId]);
+            }
+        }
     }
 }

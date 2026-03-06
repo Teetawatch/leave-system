@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\GuardChangeRequestController;
+use App\Http\Controllers\DutyRosterController;
 use App\Http\Controllers\EmployeeRegistrationController;
 use App\Http\Controllers\ExecutiveDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
 
 /*
-|--------------------------------------------------------------------------
+|-------------------------------------------------------------------                                          -------
 | Web Routes
 |--------------------------------------------------------------------------
 |
@@ -176,6 +177,10 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
     // Calendar Routes (Shared Leave Calendar)
     Route::get('/calendar', [App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/calendar/events', [App\Http\Controllers\CalendarController::class, 'events'])->name('calendar.events');
+
+    // Duty Roster Routes (ตารางเวร - ทุกคนเห็น)
+    Route::get('/duty-roster', [DutyRosterController::class, 'index'])->name('duty-roster.index');
+    Route::get('/duty-roster/data', [DutyRosterController::class, 'getMonthData'])->name('duty-roster.data');
     Route::get('/calendar/summary', [App\Http\Controllers\CalendarController::class, 'summary'])->name('calendar.summary');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -247,6 +252,16 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
 
         Route::get('/settings', [App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
+
+        // Duty Roster Management Routes (Admin only)
+        Route::get('/duty-roster/manage', [DutyRosterController::class, 'manage'])->name('duty-roster.manage');
+        Route::post('/duty-roster/store', [DutyRosterController::class, 'store'])->name('duty-roster.store');
+        Route::post('/duty-roster/bulk-store', [DutyRosterController::class, 'bulkStore'])->name('duty-roster.bulk-store');
+        Route::delete('/duty-roster/destroy', [DutyRosterController::class, 'destroy'])->name('duty-roster.destroy');
+        Route::get('/duty-roster/template', [DutyRosterController::class, 'downloadTemplate'])->name('duty-roster.template');
+        Route::post('/duty-roster/import', [DutyRosterController::class, 'import'])->name('duty-roster.import');
+        Route::post('/duty-roster/senior/store', [DutyRosterController::class, 'storeSenior'])->name('duty-roster.senior.store');
+        Route::delete('/duty-roster/senior/{id}', [DutyRosterController::class, 'destroySenior'])->name('duty-roster.senior.destroy');
 
         Route::resource('departments', App\Http\Controllers\DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
 
