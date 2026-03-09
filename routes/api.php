@@ -87,6 +87,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/guard-change', [\App\Http\Controllers\Api\ReportController::class, 'guardChangeSummary']);
 
     // -------------------------------------------------------------------------
+    // Guard Duty / Duty Roster
+    // -------------------------------------------------------------------------
+    Route::get('/today-guard-duty', [\App\Http\Controllers\Api\GuardDutyController::class, 'today']);
+    Route::get('/duty-roster', [\App\Http\Controllers\Api\GuardDutyController::class, 'byDate']);
+    Route::get('/duty-roster/monthly', [\App\Http\Controllers\Api\GuardDutyController::class, 'monthly']);
+
+    // -------------------------------------------------------------------------
     // Notifications
     // -------------------------------------------------------------------------
     Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
