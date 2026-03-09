@@ -330,6 +330,35 @@ Route::get('/cron/daily-duty-roster/{secret}', function ($secret) {
 });
 
 
+// New LINE Bot 2 Routes (for daily reports)
+Route::get('/line/daily-leave-summary', function () {
+    $exitCode = Artisan::call('line:daily-leave-summary');
+    return response()->json([
+        'message' => 'Daily leave summary (Bot 2) executed',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output(),
+        'debug' => [
+            'bot2_token_set' => !empty(env('LINE_CHANNEL_ACCESS_TOKEN_2')),
+            'bot2_group_id_set' => !empty(env('LINE_GROUP_ID_2')),
+        ],
+    ]);
+});
+
+Route::get('/line/daily-duty-roster', function () {
+    $exitCode = Artisan::call('line:daily-duty-roster');
+    return response()->json([
+        'message' => 'Daily duty roster (Bot 2) executed',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output(),
+        'debug' => [
+            'bot2_token_set' => !empty(env('LINE_CHANNEL_ACCESS_TOKEN_2')),
+            'bot2_group_id_set' => !empty(env('LINE_GROUP_ID_2')),
+            'queue_connection' => env('QUEUE_CONNECTION', 'sync'),
+        ],
+    ]);
+});
+
+
 Route::get('/queue-work/{secret}', function ($secret) {
     // Check if the secret matches the one in .env
     if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {

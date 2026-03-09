@@ -10,12 +10,16 @@ class LineService
 {
     protected $httpClient;
     protected $channelAccessToken;
+    protected $channelAccessToken2;
+    protected $channelSecret2;
     protected $lineNotifyToken;
 
     public function __construct()
     {
         $this->httpClient = new Client();
         $this->channelAccessToken = env('LINE_CHANNEL_ACCESS_TOKEN');
+        $this->channelAccessToken2 = env('LINE_CHANNEL_ACCESS_TOKEN_2');
+        $this->channelSecret2 = env('LINE_CHANNEL_SECRET_2');
         $this->lineNotifyToken = env('LINE_NOTIFY_TOKEN');
     }
 
@@ -108,6 +112,79 @@ class LineService
         }
 
         return $success;
+    }
+
+    /**
+     * Send a text message to a LINE group via push API using Bot 2 (for daily reports).
+     * Uses LINE_CHANNEL_ACCESS_TOKEN_2 and LINE_GROUP_ID_2.
+     */
+    public function sendGroupTextMessage2(string $text): bool
+    {
+        $groupId = env('LINE_GROUP_ID_2');
+
+        if (!$groupId || !$this->channelAccessToken2) {
+            Log::warning('LINE Bot 2: GROUP_ID or ACCESS_TOKEN not configured.');
+            return false;
+        }
+
+        $this->addRateLimitDelay();
+
+        try {
+            $response = $this->httpClient->post('https://api.line.me/v2/bot/message/push', [
+                'headers' => [
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $this->channelAccessToken2,
+                ],
+                'json' => [
+                    'to'       => $groupId,
+                    'messages' => [['type' => 'text', 'text' => $text]],
+                ],
+            ]);
+
+            return $response->getStatusCode() === 200;
+        } catch (\Exception $e) {
+            Log::error('LINE Bot 2 Send Group Text Error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Send a Flex Message to a LINE group via push API using Bot 2 (for daily reports).
+     * Uses LINE_CHANNEL_ACCESS_TOKEN_2 and LINE_GROUP_ID_2.
+     */
+    public function sendGroupFlexMessage2(string $altText, array $flexContents): bool
+    {
+        $groupId = env('LINE_GROUP_ID_2');
+
+        if (!$groupId || !$this->channelAccessToken2) {
+            Log::warning('LINE Bot 2: GROUP_ID or ACCESS_TOKEN not configured.');
+            return false;
+        }
+
+        $this->addRateLimitDelay();
+
+        try {
+            $response = $this->httpClient->post('https://api.line.me/v2/bot/message/push', [
+                'headers' => [
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $this->channelAccessToken2,
+                ],
+                'json' => [
+                    'to'       => $groupId,
+                    'messages' => [['type' => 'flex', 'altText' => $altText, 'contents' => $flexContents]],
+                ],
+            ]);
+
+            return $response->getStatusCode() === 200;
+        } catch (ClientException $e) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            $body = $e->getResponse()->getBody()->getContents();
+            Log::error("LINE Bot 2 Send Group Flex Error ({$statusCode}): {$body}");
+            return false;
+        } catch (\Exception $e) {
+            Log::error('LINE Bot 2 Send Group Flex Error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**

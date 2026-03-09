@@ -63,13 +63,7 @@ class SendDailyLeaveSummary extends Command
 
             if (!$isTest) {
                 $noLeaveMessage = $this->buildNoLeaveMessage($date);
-                try {
-                    $this->lineService->sendGroupNotify($noLeaveMessage);
-                } catch (\Exception $e) {
-                    $this->error("LINE Notify failed: " . $e->getMessage());
-                    // Fallback to push
-                    $this->lineService->sendGroupTextMessage($noLeaveMessage);
-                }
+                $this->lineService->sendGroupTextMessage2($noLeaveMessage);
             }
 
             return Command::SUCCESS;
@@ -114,7 +108,7 @@ class SendDailyLeaveSummary extends Command
             );
             
             try {
-                $result = $this->lineService->sendGroupFlexMessage($altText, $flexMessage);
+                $result = $this->lineService->sendGroupFlexMessage2($altText, $flexMessage);
                 
                 if ($result) {
                     $this->info('✅ ส่งสรุปเข้ากลุ่ม LINE เรียบร้อยแล้ว!');

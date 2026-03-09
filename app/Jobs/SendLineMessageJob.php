@@ -51,6 +51,17 @@ class SendLineMessageJob implements ShouldQueue
                 case 'text':
                     $result = $lineService->sendGroupTextMessage($this->data['text']);
                     break;
+
+                case 'flex2':
+                    $result = $lineService->sendGroupFlexMessage2(
+                        $this->data['altText'],
+                        $this->data['flexContents']
+                    );
+                    break;
+
+                case 'text2':
+                    $result = $lineService->sendGroupTextMessage2($this->data['text']);
+                    break;
                     
                 default:
                     Log::error('Unknown LINE message type: ' . $this->type);
