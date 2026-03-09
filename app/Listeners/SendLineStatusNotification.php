@@ -139,37 +139,56 @@ class SendLineStatusNotification implements ShouldQueue
     private function notifyNextApprover($leaveRequest, $status)
     {
         $user = $leaveRequest->user;
-        $recipientId = null;
 
         if ($status === 'pending_manager') {
-            $recipientId = $user->manager_id;
-        } elseif ($status === 'pending_deputy_director') {
-            // Usually notified via role
-            $deputies = User::where('role', 'deputy_director')->whereNotNull('line_user_id')->get();
-            foreach ($deputies as $deputy) {
-                $this->sendApprovalRequest($deputy, $leaveRequest);
-            }
-            return;
-        } elseif ($status === 'pending_director') {
-            $directors = User::where('role', 'director')->whereNotNull('line_user_id')->get();
-            foreach ($directors as $director) {
-                $this->sendApprovalRequest($director, $leaveRequest);
-            }
-            return;
-        }
-
-        if ($recipientId) {
-            $recipient = User::find($recipientId);
+            $recipient = $user->manager_id ? User::find($user->manager_id) : null;
             if ($recipient && $recipient->line_user_id) {
                 $this->sendApprovalRequest($recipient, $leaveRequest);
             }
+            return;
         }
+
+        if ($status === 'pending_deputy_director') {
+            $recipients = User::where('role', 'deputy_director')->whereNotNull('line_user_id')->get();
+        } elseif ($status === 'pending_director') {
+            $recipients = User::where('role', 'director')->whereNotNull('line_user_id')->get();
+        } else {
+            return;
+        }
+
+        if ($recipients->isEmpty()) return;
+
+        $lineUserIds = $recipients->pluck('line_user_id')->values()->all();
+
+        if (count($lineUserIds) === 1) {
+            $this->sendApprovalRequest($recipients->first(), $leaveRequest);
+            return;
+        }
+
+        $user = $leaveRequest->user;
+        $flexContents = $this->buildApprovalFlexContents($leaveRequest, $user);
+
+        $this->lineService->multicastFlexMessage(
+            $lineUserIds,
+            "มีใบลาใหม่รอนุมัติจาก {$user->name}",
+            $flexContents
+        );
     }
 
     private function sendApprovalRequest($recipient, $leaveRequest)
     {
         $user = $leaveRequest->user;
-        
+        $flexContents = $this->buildApprovalFlexContents($leaveRequest, $user);
+
+        $this->lineService->sendFlexMessage(
+            $recipient->line_user_id,
+            "มีใบลาใหม่รอนุมัติจาก {$user->name}",
+            $flexContents
+        );
+    }
+
+    private function buildApprovalFlexContents($leaveRequest, $user): array
+    {
         $detailsContents = [
             [
                 'type' => 'box',
@@ -185,7 +204,7 @@ class SendLineStatusNotification implements ShouldQueue
             $periodText = $leaveRequest->temporary_leave_period;
             if ($periodText === 'morning') $periodText = 'ช่วงเช้า';
             elseif ($periodText === 'afternoon') $periodText = 'ช่วงบ่าย';
-            
+
             $detailsContents[] = [
                 'type' => 'box',
                 'layout' => 'horizontal',
@@ -224,10 +243,10 @@ class SendLineStatusNotification implements ShouldQueue
         ];
 
         if (!empty($leaveRequest->contact_address)) {
-            $contactText = is_array($leaveRequest->contact_address) 
-                ? implode(', ', $leaveRequest->contact_address) 
-                : (string)$leaveRequest->contact_address;
-                
+            $contactText = is_array($leaveRequest->contact_address)
+                ? implode(', ', $leaveRequest->contact_address)
+                : (string) $leaveRequest->contact_address;
+
             $detailsContents[] = [
                 'type' => 'box',
                 'layout' => 'horizontal',
@@ -251,7 +270,7 @@ class SendLineStatusNotification implements ShouldQueue
             ];
         }
 
-        $flexContents = [
+        return [
             'type' => 'bubble',
             'size' => 'kilo',
             'header' => [
@@ -339,11 +358,5 @@ class SendLineStatusNotification implements ShouldQueue
                 ]
             ]
         ];
-
-        $this->lineService->sendFlexMessage(
-            $recipient->line_user_id,
-            "มีใบลาใหม่รอนุมัติจาก {$user->name}",
-            $flexContents
-        );
     }
 }

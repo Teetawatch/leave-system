@@ -348,36 +348,55 @@ class GuardChangeApprovalService
         $replacement = $guardChange->replacementUser;
         $dutyPosition = self::DUTY_POSITIONS[$guardChange->duty_position] ?? $guardChange->duty_position;
 
-        $recipients = [];
-
         if ($currentStatus === 'pending') {
-            // Notify replacement user
+            // Single target: replacement user — use individual push
             if ($replacement && $replacement->line_user_id) {
-                $recipients[] = $replacement;
+                $this->sendGuardChangeApprovalFlex($replacement, $guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
             }
-        } elseif ($currentStatus === 'approved') {
-            // Notify deputy directors
-            $recipients = User::where('role', 'deputy_director')
-                ->whereNotNull('line_user_id')
-                ->get()
-                ->all();
-        } elseif ($currentStatus === 'director_approved') {
-            // Notify directors
-            $recipients = User::where('role', 'director')
-                ->whereNotNull('line_user_id')
-                ->get()
-                ->all();
+            return;
         }
 
-        foreach ($recipients as $recipient) {
-            $this->sendGuardChangeApprovalFlex($recipient, $guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
+        if ($currentStatus === 'approved') {
+            $recipients = User::where('role', 'deputy_director')->whereNotNull('line_user_id')->get();
+        } elseif ($currentStatus === 'director_approved') {
+            $recipients = User::where('role', 'director')->whereNotNull('line_user_id')->get();
+        } else {
+            return;
         }
+
+        if ($recipients->isEmpty()) return;
+
+        $lineUserIds = $recipients->pluck('line_user_id')->values()->all();
+
+        if (count($lineUserIds) === 1) {
+            $this->sendGuardChangeApprovalFlex($recipients->first(), $guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
+            return;
+        }
+
+        // Use multicast for multiple recipients — 1 API call instead of N push calls
+        $flexContents = $this->buildGuardChangeApprovalFlexContents($guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
+        $this->lineService->multicastFlexMessage(
+            $lineUserIds,
+            "คำขอเปลี่ยนเวรยามจาก {$requester->name}",
+            $flexContents
+        );
     }
 
     /**
      * Send a Flex Message for guard change approval request
      */
     protected function sendGuardChangeApprovalFlex($recipient, $guardChange, $requester, $replacement, $dutyPosition, $currentStatus)
+    {
+        $flexContents = $this->buildGuardChangeApprovalFlexContents($guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
+
+        $this->lineService->sendFlexMessage(
+            $recipient->line_user_id,
+            "คำขอเปลี่ยนเวรยามจาก {$requester->name}",
+            $flexContents
+        );
+    }
+
+    protected function buildGuardChangeApprovalFlexContents($guardChange, $requester, $replacement, $dutyPosition, $currentStatus): array
     {
         $stepLabel = '';
         if ($currentStatus === 'pending') {
@@ -434,7 +453,6 @@ class GuardChangeApprovalService
             ];
         }
 
-        // Add step indicator
         $detailsContents[] = [
             'type' => 'box',
             'layout' => 'horizontal',
@@ -444,7 +462,7 @@ class GuardChangeApprovalService
             ]
         ];
 
-        $flexContents = [
+        return [
             'type' => 'bubble',
             'size' => 'kilo',
             'header' => [
@@ -523,12 +541,6 @@ class GuardChangeApprovalService
                 ]
             ]
         ];
-
-        $this->lineService->sendFlexMessage(
-            $recipient->line_user_id,
-            "คำขอเปลี่ยนเวรยามจาก {$requester->name}",
-            $flexContents
-        );
     }
 
     /**

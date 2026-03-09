@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Models\LeaveType;
 use App\Services\LineService;
+use App\Jobs\SendLineMessageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -61,7 +63,13 @@ class SendDailyLeaveSummary extends Command
 
             if (!$isTest) {
                 $noLeaveMessage = $this->buildNoLeaveMessage($date);
-                $this->lineService->sendGroupTextMessage($noLeaveMessage);
+                try {
+                    $this->lineService->sendGroupNotify($noLeaveMessage);
+                } catch (\Exception $e) {
+                    $this->error("LINE Notify failed: " . $e->getMessage());
+                    // Fallback to push
+                    $this->lineService->sendGroupTextMessage($noLeaveMessage);
+                }
             }
 
             return Command::SUCCESS;
@@ -98,26 +106,30 @@ class SendDailyLeaveSummary extends Command
 
         // ส่ง Flex Message เข้ากลุ่ม LINE
         if (!$isTest) {
+            // Send flex message directly (no queue for shared hosting)
             $flexMessage = $this->buildFlexMessage($date, $officerLeaves, $studentLeaves);
             $altText = sprintf(
-                '📋 สรุปการลา %s - ข้าราชการ %d คน, หลักสูตร %d คน',
-                $this->toThaiDate($date),
-                count($officerLeaves),
-                count($studentLeaves)
+                '📋 สรุปการลาประจำวัน %s',
+                $this->toThaiDate($date)
             );
-
-            $result = $this->lineService->sendGroupFlexMessage($altText, $flexMessage);
-
-            if ($result) {
-                $this->info('✅ ส่งสรุปเข้ากลุ่ม LINE เรียบร้อยแล้ว!');
-                Log::info('Daily leave summary sent to LINE group', [
-                    'date' => $dateStr,
-                    'officers' => count($officerLeaves),
-                    'students' => count($studentLeaves),
-                ]);
-            } else {
-                $this->error('❌ ส่งสรุปเข้ากลุ่ม LINE ไม่สำเร็จ');
-                Log::error('Failed to send daily leave summary to LINE group');
+            
+            try {
+                $result = $this->lineService->sendGroupFlexMessage($altText, $flexMessage);
+                
+                if ($result) {
+                    $this->info('✅ ส่งสรุปเข้ากลุ่ม LINE เรียบร้อยแล้ว!');
+                    Log::info('Daily leave summary sent to LINE group', [
+                        'date' => $dateStr,
+                        'officers' => count($officerLeaves),
+                        'students' => count($studentLeaves),
+                    ]);
+                } else {
+                    $this->error('❌ ส่งสรุปเข้ากลุ่ม LINE ไม่สำเร็จ');
+                    Log::error('Failed to send daily leave summary to LINE group');
+                }
+            } catch (\Exception $e) {
+                $this->error("Failed to send flex message: " . $e->getMessage());
+                $result = false;
             }
         } else {
             $this->warn('⚠️  โหมดทดสอบ: ไม่ได้ส่งข้อความจริง');
