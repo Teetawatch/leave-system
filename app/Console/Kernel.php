@@ -19,9 +19,10 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->onOneServer();
 
-        // ส่งสรุปการลาประจำวันเข้ากลุ่ม LINE ทุกวัน เวลา 08:00 น.
+        // ส่งสรุปการลาประจำวันเข้ากลุ่ม LINE ทุกวัน เวลา 07:30 น.
+        // (เว้นห่างจาก duty-roster 30 นาที เพื่อหลีกเลี่ยง LINE API rate limit)
         $schedule->command('line:daily-leave-summary')
-                 ->dailyAt('08:00')
+                 ->dailyAt('07:30')
                  ->timezone('Asia/Bangkok')
                  ->withoutOverlapping()
                  ->onOneServer();

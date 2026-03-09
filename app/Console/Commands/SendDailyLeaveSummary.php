@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Models\LeaveType;
 use App\Services\LineService;
+use App\Jobs\SendLineMessageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -61,7 +63,7 @@ class SendDailyLeaveSummary extends Command
 
             if (!$isTest) {
                 $noLeaveMessage = $this->buildNoLeaveMessage($date);
-                $this->lineService->sendGroupTextMessage($noLeaveMessage);
+                $this->lineService->sendGroupNotify($noLeaveMessage);
             }
 
             return Command::SUCCESS;
@@ -106,7 +108,13 @@ class SendDailyLeaveSummary extends Command
                 count($studentLeaves)
             );
 
-            $result = $this->lineService->sendGroupFlexMessage($altText, $flexMessage);
+            // Use queue to avoid rate limiting
+            SendLineMessageJob::dispatch('flex', [
+                'altText' => $altText,
+                'flexContents' => $flexMessage
+            ]);
+            
+            $result = true; // Assume success for now, job will handle errors
 
             if ($result) {
                 $this->info('✅ ส่งสรุปเข้ากลุ่ม LINE เรียบร้อยแล้ว!');

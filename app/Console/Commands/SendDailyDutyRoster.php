@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\DutyRoster;
 use App\Models\SeniorDutyRoster;
 use App\Services\LineService;
+use App\Jobs\SendLineMessageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -58,15 +59,23 @@ class SendDailyDutyRoster extends Command
 
         if (!$isTest) {
             if (!$dutyRoster && !$seniorDutyRoster) {
-                $message = $this->buildNoRosterMessage($date);
-                $result = $this->lineService->sendGroupTextMessage($message);
+                // Use queue for text message
+                SendLineMessageJob::dispatch('text', [
+                    'text' => $this->buildNoRosterMessage($date)
+                ]);
+                $result = true;
             } else {
+                // Use queue for flex message
                 $flexMessage = $this->buildFlexMessage($date, $dutyRoster, $seniorDutyRoster);
                 $altText = sprintf(
                     '🛡️ เวรยามประจำวัน %s',
                     $this->toThaiDate($date)
                 );
-                $result = $this->lineService->sendGroupFlexMessage($altText, $flexMessage);
+                SendLineMessageJob::dispatch('flex', [
+                    'altText' => $altText,
+                    'flexContents' => $flexMessage
+                ]);
+                $result = true;
             }
 
             if ($result) {

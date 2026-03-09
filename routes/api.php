@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\LeaveBalanceController;
 use App\Http\Controllers\Api\GuardChangeRequestController;
+use App\Http\Controllers\Api\LineStatusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +27,7 @@ use App\Http\Controllers\Api\GuardChangeRequestController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/line/webhook', [\App\Http\Controllers\Api\LineController::class, 'webhook']);
+Route::get('/line/status', [LineStatusController::class, 'check']);
 
 // =============================================================================
 // PROTECTED ROUTES (Require Sanctum Token)
