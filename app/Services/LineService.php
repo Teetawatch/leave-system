@@ -16,7 +16,10 @@ class LineService
 
     public function __construct()
     {
-        $this->httpClient = new Client();
+        $this->httpClient = new Client([
+            'connect_timeout' => 5,
+            'timeout'         => 15,
+        ]);
         $this->channelAccessToken = env('LINE_CHANNEL_ACCESS_TOKEN');
         $this->channelAccessToken2 = env('LINE_CHANNEL_ACCESS_TOKEN_2');
         $this->channelSecret2 = env('LINE_CHANNEL_SECRET_2');

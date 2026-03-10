@@ -243,8 +243,15 @@ class LeaveRequestController extends Controller
         // Load the leaveType relation for notification
         $leaveRequest->load('leaveType');
 
-        // Dispatch Event for Notifications (LINE, etc.)
-        event(new \App\Events\LeaveRequestSubmitted($leaveRequest));
+        // Dispatch Event for Notifications (LINE, FCM, etc.)
+        // Run AFTER response is sent so LINE API calls don't block the HTTP request
+        $leaveRequestId = $leaveRequest->id;
+        app()->terminating(function () use ($leaveRequestId) {
+            $lr = \App\Models\LeaveRequest::with(['leaveType', 'user'])->find($leaveRequestId);
+            if ($lr) {
+                event(new \App\Events\LeaveRequestSubmitted($lr));
+            }
+        });
 
         return redirect()->route('leave-request.index')->with('status', 'ส่งคำขอเรียบร้อยแล้ว รอการอนุมัติ');
     }

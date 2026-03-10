@@ -145,6 +145,7 @@
             </div>
 
             <form action="{{ route('leave-request.store') }}" method="POST" enctype="multipart/form-data" id="leaveForm"
+                @submit="submitting = true"
                 class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                 @csrf
 
@@ -498,11 +499,23 @@
 
                         <!-- Action Button -->
                         <div class="pt-12 flex flex-col md:flex-row items-center gap-8">
-                            <button type="submit"
-                                class="w-full md:w-auto flex-1 py-7 bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-white font-black text-2xl rounded-[3rem] shadow-[0_25px_60px_-15px_rgba(79,70,229,0.5)] hover:shadow-[0_35px_70px_-12px_rgba(79,70,229,0.6)] transition-all hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-5 group cursor-pointer">
-                                <i data-lucide="shield-check"
-                                    class="w-8 h-8 group-hover:rotate-12 transition-transform"></i>
-                                <span>ส่งคำขอยืนยันใบลา</span>
+                            <button type="submit" :disabled="submitting"
+                                class="w-full md:w-auto flex-1 py-7 bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-white font-black text-2xl rounded-[3rem] shadow-[0_25px_60px_-15px_rgba(79,70,229,0.5)] hover:shadow-[0_35px_70px_-12px_rgba(79,70,229,0.6)] transition-all hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-5 group cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100">
+                                <template x-if="!submitting">
+                                    <span class="flex items-center gap-5">
+                                        <i data-lucide="shield-check" class="w-8 h-8 group-hover:rotate-12 transition-transform"></i>
+                                        <span>ส่งคำขอยืนยันใบลา</span>
+                                    </span>
+                                </template>
+                                <template x-if="submitting">
+                                    <span class="flex items-center gap-5">
+                                        <svg class="animate-spin w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>กำลังส่ง....</span>
+                                    </span>
+                                </template>
                             </button>
                             <a href="{{ route('dashboard') }}"
                                 class="w-full md:w-auto px-12 py-7 bg-white text-slate-400 hover:text-rose-500 font-black text-xl rounded-[3rem] transition-all hover:bg-rose-50 border border-slate-100 text-center shadow-sm">
@@ -640,6 +653,7 @@
             document.addEventListener('alpine:init', () => {
                 Alpine.data('leaveFormApp', () => ({
                     currentStep: 1,
+                    submitting: false,
                     leaveType: '{{ old('leave_type_id') }}',
                     startDate: '{{ old('start_date') }}',
                     endDate: '{{ old('end_date') }}',

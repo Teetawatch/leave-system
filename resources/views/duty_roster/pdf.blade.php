@@ -19,7 +19,7 @@
             src: url("{!! $fontPath !!}") format('truetype');
         }
         @font-face {
-            font-family: 'THSarabunNewBold';
+            font-family: 'THSarabunNew Bold';
             font-style: normal;
             font-weight: normal; 
             src: url("{!! $fontPathBold !!}") format('truetype');
@@ -38,9 +38,9 @@
             margin: 0;
         }
         .text-center { text-align: center; }
-        .text-bold { font-family: "THSarabunNewBold", sans-serif; }
+        .text-bold { font-family: "THSarabunNew", sans-serif; }
         .title {
-            font-family: "THSarabunNewBold", sans-serif;
+            font-family: "THSarabunNew", sans-serif;
             font-size: 20pt;
             text-align: center;
             margin-bottom: 5px;
@@ -61,7 +61,7 @@
             vertical-align: top;
         }
         th {
-            font-family: "THSarabunNew Bold", sans-serif;
+            font-family: "THSarabunNew", sans-serif;
             text-align: center;
             background-color: #f3f4f6;
         }
