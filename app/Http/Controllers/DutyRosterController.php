@@ -370,6 +370,8 @@ class DutyRosterController extends Controller
         $request->validate([
             'year' => 'required|integer',
             'month' => 'required|integer|between:1,12',
+            'exclude_users' => 'nullable|array',
+            'exclude_users.*' => 'exists:users,id',
         ]);
 
         $year = $request->year;
@@ -380,41 +382,17 @@ class DutyRosterController extends Controller
         $assistantRanks = \App\Models\Rank::whereBetween('sort_order', [31, 40])->pluck('name')->toArray();
 
         // Query สำหรับคัดกรองบุคคล
-        $queryBase = function($query) {
+        $queryBase = function($query) use ($request) {
             $query->where('registration_status', 'approved')
                   ->whereNotIn('rank', ['นาย', 'นาง', 'นางสาว']) // ยกเว้นคนที่มี นายกับนาง นางสาว
                   ->whereHas('department', function($q) {
                       // ระบุชื่อแผนก/หลักสูตรที่ไม่ต้องการนำมาจัดเวร
-                      $q->whereNotIn('name', ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'แผนกศึกษา', 'ฝ่ายธุรการ']); 
-                  })
-                  // ระบุแผนกที่เจาะจงและคนยกเว้น
-                  ->where(function($q) {
-                      $q->whereDoesntHave('department', function($q2) {
-                          $q2->where('name', 'ฝ่ายการเงิน');
-                      })->orWhere(function($q2) {
-                          $q2->whereHas('department', function($q3) {
-                              $q3->where('name', 'ฝ่ายการเงิน');
-                          })->where('name', '!=', 'วิรัตน์  วีระวรรณโณ');
-                      });
-                  })
-                  ->where(function($q) {
-                      $q->whereDoesntHave('department', function($q2) {
-                          $q2->where('name', 'แผนกปกครอง');
-                      })->orWhere(function($q2) {
-                          $q2->whereHas('department', function($q3) {
-                              $q3->where('name', 'แผนกปกครอง');
-                          })->where('name', '!=', 'จตุรพิธ ภู่ระโหง');
-                      });
-                  })
-                  ->where(function($q) {
-                      $q->whereDoesntHave('department', function($q2) {
-                          $q2->where('name', 'แผนกสนับสนุน');
-                      })->orWhere(function($q2) {
-                          $q2->whereHas('department', function($q3) {
-                              $q3->where('name', 'แผนกสนับสนุน');
-                          })->where('name', '!=', 'ธัญลักษณ์ นกแสง');
-                      });
+                      $q->whereNotIn('name', ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69']); 
                   });
+                  
+            if (!empty($request->exclude_users)) {
+                $query->whereNotIn('id', $request->exclude_users);
+            }
         };
 
         $doList = User::whereIn('rank', $dutyOfficerRanks)->where($queryBase)->get();

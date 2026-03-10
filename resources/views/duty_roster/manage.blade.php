@@ -341,16 +341,7 @@
                     <span class="hidden sm:inline">ดูตาราง</span>
                 </a>
 
-                <form method="POST" action="{{ route('duty-roster.auto-schedule') }}" class="inline-block m-0" onsubmit="return confirm('ยืนยันการจัดเวรอัตโนมัติสำหรับเดือนนี้?')">
-                    @csrf
-                    <input type="hidden" name="year" value="{{ $year }}">
-                    <input type="hidden" name="month" value="{{ $month }}">
-                    <button type="submit"
-                        class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold rounded-xl hover:bg-indigo-100 transition-all text-xs sm:text-sm">
-                        <i data-lucide="zap" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">จัดเวรอัตโนมัติ</span>
-                    </button>
-                </form>
+
 
                 <form method="POST" action="{{ route('duty-roster.clear-month') }}" class="inline-block m-0" onsubmit="return confirm('ยืนยันการล้างข้อมูลเวรทั้งหมดสำหรับเดือนนี้ให้เป็นค่าว่าง?')">
                     @csrf
@@ -404,6 +395,49 @@
                 class="month-nav-btn">
                 <i data-lucide="chevron-right" class="w-5 h-5"></i>
             </a>
+    </div>
+
+    {{-- =====================================================
+         Auto Schedule Settings Section (ตั้งค่าจัดเวรอัตโนมัติ)
+         ===================================================== --}}
+    <div class="senior-section mb-6">
+        <form method="POST" action="{{ route('duty-roster.auto-schedule') }}" class="bg-white rounded-2xl border border-indigo-100 p-4 sm:p-5 shadow-sm" onsubmit="return confirm('ยืนยันการจัดเวรอัตโนมัติสำหรับเดือนนี้?\n(ข้อมูลเวรประจำวันทั้งหมดในเดือนนี้จะถูกล้างและจัดใหม่ ยกเว้นเวรอาวุโส)')">
+            @csrf
+            <input type="hidden" name="year" value="{{ $year }}">
+            <input type="hidden" name="month" value="{{ $month }}">
+            
+            <div class="flex flex-col md:flex-row gap-4 items-start md:items-end justify-between">
+                <div class="w-full md:flex-1">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
+                            <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-indigo-800 uppercase tracking-wider">จัดเวรอัตโนมัติประจำเดือน</h3>
+                            <p class="text-[10px] text-indigo-600">สุ่มเวรหลักและเวรสำรองให้อัตโนมัติ (ยกเว้นเวรอาวุโส)</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">บุคคลที่ไม่ต้องเข้าเวรรายบุคคล (ยกเว้น)</label>
+                        <select name="exclude_users[]" class="select-officer w-full text-sm" multiple placeholder="เลือกผู้ที่ต้องการยกเว้นสุ่มเข้าเวรในเดือนนี้ (ถ้ามี)...">
+                            <option value="">-- พิมพ์เพื่อค้นหา --</option>
+                            @foreach($users as $user)
+                            <option value="{{ $user->id }}">
+                                {{ $user->rank }} {{ $user->name }} ({{ $user->department?->name ?? 'ไม่มีแผนก' }})
+                            </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[10px] text-slate-400 mt-1">* ยกเว้นยศ นาย, นาง, นางสาว และคนที่อยู่ "หลักสูตรนายทหารพลาธิการฯ" โดยอัตโนมัติแล้ว</p>
+                    </div>
+                </div>
+                <div class="w-full md:w-auto mt-2 md:mt-0 shrink-0">
+                    <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all text-xs sm:text-sm shadow-md shadow-indigo-500/20">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        <span>ทำรายการจัดเวรอัตโนมัติ</span>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
     {{-- =====================================================
