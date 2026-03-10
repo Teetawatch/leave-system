@@ -124,7 +124,7 @@
                     <div class="grid grid-cols-1 gap-10">
                         @foreach($requests as $index => $req)
                             <div class="group bg-white rounded-[3rem] shadow-2xl shadow-slate-200/40 border border-slate-100 p-10 md:p-12 hover:shadow-indigo-500/10 transition-all duration-700 relative overflow-hidden"
-                                 x-data="{ openApprove: false, openReject: false }">
+                                 x-data="{ openApprove: false, openReject: false, openAttachment: false }">
 
                                 {{-- Background Decor --}}
                                 <div class="absolute top-0 right-0 w-80 h-80 bg-indigo-50 rounded-bl-full -mr-20 -mt-20 opacity-30 group-hover:scale-125 transition-transform duration-1000 pointer-events-none"></div>
@@ -439,12 +439,12 @@
                                         {{-- Attachment --}}
                                         @if($req->attachment_path)
                                             <div class="mt-6">
-                                                <a href="{{ asset('storage/' . $req->attachment_path) }}" target="_blank"
+                                                <button @click="openAttachment = true"
                                                    class="inline-flex items-center gap-3 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 transition-colors cursor-pointer group/attach">
                                                     <i data-lucide="paperclip" class="w-4 h-4 group-hover/attach:rotate-12 transition-transform"></i>
                                                     ดูเอกสารแนบ
-                                                    <i data-lucide="external-link" class="w-3 h-3 opacity-50"></i>
-                                                </a>
+                                                    <i data-lucide="maximize-2" class="w-3 h-3 opacity-50"></i>
+                                                </button>
                                             </div>
                                         @endif
                                     </div>

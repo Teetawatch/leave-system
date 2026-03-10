@@ -307,3 +307,69 @@
         </div>
     </div>
 </template>
+
+<!-- Attachment Modal -->
+<template x-teleport="body">
+    <div x-show="openAttachment" class="fixed inset-0 z-[110] overflow-y-auto" style="display: none;"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="openAttachment = false">
+                <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+            </div>
+
+            <div class="bg-slate-100 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all relative w-full max-w-5xl h-[85vh] flex flex-col animate-slide-up">
+                <div class="px-6 py-4 bg-white border-b border-slate-200 flex items-center justify-between z-10 w-full">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <i data-lucide="paperclip" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">เอกสารแนบ</h3>
+                            <p class="text-xs font-medium text-slate-500">ไฟล์ประกอบการลางาน</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ asset('storage/' . $req->attachment_path) }}" target="_blank"
+                            class="w-10 h-10 rounded-xl hover:bg-indigo-50 flex items-center justify-center text-indigo-600 transition-colors cursor-pointer" title="เปิดแท็บใหม่">
+                            <i data-lucide="external-link" class="w-5 h-5"></i>
+                        </a>
+                        <button type="button" @click="openAttachment = false"
+                            class="w-10 h-10 rounded-xl hover:bg-rose-50 flex items-center justify-center text-rose-500 transition-colors cursor-pointer" title="ปิดหน้าต่าง">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-auto bg-slate-200 p-4 flex items-center justify-center relative w-full">
+                    @php
+                        $attachExtModal = $req->attachment_path ? strtolower(pathinfo($req->attachment_path, PATHINFO_EXTENSION)) : '';
+                        $isImageModal = in_array($attachExtModal, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
+                        $isPdfModal = $attachExtModal === 'pdf';
+                    @endphp
+                    
+                    @if($isImageModal)
+                        <img src="{{ asset('storage/' . $req->attachment_path) }}" alt="เอกสารแนบ" class="max-w-full max-h-full object-contain shadow-sm rounded-lg" style="background-color: white;">
+                    @elseif($isPdfModal)
+                        <iframe src="{{ asset('storage/' . $req->attachment_path) }}" class="w-full h-full rounded-lg shadow-sm bg-white" frameborder="0"></iframe>
+                    @else
+                        <div class="text-center p-10 bg-white rounded-2xl shadow-sm border border-slate-200 max-w-sm">
+                            <div class="w-20 h-20 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
+                                <i data-lucide="file" class="w-10 h-10"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800 mb-2">ไม่สามารถแสดงตัวอย่างไฟล์นี้ได้</h4>
+                            <p class="text-sm text-slate-500 mb-6">ไฟล์ประเภท {{ strtoupper($attachExtModal) }} ไม่รองรับการแสดงผลในหน้าต่างนี้</p>
+                            <a href="{{ asset('storage/' . $req->attachment_path) }}" target="_blank"
+                                class="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md hover:bg-indigo-700 transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                ดาวน์โหลดไฟล์
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

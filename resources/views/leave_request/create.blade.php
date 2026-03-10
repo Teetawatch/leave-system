@@ -513,91 +513,110 @@
                 </div>
 
                 <!-- Right Sidebar: Premium Summary Ticket -->
-                <div class="lg:col-span-4 lg:sticky lg:top-24">
+                <div class="lg:col-span-4 lg:sticky lg:top-24 mt-10 md:mt-0">
                     <div
-                        class="glass-panel rounded-[3.5rem] p-8 pb-12 relative overflow-hidden ticket-gradient shadow-2xl border-slate-800">
-                        <!-- Background Pattern -->
-                        <div
-                            class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]">
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-16 -mt-16">
-                        </div>
+                        class="bg-white/90 backdrop-blur-2xl rounded-[3.5rem] p-8 pb-10 relative overflow-hidden shadow-2xl shadow-indigo-500/5 border border-white">
+                        
+                        <!-- Background Decor -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-50/80 rounded-full blur-[60px] -mr-20 -mt-20 opacity-70 pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-50/80 rounded-full blur-[50px] -ml-10 -mb-10 opacity-70 pointer-events-none"></div>
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.02] pointer-events-none"></div>
 
-                        <div class="relative z-10 space-y-10">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-2xl font-black text-white tracking-tight uppercase">สรุปรายการลา</h4>
+                        <div class="relative z-10 space-y-8">
+                            <!-- Header -->
+                            <div class="flex items-center gap-4 border-b border-slate-100 pb-6">
                                 <div
-                                    class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-indigo-400 border border-white/10">
-                                    <i data-lucide="award" class="w-8 h-8"></i>
+                                    class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm border border-indigo-100/50">
+                                    <i data-lucide="receipt" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-black text-slate-800 tracking-tight">สรุปรายการลา</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1 flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live Summary
+                                    </p>
                                 </div>
                             </div>
 
                             <!-- Digital Ticket Look -->
                             <div
-                                class="bg-white rounded-[3rem] p-8 shadow-2xl space-y-8 relative group overflow-hidden">
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                </div>
-
-                                <div class="space-y-8 relative z-10">
-                                    <div class="flex items-center gap-5 border-b border-slate-50 pb-6">
+                                class="bg-indigo-50/30 rounded-[2.5rem] p-7 shadow-sm border border-slate-100/80 space-y-7 relative group overflow-hidden hover:bg-white hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-100 transition-all duration-500">
+                                
+                                <div class="space-y-7 relative z-10">
+                                    <!-- Leave Type -->
+                                    <div class="flex items-start gap-5">
                                         <div
-                                            class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black">
-                                            <i data-lucide="tag" class="w-7 h-7"></i>
+                                            class="w-12 h-12 rounded-[1.25rem] bg-white text-indigo-600 shadow-sm border border-slate-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500">
+                                            <i data-lucide="tag" class="w-5 h-5"></i>
                                         </div>
-                                        <div>
+                                        <div class="flex-1 mt-0.5">
                                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                                                 ประเภทการลา</p>
-                                            <p class="text-lg font-black text-slate-900 leading-none mt-1.5"
-                                                x-text="getLeaveTypeName() || 'รอเลือกประเภท...'"></p>
+                                            <p class="text-base font-black text-slate-800 leading-tight mt-1.5"
+                                                x-text="getLeaveTypeName() || 'อัพเดทอัตโนมัติ...'"></p>
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-8">
-                                        <div>
-                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                                วันเริ่มต้น</p>
-                                            <p class="text-lg font-black text-slate-800 mt-2"
-                                                x-text="formatDate(startDate) || '-'"></p>
+                                    <!-- Dates -->
+                                    <div class="grid grid-cols-2 gap-4 bg-white rounded-[1.5rem] p-4 border border-slate-100 shadow-sm relative group-hover:border-indigo-50 transition-colors duration-500">
+                                        <!-- small connector line -->
+                                        <div class="absolute left-1/2 top-1/2 -translate-y-1/2 w-8 h-px bg-slate-200 -ml-4" x-show="!isTemporary"></div>
+                                        <div class="absolute left-1/2 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-50 rounded-full flex items-center justify-center border border-slate-200 -ml-3 z-10 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 group-hover:border-indigo-100 transition-colors" x-show="!isTemporary">
+                                            <i data-lucide="arrow-right" class="w-3 h-3"></i>
                                         </div>
-                                        <div>
+
+                                        <div class="px-2">
                                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                                วันสิ้นสุด</p>
-                                            <p class="text-lg font-black text-slate-800 mt-2"
-                                                x-text="formatDate(endDate) || '-'"></p>
+                                                เริ่มต้น</p>
+                                            <p class="text-[13px] font-black text-slate-800 mt-1 truncate"
+                                                x-text="formatDate(startDate) || 'ยังไม่ระบุ'"></p>
+                                        </div>
+                                        <div class="px-2 text-right lg:text-left" x-show="!isTemporary">
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                                สิ้นสุด</p>
+                                            <p class="text-[13px] font-black text-slate-800 mt-1 truncate"
+                                                x-text="formatDate(endDate) || 'ยังไม่ระบุ'"></p>
+                                        </div>
+                                        <div class="px-2 text-right lg:text-left" x-show="isTemporary">
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                                ช่วงเวลา</p>
+                                            <p class="text-[13px] font-black text-slate-800 mt-1 truncate"
+                                                x-text="temporaryPeriod === 'morning' ? 'ช่วงเช้า' : 'ช่วงบ่าย'"></p>
                                         </div>
                                     </div>
 
+                                    <!-- Duration -->
                                     <div
-                                        class="pt-8 border-t border-dashed border-slate-200 flex items-center justify-between">
+                                        class="pt-6 border-t border-dashed border-slate-200 flex items-center justify-between">
                                         <div class="flex flex-col">
                                             <span
-                                                class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">ยอดรวมการลาครั้งนี้</span>
-                                            <div class="flex items-baseline gap-1 mt-2">
-                                                <span class="text-5xl font-black text-indigo-600"
-                                                    x-text="duration > 0 ? duration : 0"></span>
-                                                <span class="text-xl font-black text-slate-400">วัน</span>
+                                                class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">จำนวนวันที่ใช้สิทธิ์</span>
+                                            <div class="flex items-baseline gap-1 mt-1">
+                                                <span class="text-5xl font-black text-indigo-600 tracking-tighter"
+                                                    x-text="duration > 0 && !isTemporary ? duration : (isTemporary && getLeaveTypeName() ? '0.5' : '0')"></span>
+                                                <span class="text-sm font-black text-slate-400 ml-1">วัน</span>
                                             </div>
                                         </div>
-                                        <div class="w-16 h-16 rounded-full border-4 border-indigo-50 border-t-indigo-500 animate-spin"
+                                        <div class="w-12 h-12 rounded-full border-[3px] border-indigo-50 border-t-indigo-500 animate-spin flex-shrink-0"
                                             x-show="duration > 0 && !isTemporary"></div>
+                                        <div class="w-12 h-12 rounded-full bg-slate-50 text-slate-300 flex items-center justify-center border border-slate-100 flex-shrink-0"
+                                            x-show="duration <= 0 || isTemporary">
+                                            <i data-lucide="clock" class="w-5 h-5"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Real-time Validation Message -->
-                            <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
-                                <div class="flex items-start gap-5">
+                            <div class="bg-amber-50/80 rounded-[2rem] p-5 border border-amber-100/80 hover:shadow-md transition-shadow">
+                                <div class="flex items-start gap-4">
                                     <div
-                                        class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center flex-shrink-0">
-                                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                                        class="w-10 h-10 rounded-[1rem] bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                                        <i data-lucide="shield-alert" class="w-5 h-5"></i>
                                     </div>
-                                    <div class="space-y-2">
-                                        <p class="text-lg font-black text-white">ข้อควรทราบ</p>
-                                        <p class="text-[13px] font-medium text-slate-400 leading-relaxed">
-                                            กรุณาตรวจสอบสิทธิ์วันลาคงเหลือของท่านให้ถูกต้องก่อนกดยันยัน
-                                            เพื่อความรวดเร็วในการอนุมัติ
+                                    <div class="mt-0.5">
+                                        <p class="text-sm font-black text-amber-900 tracking-tight">ข้อควรทราบก่อนยืนยัน</p>
+                                        <p class="text-[11px] font-medium text-amber-700/80 leading-relaxed mt-1">
+                                            กรุณาตรวจสอบสิทธิ์การลาคงเหลือของท่านให้เพียงพอกับจำนวนวันลาที่ระบุ
                                         </p>
                                     </div>
                                 </div>

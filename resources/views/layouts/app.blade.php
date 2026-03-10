@@ -502,7 +502,7 @@
                                     class="flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 group {{ request()->routeIs('reports.temporary-leave') ? 'bg-purple-50 text-purple-700 shadow-sm shadow-purple-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-purple-600' }}">
                                     <i data-lucide="clock"
                                         class="w-4 h-4 {{ request()->routeIs('reports.temporary-leave') ? 'text-purple-600' : 'text-slate-400 group-hover:text-purple-600' }}"></i>
-                                    <span class="ml-3 text-sm font-bold tracking-tight">รายงานลาชั่วคราว</span>
+                                    <span class="ml-3 text-sm font-bold tracking-tight">รายงานลาชั่วกาล</span>
                                 </a>
 
                                 @if(in_array(Auth::user()->role, ['admin', 'director', 'deputy_director']))
