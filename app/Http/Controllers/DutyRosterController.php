@@ -379,8 +379,46 @@ class DutyRosterController extends Controller
         $dutyOfficerRanks = \App\Models\Rank::whereBetween('sort_order', [17, 30])->pluck('name')->toArray();
         $assistantRanks = \App\Models\Rank::whereBetween('sort_order', [31, 40])->pluck('name')->toArray();
 
-        $doList = User::whereIn('rank', $dutyOfficerRanks)->where('registration_status', 'approved')->get();
-        $adoList = User::whereIn('rank', $assistantRanks)->where('registration_status', 'approved')->get();
+        // Query สำหรับคัดกรองบุคคล
+        $queryBase = function($query) {
+            $query->where('registration_status', 'approved')
+                  ->whereNotIn('rank', ['นาย', 'นาง', 'นางสาว']) // ยกเว้นคนที่มี นายกับนาง นางสาว
+                  ->whereHas('department', function($q) {
+                      // สมมติว่าในตาราง departments มีคอลัมน์ชื่อ name
+                      $q->whereNotIn('name', ['หลักสูตร', 'แผนกศึกษา', 'ฝ่ายธุรการ']); 
+                  })
+                  // ระบุแผนกที่เจาะจงและคนยกเว้น
+                  ->where(function($q) {
+                      $q->whereDoesntHave('department', function($q2) {
+                          $q2->where('name', 'ฝ่ายการเงิน');
+                      })->orWhere(function($q2) {
+                          $q2->whereHas('department', function($q3) {
+                              $q3->where('name', 'ฝ่ายการเงิน');
+                          })->where('name', '!=', 'วิรัตน์  วีระวรรณโณ');
+                      });
+                  })
+                  ->where(function($q) {
+                      $q->whereDoesntHave('department', function($q2) {
+                          $q2->where('name', 'แผนกปกครอง');
+                      })->orWhere(function($q2) {
+                          $q2->whereHas('department', function($q3) {
+                              $q3->where('name', 'แผนกปกครอง');
+                          })->where('name', '!=', 'จตุรพิธ ภู่ระโหง');
+                      });
+                  })
+                  ->where(function($q) {
+                      $q->whereDoesntHave('department', function($q2) {
+                          $q2->where('name', 'แผนกสนับสนุน');
+                      })->orWhere(function($q2) {
+                          $q2->whereHas('department', function($q3) {
+                              $q3->where('name', 'แผนกสนับสนุน');
+                          })->where('name', '!=', 'ธัญลักษณ์ นกแสง');
+                      });
+                  });
+        };
+
+        $doList = User::whereIn('rank', $dutyOfficerRanks)->where($queryBase)->get();
+        $adoList = User::whereIn('rank', $assistantRanks)->where($queryBase)->get();
 
         if ($doList->count() < 2 || $adoList->count() < 2) {
             return back()->with('error', 'มีจำนวนผู้ปฏิบัติหน้าที่ไม่เพียงพอสำหรับการจัดเวร (ต้องมีอย่างน้อย 2 คนต่อช่วงชั้นยศ)');
