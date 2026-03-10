@@ -181,6 +181,7 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
     // Duty Roster Routes (ตารางเวร - ทุกคนเห็น)
     Route::get('/duty-roster', [DutyRosterController::class, 'index'])->name('duty-roster.index');
     Route::get('/duty-roster/data', [DutyRosterController::class, 'getMonthData'])->name('duty-roster.data');
+    Route::get('/duty-roster/export-pdf', [DutyRosterController::class, 'exportPdf'])->name('duty-roster.export-pdf');
     Route::get('/calendar/summary', [App\Http\Controllers\CalendarController::class, 'summary'])->name('calendar.summary');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

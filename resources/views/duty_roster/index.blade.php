@@ -226,11 +226,16 @@
                 <div class="legend-item">
                     <div class="w-3 h-3 rounded-full bg-gradient-to-br from-pink-400 to-pink-600"></div>
                     <span class="text-slate-600">ผู้ช่วยนายทหารเวร</span>
-                </div>
                 <div class="legend-item">
                     <div class="w-3 h-3 rounded-full bg-gradient-to-br from-rose-400 to-rose-600"></div>
                     <span class="text-slate-600">ผู้ช่วยนายทหารเวร (สำรอง)</span>
                 </div>
+                
+                <a href="{{ route('duty-roster.export-pdf', ['year' => $year, 'month' => $month]) }}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 border border-rose-100 font-bold rounded-xl hover:bg-rose-100 transition-all text-xs sm:text-sm ml-auto mt-2 sm:mt-0">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>ส่งออก PDF</span>
+                </a>
             </div>
         </div>
     </div>

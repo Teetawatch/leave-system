@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\DutyRosterTemplateExport;
 use App\Imports\DutyRosterImport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DutyRosterController extends Controller
 {
@@ -55,6 +56,61 @@ class DutyRosterController extends Controller
         $thaiYear = $year + 543;
 
         return view('duty_roster.index', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'seniorRosters'));
+    }
+
+    /**
+     * ค้นหาและส่งออกตารางเวรเป็น PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $year = $request->get('year', now()->year);
+        $month = $request->get('month', now()->month);
+
+        $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        $rosters = DutyRoster::forMonth($year, $month)
+            ->with(['dutyOfficer', 'assistantDutyOfficer'])
+            ->orderBy('duty_date')
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->duty_date->format('Y-m-d');
+            });
+
+        // สร้าง array ของวันทั้งหมดในเดือน
+        $days = [];
+        $current = $startOfMonth->copy();
+        while ($current->lte($endOfMonth)) {
+            $dateKey = $current->format('Y-m-d');
+            $days[] = [
+                'date' => $current->copy(),
+                'roster' => $rosters->get($dateKey),
+            ];
+            $current->addDay();
+        }
+
+        // ค้นหานายทหารเวรสำรองและผู้ช่วยนายทหารเวรสำรอง (สำหรับเดือนนี้)
+        $firstRoster = DutyRoster::forMonth($year, $month)
+            ->whereNotNull('reserve_duty_officer_id')
+            ->orWhereNotNull('reserve_assistant_duty_officer_id')
+            ->with(['reserveDutyOfficer', 'reserveAssistantDutyOfficer'])
+            ->first();
+
+        $reserveDO = $firstRoster ? $firstRoster->reserveDutyOfficer : null;
+        $reserveADO = $firstRoster ? $firstRoster->reserveAssistantDutyOfficer : null;
+
+        $monthName = $this->getThaiMonth($month);
+        $thaiYear = $year + 543;
+
+        $pdf = Pdf::loadView('duty_roster.pdf', compact('days', 'monthName', 'thaiYear', 'reserveDO', 'reserveADO'));
+        
+        // ตั้งค่าให้ครอบคลุมการโหลดรูปแบบต่างๆ
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+        ]);
+
+        return $pdf->download("Duty_Roster_{$year}_{$month}.pdf");
     }
 
     /**

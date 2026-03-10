@@ -341,6 +341,12 @@
                     <span class="hidden sm:inline">ดูตาราง</span>
                 </a>
 
+                <a href="{{ route('duty-roster.export-pdf', ['year' => $year, 'month' => $month]) }}" target="_blank"
+                    class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-rose-50 border border-rose-100 text-rose-600 font-bold rounded-xl hover:bg-rose-100 transition-all text-xs sm:text-sm">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">ส่งออก PDF</span>
+                </a>
+
 
 
                 <form method="POST" action="{{ route('duty-roster.clear-month') }}" class="inline-block m-0" onsubmit="return confirm('ยืนยันการล้างข้อมูลเวรทั้งหมดสำหรับเดือนนี้ให้เป็นค่าว่าง?')">
