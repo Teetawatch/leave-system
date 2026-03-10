@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use App\Services\LineService;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class SendLineLeaveNotification implements ShouldQueue
 {
@@ -25,26 +26,55 @@ class SendLineLeaveNotification implements ShouldQueue
      */
     public function handle(LeaveRequestSubmitted $event): void
     {
-        $leaveRequest = $event->leaveRequest;
-        $user = $leaveRequest->user;
+        try {
+            $leaveRequest = $event->leaveRequest;
+            $user = $leaveRequest->user;
 
-        // Find the next person to notify based on status
-        $recipientId = null;
+            Log::info('[LINE] SendLineLeaveNotification handle() started', [
+                'leave_request_id' => $leaveRequest->id,
+                'status'           => $leaveRequest->status,
+                'user_id'          => optional($user)->id,
+                'supervisor_id'    => optional($user)->supervisor_id,
+            ]);
 
-        if ($leaveRequest->status === 'pending_supervisor') {
-            $recipientId = $user->supervisor_id;
-        } elseif ($leaveRequest->status === 'pending_head') {
-            $recipientId = $user->deputy_id; // Mapping to deputy as "head" if that's the flow
-        } elseif ($leaveRequest->status === 'pending_manager') {
-            $recipientId = $user->manager_id;
-        }
+            // Find the next person to notify based on status
+            $recipientId = null;
 
-        if (!$recipientId)
-            return;
+            if ($leaveRequest->status === 'pending_supervisor') {
+                $recipientId = $user->supervisor_id;
+            } elseif ($leaveRequest->status === 'pending_head') {
+                $recipientId = $user->deputy_id;
+            } elseif ($leaveRequest->status === 'pending_manager') {
+                $recipientId = $user->manager_id;
+            }
 
-        $recipient = User::find($recipientId);
-        if (!$recipient || !$recipient->line_user_id)
-            return;
+            if (!$recipientId) {
+                Log::warning('[LINE] No recipientId found, skipping notification', [
+                    'status' => $leaveRequest->status,
+                    'user_id' => optional($user)->id,
+                ]);
+                return;
+            }
+
+            $recipient = User::find($recipientId);
+
+            if (!$recipient) {
+                Log::warning('[LINE] Recipient user not found', ['recipient_id' => $recipientId]);
+                return;
+            }
+
+            if (!$recipient->line_user_id) {
+                Log::warning('[LINE] Recipient has no line_user_id', [
+                    'recipient_id'   => $recipientId,
+                    'recipient_name' => $recipient->name,
+                ]);
+                return;
+            }
+
+            Log::info('[LINE] Sending flex message to', [
+                'recipient_name'  => $recipient->name,
+                'line_user_id'    => $recipient->line_user_id,
+            ]);
 
         $detailsContents = [
             [
@@ -219,10 +249,22 @@ class SendLineLeaveNotification implements ShouldQueue
             ]
         ];
 
-        $this->lineService->sendFlexMessage(
-            $recipient->line_user_id,
-            "มีใบลาใหม่จาก {$user->name}",
-            $flexContents
-        );
+            $result = $this->lineService->sendFlexMessage(
+                $recipient->line_user_id,
+                "มีใบลาใหม่จาก {$user->name}",
+                $flexContents
+            );
+
+            Log::info('[LINE] sendFlexMessage result', [
+                'success'      => $result,
+                'recipient'    => $recipient->name,
+                'line_user_id' => $recipient->line_user_id,
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('[LINE] SendLineLeaveNotification exception: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
     }
 }

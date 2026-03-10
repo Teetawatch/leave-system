@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\NewLeaveRequestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -247,9 +248,26 @@ class LeaveRequestController extends Controller
         // Run AFTER response is sent so LINE API calls don't block the HTTP request
         $leaveRequestId = $leaveRequest->id;
         app()->terminating(function () use ($leaveRequestId) {
-            $lr = \App\Models\LeaveRequest::with(['leaveType', 'user'])->find($leaveRequestId);
-            if ($lr) {
+            try {
+                Log::info('[LeaveNotify] terminating callback fired', ['leave_request_id' => $leaveRequestId]);
+                $lr = \App\Models\LeaveRequest::with(['leaveType', 'user'])->find($leaveRequestId);
+                if (!$lr) {
+                    Log::error('[LeaveNotify] leave request not found', ['id' => $leaveRequestId]);
+                    return;
+                }
+                Log::info('[LeaveNotify] dispatching LeaveRequestSubmitted event', [
+                    'id'          => $lr->id,
+                    'status'      => $lr->status,
+                    'user_id'     => $lr->user_id,
+                    'supervisor'  => optional($lr->user)->supervisor_id,
+                    'line_user_id'=> optional(\App\Models\User::find(optional($lr->user)->supervisor_id))->line_user_id ?? 'N/A',
+                ]);
                 event(new \App\Events\LeaveRequestSubmitted($lr));
+                Log::info('[LeaveNotify] event dispatched OK');
+            } catch (\Throwable $e) {
+                Log::error('[LeaveNotify] terminating callback exception: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString(),
+                ]);
             }
         });
 
