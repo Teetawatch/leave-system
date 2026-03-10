@@ -240,7 +240,7 @@ class SendLineLeaveNotification implements ShouldQueue
                         'type' => 'button',
                         'action' => [
                             'type' => 'uri',
-                            'label' => '📎 รายละเอียดเพิ่มเติม',
+                            'label' => 'รายละเอียดเพิ่มเติม',
                             'uri' => route('approvals.index'),
                         ],
                         'style' => 'link',
