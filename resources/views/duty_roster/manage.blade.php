@@ -423,7 +423,7 @@
                             <option value="">-- พิมพ์เพื่อค้นหา --</option>
                             @foreach($users as $user)
                             <option value="{{ $user->id }}">
-                                {{ $user->rank }} {{ $user->name }} ({{ $user->department?->name ?? 'ไม่มีแผนก' }})
+                                {{ $user->rank }} {{ $user->name }} ({{ $user->department ?? 'ไม่มีแผนก' }})
                             </option>
                             @endforeach
                         </select>
