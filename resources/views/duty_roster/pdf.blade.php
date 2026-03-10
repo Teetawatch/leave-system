@@ -18,9 +18,9 @@
             src: url("{!! $fontPath !!}") format('truetype');
         }
         @font-face {
-            font-family: 'THSarabunNew';
+            font-family: 'THSarabunNewBold';
             font-style: normal;
-            font-weight: bold;
+            font-weight: normal; /* Keep normal to avoid DOMPDF bold mapping bug */
             src: url("{!! $fontPathBold !!}") format('truetype');
         }
         @page {
@@ -37,10 +37,10 @@
             margin: 0;
         }
         .text-center { text-align: center; }
-        .text-bold { font-weight: bold; }
+        .text-bold { font-family: "THSarabunNewBold", sans-serif; }
         .title {
+            font-family: "THSarabunNewBold", sans-serif;
             font-size: 20pt;
-            font-weight: bold;
             text-align: center;
             margin-bottom: 5px;
         }
@@ -60,7 +60,7 @@
             vertical-align: top;
         }
         th {
-            font-weight: bold;
+            font-family: "THSarabunNewBold", sans-serif;
             text-align: center;
             background-color: #f3f4f6;
         }
