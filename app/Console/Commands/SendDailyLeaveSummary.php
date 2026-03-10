@@ -79,13 +79,29 @@ class SendDailyLeaveSummary extends Command
 
             $isStudent = in_array($user->department, $this->studentCourses);
 
+            $isChuaKan = $leave->leaveType && str_contains($leave->leaveType->name, 'ชั่วกาล');
+            $displayDays = $isChuaKan ? 0.5 : ((is_numeric($leave->total_days) && fmod((float)$leave->total_days, 1) == 0) ? (int)$leave->total_days : (float)$leave->total_days);
+            
+            $periodText = '';
+            if ($isChuaKan && $leave->temporary_leave_period) {
+                if (strtolower($leave->temporary_leave_period) === 'morning') {
+                    $periodText = ' (ช่วงเช้า)';
+                } elseif (strtolower($leave->temporary_leave_period) === 'afternoon') {
+                    $periodText = ' (ช่วงบ่าย)';
+                } else {
+                    $periodText = " (ช่วง{$leave->temporary_leave_period})";
+                }
+            }
+
+            $leave_type_display = ($leave->leaveType->name ?? 'ไม่ระบุ') . $periodText;
+
             $leaveInfo = [
                 'name' => ($user->rank ? $user->rank . ' ' : '') . $user->name,
                 'department' => $user->department ?? 'ไม่ระบุ',
-                'leave_type' => $leave->leaveType->name ?? 'ไม่ระบุ',
+                'leave_type' => $leave_type_display,
                 'start_date' => $this->toThaiDate($leave->start_date),
                 'end_date' => $this->toThaiDate($leave->end_date),
-                'total_days' => $leave->total_days,
+                'total_days' => $displayDays,
             ];
 
             if ($isStudent) {
