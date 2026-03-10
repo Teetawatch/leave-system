@@ -91,8 +91,10 @@ class DutyRosterController extends Controller
 
         // ค้นหานายทหารเวรสำรองและผู้ช่วยนายทหารเวรสำรอง (สำหรับเดือนนี้)
         $firstRoster = DutyRoster::forMonth($year, $month)
-            ->whereNotNull('reserve_duty_officer_id')
-            ->orWhereNotNull('reserve_assistant_duty_officer_id')
+            ->where(function($query) {
+                $query->whereNotNull('reserve_duty_officer_id')
+                      ->orWhereNotNull('reserve_assistant_duty_officer_id');
+            })
             ->with(['reserveDutyOfficer', 'reserveAssistantDutyOfficer'])
             ->first();
 

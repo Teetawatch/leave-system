@@ -5,9 +5,10 @@
     <title>บัญชีรายชื่อผู้ปฏิบัติหน้าที่เวร</title>
     <style>
         @php
-            $fontPath = storage_path('fonts/THSarabunNew.ttf');
-            $fontPathBold = storage_path('fonts/THSarabunNew Bold.ttf');
+            $fontPath = public_path('fonts/THSarabunNew.ttf');
+            $fontPathBold = public_path('fonts/THSarabunNew Bold.ttf');
             
+            // DomPDF requires absolute paths with file:// protocol for best results
             $fontPath = 'file:///' . ltrim(str_replace('\\', '/', $fontPath), '/');
             $fontPathBold = 'file:///' . ltrim(str_replace('\\', '/', $fontPathBold), '/');
         @endphp
@@ -20,7 +21,7 @@
         @font-face {
             font-family: 'THSarabunNewBold';
             font-style: normal;
-            font-weight: normal; /* Keep normal to avoid DOMPDF bold mapping bug */
+            font-weight: normal; 
             src: url("{!! $fontPathBold !!}") format('truetype');
         }
         @page {
@@ -60,7 +61,7 @@
             vertical-align: top;
         }
         th {
-            font-family: "THSarabunNewBold", sans-serif;
+            font-family: "THSarabunNew Bold", sans-serif;
             text-align: center;
             background-color: #f3f4f6;
         }
