@@ -384,8 +384,8 @@ class DutyRosterController extends Controller
             $query->where('registration_status', 'approved')
                   ->whereNotIn('rank', ['นาย', 'นาง', 'นางสาว']) // ยกเว้นคนที่มี นายกับนาง นางสาว
                   ->whereHas('department', function($q) {
-                      // สมมติว่าในตาราง departments มีคอลัมน์ชื่อ name
-                      $q->whereNotIn('name', ['หลักสูตร', 'แผนกศึกษา', 'ฝ่ายธุรการ']); 
+                      // ระบุชื่อแผนก/หลักสูตรที่ไม่ต้องการนำมาจัดเวร
+                      $q->whereNotIn('name', ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'แผนกศึกษา', 'ฝ่ายธุรการ']); 
                   })
                   // ระบุแผนกที่เจาะจงและคนยกเว้น
                   ->where(function($q) {
