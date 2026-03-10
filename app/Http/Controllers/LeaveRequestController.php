@@ -245,31 +245,23 @@ class LeaveRequestController extends Controller
         $leaveRequest->load('leaveType');
 
         // Dispatch Event for Notifications (LINE, FCM, etc.)
-        // Run AFTER response is sent so LINE API calls don't block the HTTP request
-        $leaveRequestId = $leaveRequest->id;
-        app()->terminating(function () use ($leaveRequestId) {
-            try {
-                Log::info('[LeaveNotify] terminating callback fired', ['leave_request_id' => $leaveRequestId]);
-                $lr = \App\Models\LeaveRequest::with(['leaveType', 'user'])->find($leaveRequestId);
-                if (!$lr) {
-                    Log::error('[LeaveNotify] leave request not found', ['id' => $leaveRequestId]);
-                    return;
-                }
-                Log::info('[LeaveNotify] dispatching LeaveRequestSubmitted event', [
-                    'id'          => $lr->id,
-                    'status'      => $lr->status,
-                    'user_id'     => $lr->user_id,
-                    'supervisor'  => optional($lr->user)->supervisor_id,
-                    'line_user_id'=> optional(\App\Models\User::find(optional($lr->user)->supervisor_id))->line_user_id ?? 'N/A',
-                ]);
-                event(new \App\Events\LeaveRequestSubmitted($lr));
-                Log::info('[LeaveNotify] event dispatched OK');
-            } catch (\Throwable $e) {
-                Log::error('[LeaveNotify] terminating callback exception: ' . $e->getMessage(), [
-                    'trace' => $e->getTraceAsString(),
-                ]);
-            }
-        });
+        // Note: app()->terminating() does not fire reliably on shared hosting,
+        // so we dispatch directly here. Guzzle timeouts (5s/15s) prevent hanging.
+        try {
+            Log::info('[LeaveNotify] dispatching LeaveRequestSubmitted event', [
+                'id'          => $leaveRequest->id,
+                'status'      => $leaveRequest->status,
+                'user_id'     => $leaveRequest->user_id,
+                'supervisor'  => optional($leaveRequest->user)->supervisor_id,
+                'line_user_id'=> optional(\App\Models\User::find(optional($leaveRequest->user)->supervisor_id))->line_user_id ?? 'N/A',
+            ]);
+            event(new \App\Events\LeaveRequestSubmitted($leaveRequest));
+            Log::info('[LeaveNotify] event dispatched OK');
+        } catch (\Throwable $e) {
+            Log::error('[LeaveNotify] event dispatch exception: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
 
         return redirect()->route('leave-request.index')->with('status', 'ส่งคำขอเรียบร้อยแล้ว รอการอนุมัติ');
     }
