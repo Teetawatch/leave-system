@@ -398,31 +398,28 @@
     </div>
 
     {{-- =====================================================
-         Auto Schedule Settings Section (ตั้งค่าจัดเวรอัตโนมัติ)
+         Exemption Settings Section (ตั้งค่ารายชื่อผู้ได้รับการยกเว้นเวร)
          ===================================================== --}}
     <div class="senior-section mb-6">
-        <form method="POST" action="{{ route('duty-roster.auto-schedule') }}" class="bg-white rounded-2xl border border-indigo-100 p-4 sm:p-5 shadow-sm" onsubmit="return confirm('ยืนยันการจัดเวรอัตโนมัติสำหรับเดือนนี้?\n(ข้อมูลเวรประจำวันทั้งหมดในเดือนนี้จะถูกล้างและจัดใหม่ ยกเว้นเวรอาวุโส)')">
+        <form method="POST" action="{{ route('duty-roster.exemptions') }}" class="bg-white rounded-2xl border border-rose-100 p-4 sm:p-5 shadow-sm">
             @csrf
-            <input type="hidden" name="year" value="{{ $year }}">
-            <input type="hidden" name="month" value="{{ $month }}">
             
             <div class="flex flex-col md:flex-row gap-4 items-start md:items-end justify-between">
                 <div class="w-full md:flex-1">
                     <div class="flex items-center gap-2 mb-3">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
-                            <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-400 to-rose-600 flex items-center justify-center shadow-md shadow-rose-500/20">
+                            <i data-lucide="user-x" class="w-4 h-4 text-white"></i>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-indigo-800 uppercase tracking-wider">จัดเวรอัตโนมัติประจำเดือน</h3>
-                            <p class="text-[10px] text-indigo-600">สุ่มเวรหลักและเวรสำรองให้อัตโนมัติ (ยกเว้นเวรอาวุโส)</p>
+                            <h3 class="text-sm font-bold text-rose-800 uppercase tracking-wider">บุคคลที่ได้รับการยกเว้นการเข้าเวร</h3>
+                            <p class="text-[10px] text-rose-600">บันทึกครั้งเดียวใช้ตลอดไป (ไม่ต้องมาตั้งค่าซ้ำทุกเดือน)</p>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">บุคคลที่ไม่ต้องเข้าเวรรายบุคคล (ยกเว้น)</label>
-                        <select name="exclude_users[]" class="select-officer w-full text-sm" multiple placeholder="เลือกผู้ที่ต้องการยกเว้นสุ่มเข้าเวรในเดือนนี้ (ถ้ามี)...">
+                        <select name="exempt_users[]" class="select-officer w-full text-sm" multiple placeholder="พิมพ์และเลือกรายชื่อผู้ได้รับการยกเว้นเวรยาม...">
                             <option value="">-- พิมพ์เพื่อค้นหา --</option>
                             @foreach($users as $user)
-                            <option value="{{ $user->id }}">
+                            <option value="{{ $user->id }}" {{ in_array($user->id, $exemptUserIds) ? 'selected' : '' }}>
                                 {{ $user->rank }} {{ $user->name }} ({{ $user->department ?? 'ไม่มีแผนก' }})
                             </option>
                             @endforeach
@@ -431,12 +428,39 @@
                     </div>
                 </div>
                 <div class="w-full md:w-auto mt-2 md:mt-0 shrink-0">
-                    <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all text-xs sm:text-sm shadow-md shadow-indigo-500/20">
-                        <i data-lucide="zap" class="w-4 h-4"></i>
-                        <span>ทำรายการจัดเวรอัตโนมัติ</span>
+                    <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-all text-xs sm:text-sm shadow-md shadow-rose-500/20">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>บันทึกข้อยกเว้นถาวร</span>
                     </button>
                 </div>
             </div>
+        </form>
+    </div>
+
+    {{-- =====================================================
+         Auto Schedule Section (จัดเวรอัตโนมัติ)
+         ===================================================== --}}
+    <div class="senior-section mb-6">
+        <form method="POST" action="{{ route('duty-roster.auto-schedule') }}" class="bg-white rounded-2xl border border-indigo-100 p-4 sm:p-5 shadow-sm flex items-center justify-between" onsubmit="return confirm('ยืนยันการจัดเวรอัตโนมัติสำหรับเดือนนี้?\n(ข้อมูลเวรประจำวันทั้งหมดในเดือนนี้จะถูกล้างและจัดใหม่ ยกเว้นเวรอาวุโส)')">
+            @csrf
+            <input type="hidden" name="year" value="{{ $year }}">
+            <input type="hidden" name="month" value="{{ $month }}">
+            
+            <div class="flex items-center gap-3">
+                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+                     <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+                 </div>
+                 <div>
+                     <h3 class="text-sm font-bold text-indigo-800 uppercase tracking-wider">จัดเวรอัตโนมัติประจำเดือน</h3>
+                     <p class="text-xs text-indigo-600">สุ่มเวรหลักและเวรสำรองให้อัตโนมัติ โดยจะข้ามบุคคลที่ถูกยกเว้นไว้</p>
+                 </div>
+            </div>
+            
+            <button type="submit" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all text-xs sm:text-sm shadow-md shadow-indigo-500/20">
+                <i data-lucide="zap" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">จัดเวรอัตโนมัติ</span>
+                <span class="sm:hidden">จัดเวร</span>
+            </button>
         </form>
     </div>
 

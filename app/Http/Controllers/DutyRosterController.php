@@ -103,7 +103,9 @@ class DutyRosterController extends Controller
         $monthName = $this->getThaiMonth($month);
         $thaiYear = $year + 543;
 
-        return view('duty_roster.manage', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'users', 'seniorRosters'));
+        $exemptUserIds = User::where('is_duty_exempt', true)->pluck('id')->toArray();
+
+        return view('duty_roster.manage', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'users', 'seniorRosters', 'exemptUserIds'));
     }
 
     /**
@@ -370,8 +372,6 @@ class DutyRosterController extends Controller
         $request->validate([
             'year' => 'required|integer',
             'month' => 'required|integer|between:1,12',
-            'exclude_users' => 'nullable|array',
-            'exclude_users.*' => 'exists:users,id',
         ]);
 
         $year = $request->year;
@@ -382,14 +382,11 @@ class DutyRosterController extends Controller
         $assistantRanks = \App\Models\Rank::whereBetween('sort_order', [31, 40])->pluck('name')->toArray();
 
         // Query สำหรับคัดกรองบุคคล
-        $queryBase = function($query) use ($request) {
+        $queryBase = function($query) {
             $query->where('registration_status', 'approved')
+                  ->where('is_duty_exempt', false) // ตัดคนถูกยกเว้นถาวรออก
                   ->whereNotIn('rank', ['นาย', 'นาง', 'นางสาว']) // ยกเว้นคนที่มี นายกับนาง นางสาว
                   ->whereNotIn('department', ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69']);
-                  
-            if (!empty($request->exclude_users)) {
-                $query->whereNotIn('id', $request->exclude_users);
-            }
         };
 
         $doList = User::whereIn('rank', $dutyOfficerRanks)->where($queryBase)->get();
@@ -532,5 +529,30 @@ class DutyRosterController extends Controller
         DutyRoster::forMonth($request->year, $request->month)->delete();
 
         return back()->with('success', 'ล้างข้อมูลเวรสำหรับเดือนนี้เรียบร้อยแล้ว');
+    }
+
+    /**
+     * อัปเดตรายชื่อผู้ที่ได้รับการยกเว้นตลอดไป
+     */
+    public function updateExemptions(Request $request)
+    {
+        $request->validate([
+            'exempt_users' => 'nullable|array',
+            'exempt_users.*' => 'exists:users,id',
+        ]);
+
+        $exemptUserIds = $request->exempt_users ?? [];
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($exemptUserIds) {
+            // Set all to false first
+            User::where('is_duty_exempt', true)->update(['is_duty_exempt' => false]);
+            
+            // Set selected to true
+            if (!empty($exemptUserIds)) {
+                User::whereIn('id', $exemptUserIds)->update(['is_duty_exempt' => true]);
+            }
+        });
+
+        return back()->with('success', 'บันทึกรายชื่อผู้ได้รับการยกเว้นเรียบร้อยแล้ว');
     }
 }

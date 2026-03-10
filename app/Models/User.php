@@ -36,6 +36,7 @@ class User extends Authenticatable
         'signature',
         'is_registered',
         'registration_status',
+        'is_duty_exempt',
     ];
 
     /**
