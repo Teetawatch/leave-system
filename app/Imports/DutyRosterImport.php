@@ -39,11 +39,13 @@ class DutyRosterImport implements ToArray
             }
             
             // Get values by column index
-            // Col 0: วันที่, Col 1: นายทหารเวร (ชื่อ-นามสกุล), Col 2: ผู้ช่วยนายทหารเวร (ชื่อ-นามสกุล), Col 3: หมายเหตุ
+            // Col 0: วันที่, Col 1: นายทหารเวร, Col 2: น.เวรสำรอง, Col 3: ผู้ช่วยฯ, Col 4: ผู้ช่วยฯสำรอง, Col 5: หมายเหตุ
             $dateRaw = $row[0] ?? null;
             $dutyOfficerName = $row[1] ?? '';
-            $assistantOfficerName = $row[2] ?? '';
-            $notes = $row[3] ?? null;
+            $reserveDutyOfficerName = $row[2] ?? '';
+            $assistantOfficerName = $row[3] ?? '';
+            $reserveAssistantOfficerName = $row[4] ?? '';
+            $notes = $row[5] ?? null;
             
             // Skip if date is empty
             if (empty($dateRaw)) {
@@ -64,8 +66,8 @@ class DutyRosterImport implements ToArray
                 continue;
             }
 
-            // Skip if both officers are empty
-            if (empty(trim($dutyOfficerName)) && empty(trim($assistantOfficerName))) {
+            // Skip if all officers are empty
+            if (empty(trim($dutyOfficerName)) && empty(trim($reserveDutyOfficerName)) && empty(trim($assistantOfficerName)) && empty(trim($reserveAssistantOfficerName))) {
                 // We'll skip or just create an empty record, but better to skip if user meant to leave blank.
                 // Wait, maybe they want to clear it? If they want to clear it, they can delete the cell.
                 // Let's implement setting it to null if empty
@@ -90,17 +92,39 @@ class DutyRosterImport implements ToArray
                     $this->errorMessages[] = "แถวที่ " . ($index + 1) . ": ไม่พบผู้ช่วยนายทหารเวร '{$assistantOfficerName}'";
                 }
             }
+
+            $reserveDutyOfficerId = null;
+            if (!empty(trim($reserveDutyOfficerName))) {
+                $reserveDutyOfficer = User::where('name', 'LIKE', '%' . trim($reserveDutyOfficerName) . '%')->first();
+                if ($reserveDutyOfficer) {
+                    $reserveDutyOfficerId = $reserveDutyOfficer->id;
+                } else {
+                    $this->errorMessages[] = "แถวที่ " . ($index + 1) . ": ไม่พบนายทหารเวร (สำรอง) '{$reserveDutyOfficerName}'";
+                }
+            }
+
+            $reserveAssistantOfficerId = null;
+            if (!empty(trim($reserveAssistantOfficerName))) {
+                $reserveAssistantOfficer = User::where('name', 'LIKE', '%' . trim($reserveAssistantOfficerName) . '%')->first();
+                if ($reserveAssistantOfficer) {
+                    $reserveAssistantOfficerId = $reserveAssistantOfficer->id;
+                } else {
+                    $this->errorMessages[] = "แถวที่ " . ($index + 1) . ": ไม่พบผู้ช่วยนายทหารเวร (สำรอง) '{$reserveAssistantOfficerName}'";
+                }
+            }
             
             try {
-                // If both are null and there are no notes, maybe skip or delete?
-                if (is_null($dutyOfficerId) && is_null($assistantOfficerId) && empty(trim($notes))) {
+                // If all are null and there are no notes, maybe skip or delete?
+                if (is_null($dutyOfficerId) && is_null($reserveDutyOfficerId) && is_null($assistantOfficerId) && is_null($reserveAssistantOfficerId) && empty(trim($notes))) {
                     DutyRoster::where('duty_date', $date)->delete();
                 } else {
                     DutyRoster::updateOrCreate(
                         ['duty_date' => $date],
                         [
                             'duty_officer_id' => $dutyOfficerId,
+                            'reserve_duty_officer_id' => $reserveDutyOfficerId,
                             'assistant_duty_officer_id' => $assistantOfficerId,
+                            'reserve_assistant_duty_officer_id' => $reserveAssistantOfficerId,
                             'notes' => $notes ?: null,
                             'created_by' => Auth::id() ?? 1,
                         ]

@@ -260,6 +260,9 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
         Route::delete('/duty-roster/destroy', [DutyRosterController::class, 'destroy'])->name('duty-roster.destroy');
         Route::get('/duty-roster/template', [DutyRosterController::class, 'downloadTemplate'])->name('duty-roster.template');
         Route::post('/duty-roster/import', [DutyRosterController::class, 'import'])->name('duty-roster.import');
+        Route::post('/duty-roster/auto-schedule', [DutyRosterController::class, 'autoSchedule'])->name('duty-roster.auto-schedule');
+        Route::delete('/duty-roster/clear-month', [DutyRosterController::class, 'clearMonth'])->name('duty-roster.clear-month');
+        Route::post('/duty-roster/set-monthly-reserve', [DutyRosterController::class, 'setMonthlyReserve'])->name('duty-roster.set-monthly-reserve');
         Route::post('/duty-roster/senior/store', [DutyRosterController::class, 'storeSenior'])->name('duty-roster.senior.store');
         Route::delete('/duty-roster/senior/{id}', [DutyRosterController::class, 'destroySenior'])->name('duty-roster.senior.destroy');
 

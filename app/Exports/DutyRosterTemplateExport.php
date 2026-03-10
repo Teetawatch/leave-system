@@ -55,7 +55,9 @@ class DutyRosterTemplateSheet implements FromArray, WithHeadings, WithTitle, Wit
             $data[] = [
                 $date,
                 '', // นายทหารเวร
+                '', // นายทหารเวร สำรอง
                 '', // ผู้ช่วยนายทหารเวร
+                '', // ผู้ช่วยนายทหารเวร สำรอง
                 ''  // หมายเหตุ
             ];
         }
@@ -68,7 +70,9 @@ class DutyRosterTemplateSheet implements FromArray, WithHeadings, WithTitle, Wit
         return [
             'วันที่ (YYYY-MM-DD)',
             'นายทหารเวร (ชื่อ-นามสกุล)',
+            'นายทหารเวร สำรอง (ชื่อ-นามสกุล)',
             'ผู้ช่วยนายทหารเวร (ชื่อ-นามสกุล)',
+            'ผู้ช่วยนายทหารเวร สำรอง (ชื่อ-นามสกุล)',
             'หมายเหตุ'
         ];
     }
@@ -84,7 +88,9 @@ class DutyRosterTemplateSheet implements FromArray, WithHeadings, WithTitle, Wit
             'A' => 20,
             'B' => 35,
             'C' => 35,
-            'D' => 40,
+            'D' => 35,
+            'E' => 35,
+            'F' => 40,
         ];
     }
 

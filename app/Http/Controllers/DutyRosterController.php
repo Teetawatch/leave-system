@@ -26,7 +26,7 @@ class DutyRosterController extends Controller
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
         $rosters = DutyRoster::forMonth($year, $month)
-            ->with(['dutyOfficer', 'assistantDutyOfficer'])
+            ->with(['dutyOfficer', 'assistantDutyOfficer', 'reserveDutyOfficer', 'reserveAssistantDutyOfficer'])
             ->orderBy('duty_date')
             ->get()
             ->keyBy(function ($item) {
@@ -69,7 +69,7 @@ class DutyRosterController extends Controller
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
         $rosters = DutyRoster::forMonth($year, $month)
-            ->with(['dutyOfficer', 'assistantDutyOfficer'])
+            ->with(['dutyOfficer', 'assistantDutyOfficer', 'reserveDutyOfficer', 'reserveAssistantDutyOfficer'])
             ->orderBy('duty_date')
             ->get()
             ->keyBy(function ($item) {
@@ -114,7 +114,9 @@ class DutyRosterController extends Controller
         $validated = $request->validate([
             'duty_date' => 'required|date',
             'duty_officer_id' => 'nullable|exists:users,id',
+            'reserve_duty_officer_id' => 'nullable|exists:users,id',
             'assistant_duty_officer_id' => 'nullable|exists:users,id',
+            'reserve_assistant_duty_officer_id' => 'nullable|exists:users,id',
             'notes' => 'nullable|string|max:500',
         ], [
             'duty_date.required' => 'กรุณาระบุวันที่เข้าเวร',
@@ -124,7 +126,9 @@ class DutyRosterController extends Controller
             ['duty_date' => $validated['duty_date']],
             [
                 'duty_officer_id' => $validated['duty_officer_id'],
+                'reserve_duty_officer_id' => $validated['reserve_duty_officer_id'] ?? null,
                 'assistant_duty_officer_id' => $validated['assistant_duty_officer_id'],
+                'reserve_assistant_duty_officer_id' => $validated['reserve_assistant_duty_officer_id'] ?? null,
                 'notes' => $validated['notes'] ?? null,
                 'created_by' => Auth::id(),
             ]
@@ -133,7 +137,7 @@ class DutyRosterController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'บันทึกข้อมูลเวรเรียบร้อยแล้ว',
-            'roster' => $roster->load(['dutyOfficer', 'assistantDutyOfficer']),
+            'roster' => $roster->load(['dutyOfficer', 'assistantDutyOfficer', 'reserveDutyOfficer', 'reserveAssistantDutyOfficer']),
         ]);
     }
 
@@ -146,7 +150,9 @@ class DutyRosterController extends Controller
             'entries' => 'required|array|min:1',
             'entries.*.duty_date' => 'required|date',
             'entries.*.duty_officer_id' => 'nullable|exists:users,id',
+            'entries.*.reserve_duty_officer_id' => 'nullable|exists:users,id',
             'entries.*.assistant_duty_officer_id' => 'nullable|exists:users,id',
+            'entries.*.reserve_assistant_duty_officer_id' => 'nullable|exists:users,id',
             'entries.*.notes' => 'nullable|string|max:500',
         ]);
 
@@ -156,7 +162,9 @@ class DutyRosterController extends Controller
                 ['duty_date' => $entry['duty_date']],
                 [
                     'duty_officer_id' => $entry['duty_officer_id'] ?? null,
+                    'reserve_duty_officer_id' => $entry['reserve_duty_officer_id'] ?? null,
                     'assistant_duty_officer_id' => $entry['assistant_duty_officer_id'] ?? null,
+                    'reserve_assistant_duty_officer_id' => $entry['reserve_assistant_duty_officer_id'] ?? null,
                     'notes' => $entry['notes'] ?? null,
                     'created_by' => Auth::id(),
                 ]
@@ -309,7 +317,7 @@ class DutyRosterController extends Controller
         $month = $request->get('month', now()->month);
 
         $rosters = DutyRoster::forMonth($year, $month)
-            ->with(['dutyOfficer', 'assistantDutyOfficer'])
+            ->with(['dutyOfficer', 'assistantDutyOfficer', 'reserveDutyOfficer', 'reserveAssistantDutyOfficer'])
             ->orderBy('duty_date')
             ->get()
             ->map(function ($roster) {
@@ -320,9 +328,17 @@ class DutyRosterController extends Controller
                         'id' => $roster->dutyOfficer->id,
                         'name' => $roster->dutyOfficer->rank . ' ' . $roster->dutyOfficer->name,
                     ] : null,
+                    'reserve_duty_officer' => $roster->reserveDutyOfficer ? [
+                        'id' => $roster->reserveDutyOfficer->id,
+                        'name' => $roster->reserveDutyOfficer->rank . ' ' . $roster->reserveDutyOfficer->name,
+                    ] : null,
                     'assistant_duty_officer' => $roster->assistantDutyOfficer ? [
                         'id' => $roster->assistantDutyOfficer->id,
                         'name' => $roster->assistantDutyOfficer->rank . ' ' . $roster->assistantDutyOfficer->name,
+                    ] : null,
+                    'reserve_assistant_duty_officer' => $roster->reserveAssistantDutyOfficer ? [
+                        'id' => $roster->reserveAssistantDutyOfficer->id,
+                        'name' => $roster->reserveAssistantDutyOfficer->rank . ' ' . $roster->reserveAssistantDutyOfficer->name,
                     ] : null,
                     'notes' => $roster->notes,
                 ];
@@ -344,5 +360,164 @@ class DutyRosterController extends Controller
         ];
 
         return $months[$month] ?? '';
+    }
+
+    /**
+     * จัดเวรอัตโนมัติ (Automated Scheduling)
+     */
+    public function autoSchedule(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+        ]);
+
+        $year = $request->year;
+        $month = $request->month;
+
+        // Get allowed ranks
+        $dutyOfficerRanks = \App\Models\Rank::whereBetween('sort_order', [17, 30])->pluck('name')->toArray();
+        $assistantRanks = \App\Models\Rank::whereBetween('sort_order', [31, 40])->pluck('name')->toArray();
+
+        $doList = User::whereIn('rank', $dutyOfficerRanks)->where('registration_status', 'approved')->get();
+        $adoList = User::whereIn('rank', $assistantRanks)->where('registration_status', 'approved')->get();
+
+        if ($doList->count() < 2 || $adoList->count() < 2) {
+            return back()->with('error', 'มีจำนวนผู้ปฏิบัติหน้าที่ไม่เพียงพอสำหรับการจัดเวร (ต้องมีอย่างน้อย 2 คนต่อช่วงชั้นยศ)');
+        }
+
+        $doStats = [];
+        foreach($doList as $user) {
+            $doStats[$user->id] = ['id' => $user->id, 'count' => 0, 'holiday_count' => 0, 'last_duty_date' => null];
+        }
+
+        $adoStats = [];
+        foreach($adoList as $user) {
+            $adoStats[$user->id] = ['id' => $user->id, 'count' => 0, 'holiday_count' => 0, 'last_duty_date' => null];
+        }
+
+        $pickUsers = function(&$stats, $isHoliday, $dateStr, $needed = 1) {
+            $keys = array_keys($stats);
+            shuffle($keys);
+
+            usort($keys, function($a, $b) use ($stats, $isHoliday) {
+                $sa = $stats[$a];
+                $sb = $stats[$b];
+
+                if ($isHoliday) {
+                    if ($sa['holiday_count'] !== $sb['holiday_count']) {
+                        return $sa['holiday_count'] <=> $sb['holiday_count'];
+                    }
+                }
+                if ($sa['count'] !== $sb['count']) {
+                    return $sa['count'] <=> $sb['count'];
+                }
+
+                $la = $sa['last_duty_date'];
+                $lb = $sb['last_duty_date'];
+                if ($la !== $lb) {
+                    if ($la === null) return -1;
+                    if ($lb === null) return 1;
+                    return $la <=> $lb;
+                }
+                return 0;
+            });
+
+            $picked = [];
+            for ($i=0; $i<$needed; $i++) {
+                $selectedId = $keys[$i];
+                $picked[] = $selectedId;
+
+                $stats[$selectedId]['count']++;
+                if ($isHoliday) {
+                    $stats[$selectedId]['holiday_count']++;
+                }
+                $stats[$selectedId]['last_duty_date'] = $dateStr;
+            }
+
+            return $picked;
+        };
+
+        $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+
+        try {
+            for ($d = clone $startOfMonth; $d->lte($endOfMonth); $d->addDay()) {
+                $isHoliday = $d->isWeekend(); // For now, treat weekends as holidays. Can be expanded if a holidays table exists.
+                $dateStr = $d->format('Y-m-d');
+
+                $chosenDO = $pickUsers($doStats, $isHoliday, $dateStr, 1);
+                $chosenADO = $pickUsers($adoStats, $isHoliday, $dateStr, 1);
+
+                $record = DutyRoster::firstOrNew(['duty_date' => $dateStr]);
+                $record->duty_officer_id = $chosenDO[0];
+                $record->assistant_duty_officer_id = $chosenADO[0];
+                $record->created_by = Auth::id() ?? 1;
+                $record->save();
+            }
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->with('error', 'เกิดข้อผิดพลาดในการจัดเวร: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'จัดเวรอัตโนมัติสำหรับเดือนนี้เรียบร้อยแล้ว (ไม่รวมเวรสำรอง)');
+    }
+
+    /**
+     * กำหนดเวรสำรองแบบรายเดือน
+     */
+    public function setMonthlyReserve(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+            'reserve_duty_officer_id' => 'nullable|exists:users,id',
+            'reserve_assistant_duty_officer_id' => 'nullable|exists:users,id',
+        ]);
+
+        $year = $request->year;
+        $month = $request->month;
+
+        $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+
+        try {
+            for ($d = clone $startOfMonth; $d->lte($endOfMonth); $d->addDay()) {
+                $dateStr = $d->format('Y-m-d');
+                $record = DutyRoster::firstOrNew(['duty_date' => $dateStr]);
+                $record->reserve_duty_officer_id = $request->reserve_duty_officer_id;
+                $record->reserve_assistant_duty_officer_id = $request->reserve_assistant_duty_officer_id;
+                if (!$record->exists) {
+                    $record->created_by = Auth::id() ?? 1;
+                }
+                $record->save();
+            }
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->with('error', 'เกิดข้อผิดพลาดในการกำหนดเวรสำรอง: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'กำหนดเวรสำรองสำหรับเดือนนี้เรียบร้อยแล้ว');
+    }
+
+    /**
+     * ล้างข้อมูลเวรประจำวันทั้งหมดในเดือนนั้น (ยกเว้นนายทหารเวรอาวุโส)
+     */
+    public function clearMonth(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+        ]);
+
+        DutyRoster::forMonth($request->year, $request->month)->delete();
+
+        return back()->with('success', 'ล้างข้อมูลเวรสำหรับเดือนนี้เรียบร้อยแล้ว');
     }
 }

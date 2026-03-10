@@ -12,7 +12,9 @@ class DutyRoster extends Model
     protected $fillable = [
         'duty_date',
         'duty_officer_id',
+        'reserve_duty_officer_id',
         'assistant_duty_officer_id',
+        'reserve_assistant_duty_officer_id',
         'notes',
         'created_by',
     ];
@@ -30,11 +32,27 @@ class DutyRoster extends Model
     }
 
     /**
+     * นายทหารเวรสำรอง
+     */
+    public function reserveDutyOfficer()
+    {
+        return $this->belongsTo(User::class, 'reserve_duty_officer_id');
+    }
+
+    /**
      * ผู้ช่วยนายทหารเวร
      */
     public function assistantDutyOfficer()
     {
         return $this->belongsTo(User::class, 'assistant_duty_officer_id');
+    }
+
+    /**
+     * ผู้ช่วยนายทหารเวรสำรอง
+     */
+    public function reserveAssistantDutyOfficer()
+    {
+        return $this->belongsTo(User::class, 'reserve_assistant_duty_officer_id');
     }
 
     /**

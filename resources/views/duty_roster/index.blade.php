@@ -220,8 +220,16 @@
                     <span class="text-slate-600">นายทหารเวร</span>
                 </div>
                 <div class="legend-item">
+                    <div class="w-3 h-3 rounded-full bg-gradient-to-br from-sky-400 to-sky-600"></div>
+                    <span class="text-slate-600">นายทหารเวร (สำรอง)</span>
+                </div>
+                <div class="legend-item">
                     <div class="w-3 h-3 rounded-full bg-gradient-to-br from-pink-400 to-pink-600"></div>
                     <span class="text-slate-600">ผู้ช่วยนายทหารเวร</span>
+                </div>
+                <div class="legend-item">
+                    <div class="w-3 h-3 rounded-full bg-gradient-to-br from-rose-400 to-rose-600"></div>
+                    <span class="text-slate-600">ผู้ช่วยนายทหารเวร (สำรอง)</span>
                 </div>
             </div>
         </div>
@@ -370,11 +378,25 @@
                                         {{ $roster->dutyOfficer->name }}</span>
                                 </div>
                                 @endif
+                                @if($roster->reserveDutyOfficer)
+                                <div class="officer-badge duty-officer mb-1" style="background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0369a1;">
+                                    <i data-lucide="shield-alert" class="w-3 h-3 flex-shrink-0"></i>
+                                    <span class="truncate">{{ $roster->reserveDutyOfficer->rank }}
+                                        {{ $roster->reserveDutyOfficer->name }}</span>
+                                </div>
+                                @endif
                                 @if($roster->assistantDutyOfficer)
-                                <div class="officer-badge assistant-officer">
+                                <div class="officer-badge assistant-officer mb-1">
                                     <i data-lucide="shield-check" class="w-3 h-3 flex-shrink-0"></i>
                                     <span class="truncate">{{ $roster->assistantDutyOfficer->rank }}
                                         {{ $roster->assistantDutyOfficer->name }}</span>
+                                </div>
+                                @endif
+                                @if($roster->reserveAssistantDutyOfficer)
+                                <div class="officer-badge assistant-officer mb-1" style="background: linear-gradient(135deg, #ffe4e6, #fecdd3); color: #be123c;">
+                                    <i data-lucide="shield-plus" class="w-3 h-3 flex-shrink-0"></i>
+                                    <span class="truncate">{{ $roster->reserveAssistantDutyOfficer->rank }}
+                                        {{ $roster->reserveAssistantDutyOfficer->name }}</span>
                                 </div>
                                 @endif
                                 @if($roster->notes)
@@ -454,11 +476,24 @@
                     <span>{{ $roster->dutyOfficer->rank }} {{ $roster->dutyOfficer->name }}</span>
                 </div>
                 @endif
+                @if($roster->reserveDutyOfficer)
+                <div class="officer-badge duty-officer" style="background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0369a1;">
+                    <i data-lucide="shield-alert" class="w-3 h-3 flex-shrink-0"></i>
+                    <span>{{ $roster->reserveDutyOfficer->rank }} {{ $roster->reserveDutyOfficer->name }}</span>
+                </div>
+                @endif
                 @if($roster->assistantDutyOfficer)
                 <div class="officer-badge assistant-officer">
                     <i data-lucide="shield-check" class="w-3 h-3 flex-shrink-0"></i>
                     <span>{{ $roster->assistantDutyOfficer->rank }}
                         {{ $roster->assistantDutyOfficer->name }}</span>
+                </div>
+                @endif
+                @if($roster->reserveAssistantDutyOfficer)
+                <div class="officer-badge assistant-officer" style="background: linear-gradient(135deg, #ffe4e6, #fecdd3); color: #be123c;">
+                    <i data-lucide="shield-plus" class="w-3 h-3 flex-shrink-0"></i>
+                    <span>{{ $roster->reserveAssistantDutyOfficer->rank }}
+                        {{ $roster->reserveAssistantDutyOfficer->name }}</span>
                 </div>
                 @endif
                 @if($roster->notes)

@@ -340,6 +340,29 @@
                     <i data-lucide="eye" class="w-4 h-4"></i>
                     <span class="hidden sm:inline">ดูตาราง</span>
                 </a>
+
+                <form method="POST" action="{{ route('duty-roster.auto-schedule') }}" class="inline-block m-0" onsubmit="return confirm('ยืนยันการจัดเวรอัตโนมัติสำหรับเดือนนี้?')">
+                    @csrf
+                    <input type="hidden" name="year" value="{{ $year }}">
+                    <input type="hidden" name="month" value="{{ $month }}">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold rounded-xl hover:bg-indigo-100 transition-all text-xs sm:text-sm">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">จัดเวรอัตโนมัติ</span>
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ route('duty-roster.clear-month') }}" class="inline-block m-0" onsubmit="return confirm('ยืนยันการล้างข้อมูลเวรทั้งหมดสำหรับเดือนนี้ให้เป็นค่าว่าง?')">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="year" value="{{ $year }}">
+                    <input type="hidden" name="month" value="{{ $month }}">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-rose-50 text-rose-600 border border-rose-100 font-bold rounded-xl hover:bg-rose-100 transition-all text-xs sm:text-sm">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">ล้างข้อมูลทั้งเดือน</span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -381,6 +404,61 @@
                 class="month-nav-btn">
                 <i data-lucide="chevron-right" class="w-5 h-5"></i>
             </a>
+    </div>
+
+    {{-- =====================================================
+         Monthly Reserve Duty Officer Section (เวรสำรองประจำเดือน)
+         ===================================================== --}}
+    <div class="senior-section mb-6">
+        <form method="POST" action="{{ route('duty-roster.set-monthly-reserve') }}" class="bg-white rounded-2xl border border-sky-100 p-4 sm:p-5 shadow-sm">
+            @csrf
+            <input type="hidden" name="year" value="{{ $year }}">
+            <input type="hidden" name="month" value="{{ $month }}">
+            
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
+                <div class="w-full sm:w-auto">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center shadow-md shadow-sky-500/20">
+                            <i data-lucide="shield-alert" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-sky-800 uppercase tracking-wider">เวรสำรองประจำเดือน</h3>
+                            <p class="text-[10px] text-sky-600">ตั้งค่าเวรสำรองสำหรับ 1 เดือน (1 คน/เดือน)</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="w-full sm:w-64">
+                            <label class="text-[10px] font-bold text-sky-700 uppercase tracking-wider mb-1 block">นายทหารเวร (สำรอง)</label>
+                            <select name="reserve_duty_officer_id" class="select-officer w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none text-sm transition-all">
+                                <option value="">-- ไม่ระบุ --</option>
+                                @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ (isset($days[0]['roster']) && $days[0]['roster']->reserve_duty_officer_id == $user->id) ? 'selected' : '' }}>
+                                    {{ $user->rank }} {{ $user->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-64">
+                            <label class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-1 block">ผู้ช่วยนายทหารเวร (สำรอง)</label>
+                            <select name="reserve_assistant_duty_officer_id" class="select-officer w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none text-sm transition-all">
+                                <option value="">-- ไม่ระบุ --</option>
+                                @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ (isset($days[0]['roster']) && $days[0]['roster']->reserve_assistant_duty_officer_id == $user->id) ? 'selected' : '' }}>
+                                    {{ $user->rank }} {{ $user->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full sm:w-auto mt-2 sm:mt-0">
+                    <button type="submit" onclick="return confirm('ยืนยันตั้งค่าเวรสำรองประจำเดือนนี้? การทำรายการนี้จะเปลี่ยนเวรสำรองของทุกวันในเดือนนี้เป็นรายชื่อที่เลือก')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-sky-500 text-white font-bold rounded-xl hover:bg-sky-600 transition-all text-xs sm:text-sm shadow-md shadow-sky-500/20">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>บันทึกเวรสำรอง</span>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
     {{-- =====================================================
@@ -553,6 +631,26 @@
                     </select>
                 </div>
 
+                {{-- Reserve Duty Officer Select --}}
+                <div>
+                    <label class="text-[10px] font-bold text-sky-600 uppercase tracking-wider flex items-center gap-1 mb-1">
+                        <i data-lucide="shield-alert" class="w-3 h-3"></i> นายทหารเวร (สำรอง)
+                    </label>
+                    <select class="select-officer"
+                        id="reserve_duty_officer_{{ $date->format('Y-m-d') }}"
+                        data-date="{{ $date->format('Y-m-d') }}"
+                        data-field="reserve_duty_officer_id"
+                        @change="markChanged('{{ $date->format('Y-m-d') }}')">
+                        <option value="">-- ไม่มี --</option>
+                        @foreach($users as $user)
+                        <option value="{{ $user->id }}"
+                            {{ $roster && $roster->reserve_duty_officer_id == $user->id ? 'selected' : '' }}>
+                            {{ $user->rank }} {{ $user->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 {{-- Assistant Duty Officer Select --}}
                 <div>
                     <label class="text-[10px] font-bold text-pink-600 uppercase tracking-wider flex items-center gap-1 mb-1">
@@ -567,6 +665,26 @@
                         @foreach($users as $user)
                         <option value="{{ $user->id }}"
                             {{ $roster && $roster->assistant_duty_officer_id == $user->id ? 'selected' : '' }}>
+                            {{ $user->rank }} {{ $user->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Reserve Assistant Duty Officer Select --}}
+                <div>
+                    <label class="text-[10px] font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1 mb-1">
+                        <i data-lucide="shield-plus" class="w-3 h-3"></i> ผู้ช่วยนายทหารเวร (สำรอง)
+                    </label>
+                    <select class="select-officer"
+                        id="reserve_assistant_{{ $date->format('Y-m-d') }}"
+                        data-date="{{ $date->format('Y-m-d') }}"
+                        data-field="reserve_assistant_duty_officer_id"
+                        @change="markChanged('{{ $date->format('Y-m-d') }}')">
+                        <option value="">-- ไม่มี --</option>
+                        @foreach($users as $user)
+                        <option value="{{ $user->id }}"
+                            {{ $roster && $roster->reserve_assistant_duty_officer_id == $user->id ? 'selected' : '' }}>
                             {{ $user->rank }} {{ $user->name }}
                         </option>
                         @endforeach
@@ -685,7 +803,9 @@
                 this.saving = date;
 
                 const dutyOfficerId = document.getElementById('duty_officer_' + date)?.value || null;
+                const reserveDOId = document.getElementById('reserve_duty_officer_' + date)?.value || null;
                 const assistantId = document.getElementById('assistant_' + date)?.value || null;
+                const reserveADOId = document.getElementById('reserve_assistant_' + date)?.value || null;
                 const notes = document.getElementById('notes_' + date)?.value || null;
 
                 try {
@@ -699,7 +819,9 @@
                         body: JSON.stringify({
                             duty_date: date,
                             duty_officer_id: dutyOfficerId || null,
+                            reserve_duty_officer_id: reserveDOId || null,
                             assistant_duty_officer_id: assistantId || null,
+                            reserve_assistant_duty_officer_id: reserveADOId || null,
                             notes: notes,
                         }),
                     });
