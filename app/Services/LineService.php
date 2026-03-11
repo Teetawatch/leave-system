@@ -178,7 +178,10 @@ class LineService
                 ],
             ]);
 
-            return $response->getStatusCode() === 200;
+            $statusCode = $response->getStatusCode();
+            $body = $response->getBody()->getContents();
+            Log::info("LINE Bot 2 Send Group Flex: HTTP {$statusCode} to group [{$groupId}] body: {$body}");
+            return $statusCode === 200;
         } catch (ClientException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $body = $e->getResponse()->getBody()->getContents();

@@ -59,23 +59,18 @@ class SendDailyDutyRoster extends Command
 
         if (!$isTest) {
             if (!$dutyRoster && !$seniorDutyRoster) {
-                // Use queue for text message (bot 2)
-                SendLineMessageJob::dispatch('text2', [
-                    'text' => $this->buildNoRosterMessage($date)
-                ]);
-                $result = true;
+                // Send text message directly (no queue for shared hosting)
+                $result = $this->lineService->sendGroupTextMessage2(
+                    $this->buildNoRosterMessage($date)
+                );
             } else {
-                // Use queue for flex message (bot 2)
+                // Send flex message directly (no queue for shared hosting)
                 $flexMessage = $this->buildFlexMessage($date, $dutyRoster, $seniorDutyRoster);
                 $altText = sprintf(
                     '🛡️ เวรยามประจำวัน %s',
                     $this->toThaiDate($date)
                 );
-                SendLineMessageJob::dispatch('flex2', [
-                    'altText' => $altText,
-                    'flexContents' => $flexMessage
-                ]);
-                $result = true;
+                $result = $this->lineService->sendGroupFlexMessage2($altText, $flexMessage);
             }
 
             if ($result) {

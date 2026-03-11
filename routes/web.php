@@ -338,27 +338,45 @@ Route::get('/cron/daily-duty-roster/{secret}', function ($secret) {
 // New LINE Bot 2 Routes (for daily reports)
 Route::get('/line/daily-leave-summary', function () {
     $exitCode = Artisan::call('line:daily-leave-summary');
+    $groupId = env('LINE_GROUP_ID_2', '');
+    $token = env('LINE_CHANNEL_ACCESS_TOKEN_2', '');
+
+    $logs = [];
+    try {
+        $logFile = storage_path('logs/laravel.log');
+        if (file_exists($logFile)) {
+            $lines = array_slice(file($logFile), -50);
+            $logs = array_values(array_filter($lines, fn($l) => str_contains($l, 'LINE Bot 2') || str_contains($l, 'Error')));
+        }
+    } catch (\Exception $e) {}
+
     return response()->json([
         'message' => 'Daily leave summary (Bot 2) executed',
         'exit_code' => $exitCode,
         'output' => Artisan::output(),
         'debug' => [
-            'bot2_token_set' => !empty(env('LINE_CHANNEL_ACCESS_TOKEN_2')),
-            'bot2_group_id_set' => !empty(env('LINE_GROUP_ID_2')),
+            'bot2_token_set' => !empty($token),
+            'bot2_token_prefix' => $token ? substr($token, 0, 8) . '...' : null,
+            'bot2_group_id_set' => !empty($groupId),
+            'bot2_group_id_preview' => $groupId ? substr($groupId, 0, 6) . '...' . substr($groupId, -4) : null,
         ],
+        'recent_line_logs' => $logs,
     ]);
 });
 
 Route::get('/line/daily-duty-roster', function () {
     $exitCode = Artisan::call('line:daily-duty-roster');
+    $groupId = env('LINE_GROUP_ID_2', '');
+    $token = env('LINE_CHANNEL_ACCESS_TOKEN_2', '');
     return response()->json([
         'message' => 'Daily duty roster (Bot 2) executed',
         'exit_code' => $exitCode,
         'output' => Artisan::output(),
         'debug' => [
-            'bot2_token_set' => !empty(env('LINE_CHANNEL_ACCESS_TOKEN_2')),
-            'bot2_group_id_set' => !empty(env('LINE_GROUP_ID_2')),
-            'queue_connection' => env('QUEUE_CONNECTION', 'sync'),
+            'bot2_token_set' => !empty($token),
+            'bot2_token_prefix' => $token ? substr($token, 0, 8) . '...' : null,
+            'bot2_group_id_set' => !empty($groupId),
+            'bot2_group_id_preview' => $groupId ? substr($groupId, 0, 6) . '...' . substr($groupId, -4) : null,
         ],
     ]);
 });
