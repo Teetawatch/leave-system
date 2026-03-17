@@ -273,7 +273,7 @@
                                         <div
                                             class="w-20 h-20 rounded-[2rem] overflow-hidden bg-slate-200 mb-4 ring-4 ring-white shadow-xl transition-transform group-hover:scale-110">
                                             @if($log->student->photo_path)
-                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->student->photo_path) }}"
+                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->student->photo_path) }}"
                                                     class="w-full h-full object-cover">
                                             @else
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
@@ -319,7 +319,7 @@
                                         <div
                                             class="w-20 h-20 rounded-[2rem] overflow-hidden bg-slate-200 mb-4 ring-4 ring-white shadow-xl transition-transform group-hover:scale-110">
                                             @if($student->photo_path)
-                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($student->photo_path) }}"
+                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($student->photo_path) }}"
                                                     class="w-full h-full object-cover">
                                             @else
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
@@ -365,7 +365,7 @@
                                         <div
                                             class="w-20 h-20 rounded-[2rem] overflow-hidden bg-slate-200 mb-4 ring-4 ring-white shadow-xl transition-transform group-hover:scale-110">
                                             @if($student->photo_path)
-                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($student->photo_path) }}"
+                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($student->photo_path) }}"
                                                     class="w-full h-full object-cover">
                                             @else
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
@@ -441,7 +441,7 @@
                                                 <div
                                                     class="w-14 h-14 rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-lg overflow-hidden transition-transform group-hover:scale-110">
                                                     @if($log->student && $log->student->photo_path)
-                                                        <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->student->photo_path) }}"
+                                                        <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->student->photo_path) }}"
                                                             class="w-full h-full object-cover">
                                                     @else
                                                         <div class="w-full h-full flex items-center justify-center text-slate-400">
@@ -477,7 +477,7 @@
                                                         <div
                                                             class="w-20 h-24 rounded-xl bg-slate-100 border-2 border-white shadow-md overflow-hidden transition-transform group-hover/photo:scale-110">
                                                             @if($log->morning->snapshot_path)
-                                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->morning->snapshot_path) }}"
+                                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->morning->snapshot_path) }}"
                                                                     class="w-full h-full object-cover">
                                                             @else
                                                                 <div
@@ -520,7 +520,7 @@
                                                         <div
                                                             class="w-20 h-24 rounded-xl bg-slate-100 border-2 border-white shadow-md overflow-hidden transition-transform group-hover/photo:scale-110">
                                                             @if($log->afternoon->snapshot_path)
-                                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->afternoon->snapshot_path) }}"
+                                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->afternoon->snapshot_path) }}"
                                                                     class="w-full h-full object-cover">
                                                             @else
                                                                 <div
@@ -560,9 +560,13 @@
                                             @php
                                                 $isLate = ($log->morning && $log->morning->is_late) || ($log->afternoon && $log->afternoon->is_late);
                                                 $isPresent = $log->morning || $log->afternoon;
+                                                $isOnLeave = !empty($log->leave_info);
                                             @endphp
 
-                                            @if(!$isPresent)
+                                            @if($isOnLeave)
+                                                <span
+                                                    class="px-5 py-2 bg-blue-500 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-blue-500/20 uppercase tracking-widest">{{ $log->leave_type_name ?? 'ลางาน' }}</span>
+                                            @elseif(!$isPresent)
                                                 <span
                                                     class="px-5 py-2 bg-rose-500 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-rose-500/20 uppercase tracking-widest">ขาดเรียน</span>
                                             @elseif($isLate)
@@ -687,7 +691,7 @@
                                         <div
                                             class="w-20 h-20 rounded-[2rem] overflow-hidden bg-slate-200 mb-4 ring-4 ring-white shadow-xl transition-transform group-hover:scale-110">
                                             @if($log->employee->photo_path)
-                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->employee->photo_path) }}"
+                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->employee->photo_path) }}"
                                                     class="w-full h-full object-cover">
                                             @else
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
@@ -738,7 +742,7 @@
                                         <div
                                             class="w-20 h-20 rounded-[2rem] overflow-hidden bg-slate-200 mb-4 ring-4 ring-white shadow-xl transition-transform group-hover:scale-110">
                                             @if($employee->photo_path)
-                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($employee->photo_path) }}"
+                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($employee->photo_path) }}"
                                                     class="w-full h-full object-cover">
                                             @else
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
@@ -789,7 +793,7 @@
                                         <div
                                             class="w-20 h-20 rounded-[2rem] overflow-hidden bg-slate-200 mb-4 ring-4 ring-white shadow-xl transition-transform group-hover:scale-110">
                                             @if($employee->photo_path)
-                                                <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($employee->photo_path) }}"
+                                                <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($employee->photo_path) }}"
                                                     class="w-full h-full object-cover">
                                             @else
                                                 <i data-lucide="user" class="w-10 h-10 text-slate-400 mt-5"></i>
@@ -801,7 +805,7 @@
                                             @endif
                                             {{ $employee->first_name }}
                                         </h4>
-                                        @if($employee->leave_info->reason)
+                                        @if(isset($employee->leave_info->reason) && $employee->leave_info->reason)
                                             <p class="text-[9px] font-bold text-slate-400 mt-1 truncate w-full px-2"
                                                 title="{{ $employee->leave_info->reason }}">
                                                 {{ Str::limit($employee->leave_info->reason, 20) }}
@@ -862,7 +866,7 @@
                                                     <div
                                                         class="w-14 h-14 rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-lg overflow-hidden transition-transform group-hover:scale-110">
                                                         @if($log->employee && $log->employee->photo_path)
-                                                            <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->employee->photo_path) }}"
+                                                            <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->employee->photo_path) }}"
                                                                 class="w-full h-full object-cover">
                                                         @else
                                                             <div class="w-full h-full flex items-center justify-center text-slate-400">
@@ -895,7 +899,7 @@
                                                         <div class="relative group/photo">
                                                             <div class="w-20 h-24 rounded-xl bg-slate-100 border-2 border-white shadow-md overflow-hidden transition-transform group-hover/photo:scale-110">
                                                                 @if($log->morning->snapshot_path)
-                                                                    <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->morning->snapshot_path) }}"
+                                                                    <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->morning->snapshot_path) }}"
                                                                         class="w-full h-full object-cover">
                                                                 @else
                                                                     <div class="w-full h-full flex items-center justify-center text-slate-300">
@@ -933,7 +937,7 @@
                                                         <div class="relative group/photo">
                                                             <div class="w-20 h-24 rounded-xl bg-slate-100 border-2 border-white shadow-md overflow-hidden transition-transform group-hover/photo:scale-110">
                                                                 @if($log->afternoon->snapshot_path)
-                                                                    <img src="https://nass.ac.th/faceattendance/storage-file?path={{ urlencode($log->afternoon->snapshot_path) }}"
+                                                                    <img src="https://faceattendance.nass.ac.th/storage-file?path={{ urlencode($log->afternoon->snapshot_path) }}"
                                                                         class="w-full h-full object-cover">
                                                                 @else
                                                                     <div class="w-full h-full flex items-center justify-center text-slate-300">
@@ -969,9 +973,12 @@
                                                 @php
                                                     $isLate = ($log->morning && $log->morning->is_late) || ($log->afternoon && $log->afternoon->is_late);
                                                     $isPresent = $log->morning || $log->afternoon;
+                                                    $isOnLeave = !empty($log->leave_info);
                                                 @endphp
 
-                                                @if(!$isPresent)
+                                                @if($isOnLeave)
+                                                    <span class="px-5 py-2 bg-blue-500 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-blue-500/20 uppercase tracking-widest">{{ $log->leave_type_name ?? 'ลางาน' }}</span>
+                                                @elseif(!$isPresent)
                                                     <span class="px-5 py-2 bg-rose-500 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-rose-500/20 uppercase tracking-widest">ขาดงาน</span>
                                                 @elseif($isLate)
                                                     <span class="px-5 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-amber-500/20 uppercase tracking-widest">มาสาย</span>

@@ -43,8 +43,36 @@ class AttendanceReportController extends Controller
             ->orderBy('scan_date', 'desc')
             ->paginate(20);
 
+        // Get approved leave requests for STUDENTS — loaded before transform so it can be used inside
+        $studentUsersOnLeave = \App\Models\User::whereHas('leaveRequests', function ($q) use ($startDate, $endDate) {
+            $q->where('status', 'approved')
+                ->whereDate('start_date', '<=', $endDate)
+                ->whereDate('end_date', '>=', $startDate);
+        })->with([
+                    'leaveRequests' => function ($q) use ($startDate, $endDate) {
+                        $q->where('status', 'approved')
+                            ->whereDate('start_date', '<=', $endDate)
+                            ->whereDate('end_date', '>=', $startDate);
+                    },
+                    'leaveRequests.leaveType'
+                ])->get();
+
+        // Helper closure to match a student to an approved leave request by name
+        $matchStudentLeave = function ($student) use ($studentUsersOnLeave) {
+            $studentFullName = trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? ''));
+            $matchedUser = $studentUsersOnLeave->first(function ($user) use ($studentFullName) {
+                $userParts = array_filter(explode(' ', $user->name));
+                if (empty($userParts)) return false;
+                foreach ($userParts as $part) {
+                    if (!str_contains($studentFullName, trim($part))) return false;
+                }
+                return true;
+            });
+            return $matchedUser ? $matchedUser->leaveRequests->first() : null;
+        };
+
         // Map grouped items to include morning and afternoon scan details
-        $logs->getCollection()->transform(function ($item) {
+        $logs->getCollection()->transform(function ($item) use ($matchStudentLeave) {
             $dayLogs = FaStudentAttendanceLog::with(['student.course'])
                 ->where('student_id', $item->student_id)
                 ->whereDate('scan_time', $item->scan_date)
@@ -69,6 +97,12 @@ class AttendanceReportController extends Controller
 
             // Fallback for student data
             $item->student = $dayLogs->first()?->student ?? FaStudent::with('course')->find($item->student_id);
+
+            // Attach leave info so the view status column can show correct status
+            $leaveReq = $item->student ? $matchStudentLeave($item->student) : null;
+            $item->leave_info = $leaveReq;
+            $item->leave_type_name = $leaveReq ? ($leaveReq->leaveType->name ?? 'ลางาน') : null;
+
             return $item;
         });
 
@@ -115,41 +149,14 @@ class AttendanceReportController extends Controller
             return !$scannedStudentIds->contains($student->id);
         });
 
-        // Get approved leave requests for STUDENTS (using student name matching approach)
-        $usersOnLeave = \App\Models\User::whereHas('leaveRequests', function ($q) use ($startDate, $endDate) {
-            $q->where('status', 'approved')
-                ->whereDate('start_date', '<=', $endDate)
-                ->whereDate('end_date', '>=', $startDate);
-        })->with([
-                    'leaveRequests' => function ($q) use ($startDate, $endDate) {
-                        $q->where('status', 'approved')
-                            ->whereDate('start_date', '<=', $endDate)
-                            ->whereDate('end_date', '>=', $startDate);
-                    },
-                    'leaveRequests.leaveType'
-                ])->get();
-
-        // Partition Absent Students into 'On Leave' vs 'True Absent'
+        // Partition Absent Students into 'On Leave' vs 'True Absent' (reuse $matchStudentLeave)
         $onLeaveStudents = collect();
         $absentStudents = collect();
 
         foreach ($absentStudentsRaw as $student) {
-            $matchedUser = $usersOnLeave->first(function ($user) use ($student) {
-                $studentFullName = trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? ''));
-                $userParts = array_filter(explode(' ', $user->name));
-                if (empty($userParts))
-                    return false;
+            $matchedRequest = $matchStudentLeave($student);
 
-                foreach ($userParts as $part) {
-                    if (!str_contains($studentFullName, trim($part))) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-            if ($matchedUser) {
-                $matchedRequest = $matchedUser->leaveRequests->first();
+            if ($matchedRequest) {
                 $student->leave_info = $matchedRequest;
                 $student->leave_type_name = $matchedRequest->leaveType->name ?? 'ลางาน';
                 $onLeaveStudents->push($student);
@@ -179,6 +186,22 @@ class AttendanceReportController extends Controller
 
         // ===== ข้อมูลข้าราชการ (Employees) =====
 
+        // Get ALL approved leave requests for the date range (needed before transform)
+        $leaveRequests = LeaveRequest::with(['leaveType', 'user'])
+            ->where('status', 'approved')
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereDate('start_date', '<=', $endDate)
+                    ->whereDate('end_date', '>=', $startDate);
+            })
+            ->get();
+
+        // Users on leave (for name matching)
+        $usersOnLeave = collect();
+        if ($leaveRequests->isNotEmpty()) {
+            $userIdsOnLeave = $leaveRequests->pluck('user_id')->unique();
+            $usersOnLeave = \App\Models\User::whereIn('id', $userIdsOnLeave)->get();
+        }
+
         // Get employee attendance logs - Group by employee and date similar to students
         $employeeLogsQuery = FaAttendanceLog::with(['employee.user'])
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -190,7 +213,7 @@ class AttendanceReportController extends Controller
             ->paginate(20, ['*'], 'emp_page');
 
         // Map grouped items to include morning and afternoon scan details
-        $employeeLogsGrouped->getCollection()->transform(function ($item) {
+        $employeeLogsGrouped->getCollection()->transform(function ($item) use ($leaveRequests, $usersOnLeave) {
             $dayLogs = FaAttendanceLog::with(['employee.user'])
                 ->where('employee_id', $item->employee_id)
                 ->whereDate('scan_time', $item->scan_date)
@@ -223,6 +246,33 @@ class AttendanceReportController extends Controller
 
             // Fallback for employee data
             $item->employee = $dayLogs->first()?->employee ?? FaEmployee::with('user')->find($item->employee_id);
+
+            // Attach leave info for this employee so the view status column can show correct status
+            $emp = $item->employee;
+            $matchedRequest = null;
+            if ($emp) {
+                $empFullName = trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
+                if ($emp->user_id) {
+                    $matchedRequest = $leaveRequests->first(fn($req) => $req->user_id == $emp->user_id);
+                }
+                if (!$matchedRequest && $usersOnLeave->isNotEmpty()) {
+                    $matchedUser = $usersOnLeave->first(function ($user) use ($emp, $empFullName) {
+                        if ($emp->user_id && $emp->user_id == $user->id) return true;
+                        $userParts = array_filter(explode(' ', $user->name));
+                        if (empty($userParts)) return false;
+                        foreach ($userParts as $part) {
+                            if (!str_contains($empFullName, trim($part))) return false;
+                        }
+                        return true;
+                    });
+                    if ($matchedUser) {
+                        $matchedRequest = $leaveRequests->firstWhere('user_id', $matchedUser->id);
+                    }
+                }
+            }
+            $item->leave_info = $matchedRequest;
+            $item->leave_type_name = $matchedRequest ? ($matchedRequest->leaveType->name ?? 'ลางาน') : null;
+
             return $item;
         });
 
@@ -247,24 +297,6 @@ class AttendanceReportController extends Controller
             ->where('scan_type', 'in')
             ->pluck('employee_id')
             ->unique();
-
-        // Get ALL approved leave requests for the date range
-        $leaveRequests = LeaveRequest::with(['leaveType', 'user'])
-            ->where('status', 'approved')
-            ->where(function ($query) use ($startDate, $endDate) {
-                // Check for date overlap:
-                // (start_date <= end_range) AND (end_date >= start_range)
-                $query->whereDate('start_date', '<=', $endDate)
-                    ->whereDate('end_date', '>=', $startDate);
-            })
-            ->get();
-
-        // Users on leave (for name matching)
-        $usersOnLeave = collect();
-        if ($leaveRequests->isNotEmpty()) {
-            $userIdsOnLeave = $leaveRequests->pluck('user_id')->unique();
-            $usersOnLeave = \App\Models\User::whereIn('id', $userIdsOnLeave)->get();
-        }
 
         // Identify Absent Employees (Not scanned)
         $absentEmployeesRaw = $allEmployees->filter(function ($employee) use ($scannedEmployeeIds) {
