@@ -610,11 +610,12 @@
                                                 <i data-lucide="file-text" class="w-6 h-6 group-hover/tool:rotate-12 transition-transform"></i>
                                             </a>
                                             @if($req->attachment_path)
-                                                <a href="{{ asset('storage/' . $req->attachment_path) }}" target="_blank"
+                                                <button type="button"
+                                                    onclick="openAttachmentModal('{{ asset('storage/' . $req->attachment_path) }}', '{{ pathinfo($req->attachment_path, PATHINFO_EXTENSION) }}')"
                                                     class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-400 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 hover:border-indigo-600 shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-95 group/tool"
                                                     title="เอกสารแนบ">
                                                     <i data-lucide="paperclip" class="w-6 h-6 group-hover/tool:-rotate-12 transition-transform"></i>
-                                                </a>
+                                                </button>
                                             @endif
                                         </div>
                                     </td>
@@ -651,4 +652,75 @@
             </div>
         </div>
     </div>
+<!-- Attachment Preview Modal -->
+<div id="attachmentModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onclick="closeAttachmentModal()"></div>
+    <div class="relative flex items-center justify-center min-h-screen p-4">
+        <div class="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-slide-up">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-8 py-5 border-b border-slate-100 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-900 tracking-tight">เอกสารแนบ</h3>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a id="attachmentDownloadLink" href="#" download
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        ดาวน์โหลด
+                    </a>
+                    <button type="button" onclick="closeAttachmentModal()"
+                        class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-500 text-slate-400 flex items-center justify-center transition-all">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-auto p-4 bg-slate-50 flex items-center justify-center" id="attachmentModalBody">
+                <!-- content injected by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function openAttachmentModal(url, ext) {
+        const modal = document.getElementById('attachmentModal');
+        const body  = document.getElementById('attachmentModalBody');
+        const dlLink = document.getElementById('attachmentDownloadLink');
+
+        dlLink.href = url;
+
+        const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+        const extLower  = (ext || '').toLowerCase();
+
+        if (imageExts.includes(extLower)) {
+            body.innerHTML = `<img src="${url}" alt="เอกสารแนบ" class="max-w-full max-h-[70vh] rounded-xl shadow-lg object-contain">`;
+        } else {
+            body.innerHTML = `<iframe src="${url}" class="w-full rounded-xl shadow-lg" style="height:70vh;" frameborder="0"></iframe>`;
+        }
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function closeAttachmentModal() {
+        const modal = document.getElementById('attachmentModal');
+        const body  = document.getElementById('attachmentModalBody');
+        modal.classList.add('hidden');
+        body.innerHTML = '';
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeAttachmentModal();
+    });
+</script>
+@endpush
+
 </x-app-layout>
