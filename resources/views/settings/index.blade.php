@@ -470,6 +470,161 @@
             </div>
         </form>
 
+        <!-- Telegram Bot Settings -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 relative z-20">
+            <div class="glass-panel rounded-[3rem] overflow-hidden animate-slide-up setting-card" style="animation-delay: 0.55s">
+                <div class="bg-slate-900 px-6 sm:px-10 py-6 flex items-center gap-4 sm:gap-6">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/20 shadow-inner flex-shrink-0">
+                        <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg sm:text-xl font-black text-white tracking-tight">Telegram Bot แจ้งเตือน</h3>
+                        <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                            <span class="text-[10px] font-black text-slate-500 tracking-[0.15em] uppercase">การตั้งค่า Telegram Bot</span>
+                            <span class="text-slate-700">•</span>
+                            @if(config('services.telegram.bot_token'))
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">เชื่อมต่อแล้ว ✓</span>
+                            @else
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400">ยังไม่ได้ตั้งค่า ✗</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 sm:p-10 space-y-6">
+                    <!-- Status Overview -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 text-center">
+                            <div class="text-3xl font-black text-sky-600">{{ \App\Models\User::whereNotNull('telegram_chat_id')->count() }}</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ผู้ใช้เชื่อมต่อ Telegram</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 text-center">
+                            <div class="text-3xl font-black text-indigo-600">{{ \App\Models\User::whereNotNull('telegram_chat_id')->whereIn('role', ['admin', 'director', 'deputy_director', 'department_head'])->count() }}</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ผู้อนุมัติเชื่อมต่อ</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 text-center">
+                            @if(config('services.telegram.bot_token'))
+                                <div class="text-xl font-black text-emerald-500 flex items-center justify-center gap-1.5 mt-1"><i data-lucide="check-circle-2" class="w-6 h-6"></i> พร้อมใช้งาน</div>
+                            @else
+                                <div class="text-xl font-black text-rose-400 flex items-center justify-center gap-1.5 mt-1"><i data-lucide="alert-circle" class="w-6 h-6"></i> ยังไม่ตั้งค่า</div>
+                            @endif
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">สถานะ Bot</div>
+                        </div>
+                    </div>
+
+                    <!-- Setup Instructions -->
+                    <div class="bg-sky-50/50 rounded-2xl p-6 border border-sky-100/50 space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center">
+                                <i data-lucide="book-open" class="w-4 h-4"></i>
+                            </div>
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest">วิธีตั้งค่า Telegram Bot</h4>
+                        </div>
+                        <ol class="space-y-3 text-sm text-slate-600 font-medium">
+                            <li class="flex gap-3">
+                                <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">1</span>
+                                <span>สร้าง Bot ใหม่ผ่าน <a href="https://t.me/BotFather" target="_blank" class="text-sky-600 font-bold underline underline-offset-2">@BotFather</a> บน Telegram → ได้รับ Bot Token</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">2</span>
+                                <span>เพิ่มค่าใน <code class="px-2 py-0.5 bg-white rounded-lg text-xs font-bold border border-slate-200">.env</code> :<br>
+                                    <code class="inline-block mt-1 px-3 py-1.5 bg-slate-800 text-emerald-400 rounded-lg text-xs font-bold">TELEGRAM_BOT_TOKEN=your_bot_token_here</code><br>
+                                    <code class="inline-block mt-1 px-3 py-1.5 bg-slate-800 text-emerald-400 rounded-lg text-xs font-bold">TELEGRAM_BOT_USERNAME=YourBotUsername</code><br>
+                                    <code class="inline-block mt-1 px-3 py-1.5 bg-slate-800 text-amber-400 rounded-lg text-xs font-bold">TELEGRAM_WEBHOOK_SECRET=your_random_secret_here</code>
+                                </span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">3</span>
+                                <span>ตั้ง Webhook โดยรันคำสั่ง: <code class="px-3 py-1.5 bg-slate-800 text-emerald-400 rounded-lg text-xs font-bold">php artisan telegram:set-webhook</code></span>
+                            </li>
+                            <li class="flex gap-3">
+                                <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">4</span>
+                                <span>ตั้ง Cron Job (Shared Hosting) สำหรับสรุปประจำวัน:<br>
+                                    <code class="inline-block mt-1 px-3 py-1.5 bg-slate-800 text-amber-400 rounded-lg text-xs font-bold break-all">GET /telegram-daily-summary/{secret} ← ทุกวัน 07:00</code><br>
+                                    <code class="inline-block mt-1 px-3 py-1.5 bg-slate-800 text-amber-400 rounded-lg text-xs font-bold break-all">GET /telegram-duty-roster/{secret} ← ทุกวัน 07:00</code>
+                                </span>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- Features List -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="bell-ring" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">แจ้งเตือนอัตโนมัติ</p>
+                                <p class="text-[10px] text-slate-400 font-medium mt-0.5">ส่งแจ้งเตือนเมื่อมีใบลาใหม่ / สถานะเปลี่ยน</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Quick Reply อนุมัติ/ปฏิเสธ</p>
+                                <p class="text-[10px] text-slate-400 font-medium mt-0.5">กดปุ่มอนุมัติ/ไม่อนุมัติจาก Telegram ได้ทันที</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Daily Summary</p>
+                                <p class="text-[10px] text-slate-400 font-medium mt-0.5">สรุปการลาประจำวันส่งให้ผู้บริหารทุกเช้า</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">Duty Roster แจ้งเตือน</p>
+                                <p class="text-[10px] text-slate-400 font-medium mt-0.5">แจ้งเตือนผู้อยู่เวรวันนี้ + พรุ่งนี้ทุกเช้า</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Linked Users Table -->
+                    @php
+                        $linkedUsers = \App\Models\User::whereNotNull('telegram_chat_id')->orderBy('name')->get();
+                    @endphp
+                    @if($linkedUsers->isNotEmpty())
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                </div>
+                                <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest">ผู้ใช้ที่เชื่อมต่อ Telegram ({{ $linkedUsers->count() }})</h4>
+                            </div>
+                            <div class="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-slate-100/50">
+                                            <th class="text-left px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">ชื่อ</th>
+                                            <th class="text-left px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">ตำแหน่ง</th>
+                                            <th class="text-left px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Chat ID</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @foreach($linkedUsers as $lu)
+                                            <tr class="hover:bg-white/80 transition-colors">
+                                                <td class="px-4 py-3 font-bold text-slate-700">{{ $lu->rank }} {{ $lu->name }}</td>
+                                                <td class="px-4 py-3 text-slate-500 text-xs">{{ $lu->role }}</td>
+                                                <td class="px-4 py-3 text-slate-400 font-mono text-xs">{{ $lu->telegram_chat_id }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <!-- Organization Settings (Coming Soon) -->
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 relative z-20">
             <div class="glass-panel rounded-[3rem] overflow-hidden animate-slide-up setting-card" style="animation-delay: 0.6s">

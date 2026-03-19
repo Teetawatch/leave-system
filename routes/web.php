@@ -188,6 +188,10 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Telegram Link/Unlink
+    Route::post('/profile/telegram-link', [ProfileController::class, 'generateTelegramLink'])->name('profile.telegram-link');
+    Route::post('/profile/telegram-unlink', [ProfileController::class, 'unlinkTelegram'])->name('profile.telegram-unlink');
+
     // Leave Routes
     Route::put('/leave-request/{leaveRequest}/cancel', [LeaveRequestController::class, 'cancel'])->name('leave-request.cancel');
     Route::get('/leave-request/{leaveRequest}/pdf', [LeaveRequestController::class, 'exportPdf'])->name('leave-request.pdf');
@@ -289,8 +293,41 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
 });
 
 // =============================================================================
+// Telegram Bot Webhook (No auth - verified by secret token in header)
+// =============================================================================
+
+Route::post('/telegram/webhook/{secret}', [App\Http\Controllers\TelegramBotController::class, 'webhook'])
+    ->name('telegram.webhook');
+
+// =============================================================================
 // External Cron Routes (Shared Hosting Workaround)
 // =============================================================================
+
+// Telegram Daily Summary (call daily at 07:00)
+Route::get('/telegram-daily-summary/{secret}', function ($secret) {
+    if ($secret !== config('services.telegram.webhook_secret')) {
+        abort(403, 'Unauthorized');
+    }
+    $exitCode = Artisan::call('telegram:daily-summary');
+    return response()->json([
+        'message' => 'Telegram daily summary executed',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output(),
+    ]);
+});
+
+// Telegram Duty Roster Notify (call daily at 07:00)
+Route::get('/telegram-duty-roster/{secret}', function ($secret) {
+    if ($secret !== config('services.telegram.webhook_secret')) {
+        abort(403, 'Unauthorized');
+    }
+    $exitCode = Artisan::call('telegram:duty-roster-notify');
+    return response()->json([
+        'message' => 'Telegram duty roster notification executed',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output(),
+    ]);
+});
 
 Route::get('/queue-work/{secret}', function ($secret) {
     // Check if the secret matches the one in .env
@@ -313,3 +350,24 @@ Route::get('/queue-work/{secret}', function ($secret) {
 
 require __DIR__ . '/auth.php';
 
+
+// =============================================================================
+// Admin Telegram Webhook Setup (Secure Method)
+// =============================================================================
+ 
+Route::get('/admin/telegram/set-webhook/{secret}', function ($secret) {
+    // ตรวจสอบ secret key
+    if ($secret !== 'nass_admin_2026_secret') {
+        abort(403, 'Unauthorized');
+    }
+    
+    // รันคำสั่ง set webhook
+    $exitCode = Artisan::call('telegram:set-webhook');
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Telegram Webhook set successfully',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output()
+    ]);
+})->name('admin.telegram.set-webhook');

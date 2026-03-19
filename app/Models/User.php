@@ -31,6 +31,8 @@ class User extends Authenticatable
         'deputy_id',
         'manager_id',
         'fcm_token',
+        'telegram_chat_id',
+        'telegram_link_token',
         'avatar',
         'signature',
         'is_registered',

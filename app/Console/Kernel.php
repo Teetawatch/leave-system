@@ -12,6 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Telegram: ส่งสรุปการลาประจำวัน ทุกวัน 07:00 น.
+        $schedule->command('telegram:daily-summary')->dailyAt('07:00');
+
+        // Telegram: แจ้งเตือนตารางเวรประจำวัน ทุกวัน 07:00 น.
+        $schedule->command('telegram:duty-roster-notify')->dailyAt('07:00');
     }
 
     /**

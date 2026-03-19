@@ -37,6 +37,7 @@ class UserResource extends JsonResource
                     'name' => $this->manager->name,
                 ];
             }),
+            'telegram_linked' => !empty($this->telegram_chat_id),
         ];
     }
 

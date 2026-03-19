@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -60,6 +61,36 @@ class ProfileController extends Controller
         $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Generate a Telegram link token and return the deep link URL.
+     */
+    public function generateTelegramLink(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $token = Str::random(32);
+        $user->update(['telegram_link_token' => $token]);
+
+        $botUsername = env('TELEGRAM_BOT_USERNAME', 'NassLeaveBot');
+        $deepLink = "https://t.me/{$botUsername}?start={$token}";
+
+        return Redirect::route('profile.edit')
+            ->with('telegram_link', $deepLink)
+            ->with('status', 'telegram-link-generated');
+    }
+
+    /**
+     * Unlink Telegram account.
+     */
+    public function unlinkTelegram(Request $request): RedirectResponse
+    {
+        $request->user()->update([
+            'telegram_chat_id' => null,
+            'telegram_link_token' => null,
+        ]);
+
+        return Redirect::route('profile.edit')->with('status', 'telegram-unlinked');
     }
 
     /**

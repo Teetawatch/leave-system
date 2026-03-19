@@ -134,6 +134,76 @@
                         </div>
                     </div>
 
+                    <!-- Telegram Bot Connection -->
+                    <div class="bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-xl shadow-sky-900/5 border border-white overflow-hidden group/card hover:shadow-2xl hover:shadow-sky-900/10 transition-all duration-300">
+                        <div class="px-6 py-5 border-b border-slate-100/50 bg-white/40 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100 text-sky-500 flex items-center justify-center shadow-sm group-hover/card:scale-110 group-hover/card:rotate-3 transition-transform">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                            </div>
+                            <h3 class="font-extrabold text-slate-800 text-sm tracking-tight">Telegram แจ้งเตือน</h3>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            @if($user->telegram_chat_id)
+                                <div class="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-emerald-700">เชื่อมต่อแล้ว</p>
+                                        <p class="text-[10px] text-emerald-600 font-medium truncate">Chat ID: {{ $user->telegram_chat_id }}</p>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] text-slate-500 font-medium leading-relaxed">
+                                    คุณจะได้รับแจ้งเตือนการลา/อนุมัติ, สรุปประจำวัน และตารางเวรผ่าน Telegram
+                                </p>
+                                <form method="POST" action="{{ route('profile.telegram-unlink') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl border border-rose-200 transition-colors flex items-center justify-center gap-2"
+                                        onclick="return confirm('ยืนยันยกเลิกการเชื่อมต่อ Telegram?')">
+                                        <i data-lucide="unlink" class="w-3.5 h-3.5"></i>
+                                        ยกเลิกการเชื่อมต่อ
+                                    </button>
+                                </form>
+                            @else
+                                <div class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                        <i data-lucide="link" class="w-4 h-4 text-slate-400"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-600">ยังไม่ได้เชื่อมต่อ</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">เชื่อมต่อเพื่อรับแจ้งเตือนผ่าน Telegram</p>
+                                    </div>
+                                </div>
+
+                                @if(session('telegram_link'))
+                                    <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl space-y-2">
+                                        <p class="text-[11px] font-bold text-sky-700">กดลิงก์ด้านล่างเพื่อเชื่อมต่อ:</p>
+                                        <a href="{{ session('telegram_link') }}" target="_blank"
+                                           class="w-full px-4 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold rounded-xl transition-colors text-center flex items-center justify-center gap-2">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                                            เปิด Telegram Bot
+                                        </a>
+                                        <p class="text-[10px] text-sky-600 font-medium">ลิงก์จะหมดอายุเมื่อใช้งานแล้ว</p>
+                                    </div>
+                                @else
+                                    <form method="POST" action="{{ route('profile.telegram-link') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full px-4 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                                            เชื่อมต่อ Telegram
+                                        </button>
+                                    </form>
+                                @endif
+
+                                <div class="p-3 bg-slate-50/80 border border-slate-100 rounded-xl">
+                                    <p class="text-[10px] text-slate-500 font-medium leading-relaxed">
+                                        💡 เชื่อมต่อ Telegram เพื่อรับแจ้งเตือน: ใบลาใหม่, สถานะอนุมัติ, สรุปประจำวัน, ตารางเวร และสามารถอนุมัติ/ปฏิเสธผ่าน Telegram ได้ทันที
+                                    </p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Status Tip Card -->
                     <div class="bg-slate-800 rounded-[2rem] border border-slate-700 p-6 sm:p-8 text-white relative overflow-hidden group shadow-2xl shadow-slate-900/50">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-bl-full -mr-10 -mt-10 blur-xl group-hover:scale-150 transition-transform duration-700"></div>

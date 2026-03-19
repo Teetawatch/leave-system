@@ -38,6 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/profile', [AuthController::class, 'updateProfile']);
     Route::post('/fcm-token', [AuthController::class, 'updateFcmToken']);
+    Route::post('/telegram-link', [AuthController::class, 'generateTelegramLink']);
+    Route::post('/telegram-unlink', [AuthController::class, 'unlinkTelegram']);
 
     // -------------------------------------------------------------------------
     // Leave Types
