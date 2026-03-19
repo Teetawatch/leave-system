@@ -80,10 +80,6 @@ class GuardChangeRequestController extends Controller
             Log::error("Guard Change Request: Replacement user ID {$validated['replacement_user_id']} not found.");
         }
 
-        // Send LINE notification to replacement user
-        $guardChangeRequest->load(['user', 'replacementUser']);
-        $this->guardChangeService->sendNewRequestNotification($guardChangeRequest);
-
         return response()->json([
             'success' => true,
             'message' => 'ส่งคำขอเปลี่ยนยามเรียบร้อยแล้ว',

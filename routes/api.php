@@ -8,8 +8,6 @@ use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\LeaveBalanceController;
 use App\Http\Controllers\Api\GuardChangeRequestController;
-use App\Http\Controllers\Api\LineStatusController;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -26,51 +24,6 @@ use App\Http\Controllers\Api\LineStatusController;
 // =============================================================================
 
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/line/webhook', [\App\Http\Controllers\Api\LineController::class, 'webhook']);
-Route::post('/line/webhook2', function (Illuminate\Http\Request $request) {
-    \Log::info("LINE Bot 2 Webhook Received", [
-        'headers' => $request->headers->all(),
-        'body' => $request->getContent()
-    ]);
-
-    // ตอบกลับด้วยข้อความทดสอบเพื่อหา group id
-    $data = json_decode($request->getContent(), true);
-    $events = $data['events'] ?? [];
-    
-    foreach ($events as $event) {
-        $replyToken = $event['replyToken'] ?? null;
-        $sourceType = $event['source']['type'] ?? 'user';
-        
-        if ($sourceType === 'group') {
-            $groupId = $event['source']['groupId'] ?? null;
-            \Log::info("Bot 2 detected group: {$groupId}");
-            
-            if ($replyToken && ($event['message']['text'] ?? '') === 'get id') {
-                $client = new \GuzzleHttp\Client();
-                try {
-                    $client->post('https://api.line.me/v2/bot/message/reply', [
-                        'headers' => [
-                            'Content-Type' => 'application/json',
-                            'Authorization' => 'Bearer ' . env('LINE_CHANNEL_ACCESS_TOKEN_2'),
-                        ],
-                        'json' => [
-                            'replyToken' => $replyToken,
-                            'messages' => [
-                                ['type' => 'text', 'text' => "Group ID: {$groupId}"],
-                            ],
-                        ],
-                    ]);
-                    \Log::info("Bot 2 replied with group ID: {$groupId}");
-                } catch (\Exception $e) {
-                    \Log::error("Bot 2 reply failed: " . $e->getMessage());
-                }
-            }
-        }
-    }
-    
-    return response('OK', 200);
-});
-Route::get('/line/status', [LineStatusController::class, 'check']);
 
 // =============================================================================
 // PROTECTED ROUTES (Require Sanctum Token)

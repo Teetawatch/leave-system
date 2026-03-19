@@ -18,12 +18,6 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-        \App\Events\LeaveRequestSubmitted::class => [
-            \App\Listeners\SendLineLeaveNotification::class,
-        ],
-        \App\Events\LeaveRequestStatusChanged::class => [
-            \App\Listeners\SendLineStatusNotification::class,
-        ],
     ];
 
     /**
