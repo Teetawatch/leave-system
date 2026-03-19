@@ -298,14 +298,37 @@ class TelegramBotController extends Controller
             return;
         }
 
-        $text = "📋 <b>ใบลาที่รอการอนุมัติจากคุณ</b>\n\n";
-        foreach ($pendingRequests as $i => $lr) {
-            $num = $i + 1;
-            $requesterName = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
-            $text .= "{$num}. {$requesterName}\n"
-                . "   📝 {$lr->leaveType->name} ({$lr->total_days} วัน)\n"
-                . "   📅 {$lr->start_date->format('d/m/Y')} - {$lr->end_date->format('d/m/Y')}\n\n";
-        }
+        $studentCourses  = ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.'];
+        $pendingCivil   = $pendingRequests->filter(fn($lr) => !in_array($lr->user->department ?? '', $studentCourses));
+        $pendingCourse  = $pendingRequests->filter(fn($lr) => in_array($lr->user->department ?? '', $studentCourses));
+
+        $text = "📋 <b>ใบลาที่รอการอนุมัติจากคุณ</b> ({$pendingRequests->count()} ใบ)\n"
+            . "━━━━━━━━━━━━━━━━━━\n";
+
+        $renderPending = function ($items, string $label) use (&$text) {
+            if ($items->isEmpty()) return;
+            $text .= "\n{$label} ({$items->count()} ใบ)\n";
+            foreach ($items->values() as $i => $lr) {
+                $num = $i + 1;
+                $requesterName = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
+                $startStr = $lr->start_date->format('d/m/Y');
+                $endStr   = $lr->end_date->format('d/m/Y');
+
+                $periodLabel = '';
+                if ($lr->temporary_leave_period === 'morning') {
+                    $periodLabel = ' (ช่วงเช้า)';
+                } elseif ($lr->temporary_leave_period === 'afternoon') {
+                    $periodLabel = ' (ช่วงบ่าย)';
+                }
+
+                $text .= "{$num}. {$requesterName}\n"
+                    . "   📝 {$lr->leaveType->name}{$periodLabel} ({$lr->total_days} วัน)\n"
+                    . "   📅 {$startStr} — {$endStr}\n\n";
+            }
+        };
+
+        $renderPending($pendingCivil,  '👔 <b>ข้าราชการ</b>');
+        $renderPending($pendingCourse, '🎓 <b>หลักสูตร</b>');
 
         $this->telegram->sendMessage($chatId, $text);
 
@@ -333,38 +356,47 @@ class TelegramBotController extends Controller
             return;
         }
 
+        $studentCourses = ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.'];
+        $onLeaveCivil  = $onLeave->filter(fn($lr) => !in_array($lr->user->department ?? '', $studentCourses));
+        $onLeaveCourse = $onLeave->filter(fn($lr) => in_array($lr->user->department ?? '', $studentCourses));
+
         $text = "📅 <b>ผู้ลาประจำวันที่ {$todayStr}</b>\n"
             . "👥 รวม {$onLeave->count()} คน\n"
-            . "━━━━━━━━━━━━━━━━━━\n\n";
+            . "━━━━━━━━━━━━━━━━━━\n";
 
-        foreach ($onLeave as $i => $lr) {
-            $num = $i + 1;
-            $name = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
-            $startStr = $this->formatThaiDate($lr->start_date);
-            $endStr   = $this->formatThaiDate($lr->end_date);
-            $isTemporary = $lr->leaveType->slug === 'temporary';
+        $renderGroup = function ($items, string $label) use (&$text) {
+            if ($items->isEmpty()) return;
+            $text .= "\n{$label} ({$items->count()} คน)\n";
+            foreach ($items->values() as $i => $lr) {
+                $num  = $i + 1;
+                $name = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
+                $startStr = $this->formatThaiDate($lr->start_date);
+                $endStr   = $this->formatThaiDate($lr->end_date);
+                $isTemporary = $lr->leaveType->slug === 'temporary';
 
-            $text .= "{$num}. <b>{$name}</b>\n"
-                . "   📝 {$lr->leaveType->name}\n";
+                $text .= "{$num}. <b>{$name}</b>\n"
+                    . "   📝 {$lr->leaveType->name}";
 
-            if ($isTemporary) {
-                $period = match ($lr->temporary_leave_period) {
-                    'morning'   => 'ช่วงเช้า (ครึ่งวันเช้า)',
-                    'afternoon' => 'ช่วงบ่าย (ครึ่งวันบ่าย)',
-                    default     => 'ลาชั่วกาล',
-                };
-                $text .= "   ⏰ {$period}\n"
-                    . "   📆 {$startStr}\n";
-            } elseif ($lr->start_date->isSameDay($lr->end_date)) {
-                $text .= "   📆 {$startStr}\n"
-                    . "   ⏱ {$lr->total_days} วัน\n";
-            } else {
-                $text .= "   📆 {$startStr} — {$endStr}\n"
-                    . "   ⏱ {$lr->total_days} วัน\n";
+                if ($isTemporary) {
+                    $period = match ($lr->temporary_leave_period) {
+                        'morning'   => ' (ช่วงเช้า)',
+                        'afternoon' => ' (ช่วงบ่าย)',
+                        default     => '',
+                    };
+                    $text .= "{$period}\n"
+                        . "   📆 {$startStr}\n";
+                } elseif ($lr->start_date->isSameDay($lr->end_date)) {
+                    $text .= "\n   📆 {$startStr} ({$lr->total_days} วัน)\n";
+                } else {
+                    $text .= "\n   📆 {$startStr} — {$endStr} ({$lr->total_days} วัน)\n";
+                }
+
+                $text .= "\n";
             }
+        };
 
-            $text .= "\n";
-        }
+        $renderGroup($onLeaveCivil,  '👔 <b>ข้าราชการ</b>');
+        $renderGroup($onLeaveCourse, '🎓 <b>หลักสูตร</b>');
 
         $this->telegram->sendMessage($chatId, $text);
     }

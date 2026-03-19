@@ -42,14 +42,43 @@ class TelegramDailySummary extends Command
             . "📅 {$todayStr}\n"
             . "━━━━━━━━━━━━━━━━━━\n\n";
 
-        // On leave today
+        // Categorize: หลักสูตร vs ข้าราชการ
+        $studentCourses = ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.'];
+        $onLeaveCivil   = $onLeaveToday->filter(fn($lr) => !in_array($lr->user->department ?? '', $studentCourses));
+        $onLeaveCourse  = $onLeaveToday->filter(fn($lr) => in_array($lr->user->department ?? '', $studentCourses));
+
         $text .= "🏖 <b>ผู้ลาวันนี้ ({$onLeaveToday->count()} คน)</b>\n";
         if ($onLeaveToday->isEmpty()) {
             $text .= "   ไม่มี\n";
         } else {
-            foreach ($onLeaveToday as $lr) {
-                $name = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
-                $text .= "   • {$name} — {$lr->leaveType->name}\n";
+            $renderLeaveList = function ($items) use (&$text) {
+                foreach ($items as $lr) {
+                    $name = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
+                    $startStr = $lr->start_date->locale('th')->translatedFormat('j M Y');
+                    $endStr   = $lr->end_date->locale('th')->translatedFormat('j M Y');
+                    $days     = $lr->total_days;
+                    $leaveName = $lr->leaveType->name;
+
+                    $periodLabel = '';
+                    if ($lr->temporary_leave_period === 'morning') {
+                        $periodLabel = ' (ช่วงเช้า)';
+                    } elseif ($lr->temporary_leave_period === 'afternoon') {
+                        $periodLabel = ' (ช่วงบ่าย)';
+                    }
+
+                    $text .= "   • {$name}\n"
+                        . "     📋 {$leaveName}{$periodLabel}\n"
+                        . "     📅 {$startStr} — {$endStr} ({$days} วัน)\n";
+                }
+            };
+
+            if ($onLeaveCivil->isNotEmpty()) {
+                $text .= "\n👔 <b>ข้าราชการ ({$onLeaveCivil->count()} คน)</b>\n";
+                $renderLeaveList($onLeaveCivil);
+            }
+            if ($onLeaveCourse->isNotEmpty()) {
+                $text .= "\n🎓 <b>หลักสูตร ({$onLeaveCourse->count()} คน)</b>\n";
+                $renderLeaveList($onLeaveCourse);
             }
         }
 
