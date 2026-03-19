@@ -394,9 +394,9 @@
 
                 <!-- Data Grid Matix - Students -->
                 <div class="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="p-10 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
                         <div class="flex items-center gap-5">
-                            <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="database" class="w-6 h-6"></i>
                             </div>
                             <div>
@@ -404,6 +404,26 @@
                                 <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">วิเคราะห์ข้อมูล
                                     ({{ number_format($logs->total()) }} รายการ)</p>
                             </div>
+                        </div>
+                        {{-- Sort Buttons --}}
+                        @php $baseQuery = array_merge(request()->query(), ['active_tab' => 'students']); @endphp
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-1">เรียงตาม</span>
+                            <a href="{{ route('attendance-reports.index', array_merge($baseQuery, ['sort' => 'date_desc'])) }}"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($sort ?? 'date_desc') === 'date_desc' ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                                วันที่ล่าสุด
+                            </a>
+                            <a href="{{ route('attendance-reports.index', array_merge($baseQuery, ['sort' => 'earliest'])) }}"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($sort ?? '') === 'earliest' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
+                                <i data-lucide="sunrise" class="w-3.5 h-3.5"></i>
+                                มาเช้าสุด
+                            </a>
+                            <a href="{{ route('attendance-reports.index', array_merge($baseQuery, ['sort' => 'latest'])) }}"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($sort ?? '') === 'latest' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
+                                <i data-lucide="alarm-clock" class="w-3.5 h-3.5"></i>
+                                มาสายสุด
+                            </a>
                         </div>
                     </div>
 
@@ -824,18 +844,38 @@
 
                 <!-- Employee Matrix Content (Table) -->
                 <div class="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                            <div class="flex items-center gap-5">
-                                <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
-                                    <i data-lucide="database" class="w-6 h-6"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold text-slate-900 tracking-tight">บันทึกการเข้า-ออก</h3>
-                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">วิเคราะห์ข้อมูล
-                                        ({{ number_format($employeeLogs->total()) }} รายการ)</p>
-                                </div>
+                    <div class="p-10 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
+                        <div class="flex items-center gap-5">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="database" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 tracking-tight">บันทึกการเข้า-ออก (บุคลากร)</h3>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">วิเคราะห์ข้อมูล
+                                    ({{ number_format($employeeLogs->total()) }} รายการ)</p>
                             </div>
                         </div>
+                        {{-- Sort Buttons --}}
+                        @php $empBaseQuery = array_merge(request()->query(), ['active_tab' => 'employees']); @endphp
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-1">เรียงตาม</span>
+                            <a href="{{ route('attendance-reports.index', array_merge($empBaseQuery, ['emp_sort' => 'date_desc'])) }}"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($empSort ?? 'date_desc') === 'date_desc' ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                                วันที่ล่าสุด
+                            </a>
+                            <a href="{{ route('attendance-reports.index', array_merge($empBaseQuery, ['emp_sort' => 'earliest'])) }}"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($empSort ?? '') === 'earliest' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
+                                <i data-lucide="sunrise" class="w-3.5 h-3.5"></i>
+                                มาเช้าสุด
+                            </a>
+                            <a href="{{ route('attendance-reports.index', array_merge($empBaseQuery, ['emp_sort' => 'latest'])) }}"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all {{ ($empSort ?? '') === 'latest' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
+                                <i data-lucide="alarm-clock" class="w-3.5 h-3.5"></i>
+                                มาสายสุด
+                            </a>
+                        </div>
+                    </div>
 
                         <div class="overflow-x-auto">
                             <table class="w-full">

@@ -25,6 +25,8 @@ class AttendanceReportController extends Controller
         $courseId = $request->input('course_id');
         $startDate = $request->input('start_date', now()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->format('Y-m-d'));
+        $sort = $request->input('sort', 'date_desc'); // date_desc | earliest | latest
+        $empSort = $request->input('emp_sort', 'date_desc'); // date_desc | earliest | latest
 
         // Get courses for filter dropdown
         $courses = FaCourse::orderBy('created_at', 'desc')->get();
@@ -38,10 +40,22 @@ class AttendanceReportController extends Controller
             });
         }
 
-        $logs = $studentLogsQuery->select('student_id', \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'))
-            ->groupBy('student_id', 'scan_date')
-            ->orderBy('scan_date', 'desc')
-            ->paginate(20);
+        // Apply sort: earliest/latest sorts by the morning (first) scan time of each grouped row
+        $studentLogsQuery->select(
+            'student_id',
+            \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'),
+            \Illuminate\Support\Facades\DB::raw('MIN(scan_time) as first_scan_time')
+        )->groupBy('student_id', 'scan_date');
+
+        if ($sort === 'earliest') {
+            $studentLogsQuery->orderBy('first_scan_time', 'asc');
+        } elseif ($sort === 'latest') {
+            $studentLogsQuery->orderBy('first_scan_time', 'desc');
+        } else {
+            $studentLogsQuery->orderBy('scan_date', 'desc');
+        }
+
+        $logs = $studentLogsQuery->paginate(20);
 
         // Get active leave requests for STUDENTS — loaded before transform so it can be used inside
         $studentUsersOnLeave = \App\Models\User::whereHas('leaveRequests', function ($q) use ($startDate, $endDate) {
@@ -207,10 +221,22 @@ class AttendanceReportController extends Controller
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
         // Group employee logs by employee_id and scan_date for morning/afternoon view
-        $employeeLogsGrouped = $employeeLogsQuery->select('employee_id', \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'))
-            ->groupBy('employee_id', 'scan_date')
-            ->orderBy('scan_date', 'desc')
-            ->paginate(20, ['*'], 'emp_page');
+        $employeeLogsGrouped = $employeeLogsQuery->select(
+                'employee_id',
+                \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'),
+                \Illuminate\Support\Facades\DB::raw('MIN(scan_time) as first_scan_time')
+            )
+            ->groupBy('employee_id', 'scan_date');
+
+        if ($empSort === 'earliest') {
+            $employeeLogsGrouped->orderBy('first_scan_time', 'asc');
+        } elseif ($empSort === 'latest') {
+            $employeeLogsGrouped->orderBy('first_scan_time', 'desc');
+        } else {
+            $employeeLogsGrouped->orderBy('scan_date', 'desc');
+        }
+
+        $employeeLogsGrouped = $employeeLogsGrouped->paginate(20, ['*'], 'emp_page');
 
         // Map grouped items to include morning and afternoon scan details
         $employeeLogsGrouped->getCollection()->transform(function ($item) use ($leaveRequests, $usersOnLeave) {
@@ -382,12 +408,46 @@ class AttendanceReportController extends Controller
         $absentEmployeeCount = $trueAbsentEmployees->count();
         $onLeaveCount = $onLeaveEmployees->count();
 
+        // ===== Earliest / Latest Arrival — Students =====
+        $earliestStudentLog = FaStudentAttendanceLog::with('student.course')
+            ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('scan_type', 'in')
+            ->whereRaw("TIME(scan_time) < '12:00:00'")
+            ->when($courseId, fn($q) => $q->whereHas('student', fn($s) => $s->where('course_id', $courseId)))
+            ->orderBy('scan_time', 'asc')
+            ->first();
+
+        $latestStudentLog = FaStudentAttendanceLog::with('student.course')
+            ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('scan_type', 'in')
+            ->whereRaw("TIME(scan_time) < '12:00:00'")
+            ->when($courseId, fn($q) => $q->whereHas('student', fn($s) => $s->where('course_id', $courseId)))
+            ->orderBy('scan_time', 'desc')
+            ->first();
+
+        // ===== Earliest / Latest Arrival — Employees =====
+        $earliestEmployeeLog = FaAttendanceLog::with('employee.user')
+            ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('scan_type', 'in')
+            ->whereRaw("TIME(scan_time) < '12:00:00'")
+            ->orderBy('scan_time', 'asc')
+            ->first();
+
+        $latestEmployeeLog = FaAttendanceLog::with('employee.user')
+            ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->where('scan_type', 'in')
+            ->whereRaw("TIME(scan_time) < '12:00:00'")
+            ->orderBy('scan_time', 'desc')
+            ->first();
+
         return view('attendance-reports.index', compact(
             'logs',
             'courses',
             'courseId',
             'startDate',
             'endDate',
+            'sort',
+            'empSort',
             'totalScansCount',
             'uniqueStudentsCount',
             'totalStudents',
@@ -408,7 +468,12 @@ class AttendanceReportController extends Controller
             'lateEmployeeCount',
             'lateEmployeeCount',
             'onLeaveCount',
-            'onLeaveEmployees'
+            'onLeaveEmployees',
+            // Earliest / Latest Arrival
+            'earliestStudentLog',
+            'latestStudentLog',
+            'earliestEmployeeLog',
+            'latestEmployeeLog'
         ));
     }
 
