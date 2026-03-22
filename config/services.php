@@ -41,6 +41,21 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Telegram Bot
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for the Telegram Bot used for leave/approval notifications,
+    | quick reply approve/reject buttons, and daily summary messages.
+    |
+    */
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET', 'telegram-webhook-secret'),
+    ],
+
     'face_attendance' => [
         'base_url' => env('FACE_ATTENDANCE_API_URL', 'https://nass.ac.th/faceattendance/api/v1/reports'),
         'api_key' => env('FACE_ATTENDANCE_API_KEY'),

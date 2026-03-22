@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Notifications\GuardChangeStatusUpdated;
 use App\Notifications\NewGuardChangeNotification;
 use App\Services\FCMService;
-use App\Services\LineService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -17,11 +16,8 @@ use Exception;
 
 class GuardChangeApprovalService
 {
-    protected $lineService;
-
-    public function __construct(LineService $lineService)
+    public function __construct()
     {
-        $this->lineService = $lineService;
     }
 
     /**
@@ -100,7 +96,7 @@ class GuardChangeApprovalService
             'status' => 'approved',
             'approver_id' => $actor->id,
             'approval_signature' => $signaturePath,
-            'approval_comment' => $comment ?: ($actor->line_user_id ? 'อนุมัติผ่าน LINE' : null),
+            'approval_comment' => $comment ?: null,
             'approved_at' => now(),
         ]);
 
@@ -117,13 +113,7 @@ class GuardChangeApprovalService
             );
         }
 
-        // Send LINE notification to requester
-        $this->sendStatusUpdateToLine($guardChange, $requester, 'approved', $actor);
-
-        // Notify Deputy Directors (next step) via LINE
-        $this->notifyNextApproverViaLine($guardChange, 'approved');
-
-        // Also notify via FCM/DB
+        // Notify Deputy Directors (next step) via FCM/DB
         $deputyDirectors = User::where('role', 'deputy_director')->get();
         foreach ($deputyDirectors as $deputy) {
             $deputy->notify(new NewGuardChangeNotification($guardChange, $requester));
@@ -164,7 +154,7 @@ class GuardChangeApprovalService
             'status' => 'director_approved',
             'director_approver_id' => $actor->id,
             'director_signature' => $signaturePath,
-            'director_comment' => $comment ?: ($actor->line_user_id ? 'อนุมัติผ่าน LINE' : null),
+            'director_comment' => $comment ?: null,
             'director_approved_at' => now(),
         ]);
 
@@ -181,13 +171,7 @@ class GuardChangeApprovalService
             );
         }
 
-        // Send LINE status update to requester
-        $this->sendStatusUpdateToLine($guardChange, $requester, 'director_approved', $actor);
-
-        // Notify Directors (final step) via LINE
-        $this->notifyNextApproverViaLine($guardChange, 'director_approved');
-
-        // Also notify via FCM/DB
+        // Notify Directors (final step) via FCM/DB
         $directors = User::where('role', 'director')->get();
         foreach ($directors as $director) {
             $director->notify(new NewGuardChangeNotification($guardChange, $requester));
@@ -223,7 +207,7 @@ class GuardChangeApprovalService
             'status' => 'fully_approved',
             'final_approver_id' => $actor->id,
             'final_signature' => $signaturePath,
-            'final_comment' => $comment ?: ($actor->line_user_id ? 'อนุมัติผ่าน LINE' : null),
+            'final_comment' => $comment ?: null,
             'final_approved_at' => now(),
         ]);
 
@@ -240,23 +224,14 @@ class GuardChangeApprovalService
             );
         }
 
-        // Send LINE status update to requester
-        $this->sendStatusUpdateToLine($guardChange, $requester, 'fully_approved', $actor);
-
         return true;
     }
 
     /**
      * Unified approve method - determines which step based on current status
      */
-    public function approve(GuardChangeRequest $guardChange, User $actor, $comment = null, $isFromLine = false)
+    public function approve(GuardChangeRequest $guardChange, User $actor, $comment = null)
     {
-        // Check if actor has a saved signature when approving via LINE
-        if ($isFromLine && !$actor->signature) {
-            $profileUrl = url('/profile');
-            throw new Exception("⚠️ คุณยังไม่มีลายเซ็นในระบบ\n\nกรุณาอัปโหลดรูปภาพลายเซ็นที่หน้าโปรไฟล์ก่อนอนุมัติผ่าน LINE\n\n👉 {$profileUrl}");
-        }
-
         $status = $guardChange->status;
 
         switch ($status) {
@@ -281,7 +256,7 @@ class GuardChangeApprovalService
         }
 
         $previousStatus = $guardChange->status;
-        $rejectComment = $comment ?: ($actor->line_user_id ? 'ปฏิเสธผ่าน LINE' : 'ไม่ได้ระบุเหตุผล');
+        $rejectComment = $comment ?: 'ไม่ได้ระบุเหตุผล';
 
         // Determine which field to update based on step
         $updateData = [
@@ -317,14 +292,11 @@ class GuardChangeApprovalService
             );
         }
 
-        // Send LINE status update to requester
-        $this->sendStatusUpdateToLine($guardChange, $requester, 'rejected', $actor);
-
         return true;
     }
 
     /**
-     * Handle auto-signature for LINE approvals
+     * Handle auto-signature
      */
     protected function handleAutoSignature(GuardChangeRequest $guardChange, User $actor, $prefix = 'guard_sig')
     {
@@ -336,354 +308,6 @@ class GuardChangeApprovalService
         }
 
         return null;
-    }
-
-    /**
-     * Send LINE Flex Message to notify the next approver with approve/reject buttons
-     */
-    public function notifyNextApproverViaLine(GuardChangeRequest $guardChange, string $currentStatus)
-    {
-        $guardChange->load(['user', 'replacementUser']);
-        $requester = $guardChange->user;
-        $replacement = $guardChange->replacementUser;
-        $dutyPosition = self::DUTY_POSITIONS[$guardChange->duty_position] ?? $guardChange->duty_position;
-
-        if ($currentStatus === 'pending') {
-            // Single target: replacement user — use individual push
-            if ($replacement && $replacement->line_user_id) {
-                $this->sendGuardChangeApprovalFlex($replacement, $guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
-            }
-            return;
-        }
-
-        if ($currentStatus === 'approved') {
-            $recipients = User::where('role', 'deputy_director')->whereNotNull('line_user_id')->get();
-        } elseif ($currentStatus === 'director_approved') {
-            $recipients = User::where('role', 'director')->whereNotNull('line_user_id')->get();
-        } else {
-            return;
-        }
-
-        if ($recipients->isEmpty()) return;
-
-        $lineUserIds = $recipients->pluck('line_user_id')->values()->all();
-
-        if (count($lineUserIds) === 1) {
-            $this->sendGuardChangeApprovalFlex($recipients->first(), $guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
-            return;
-        }
-
-        // Use multicast for multiple recipients — 1 API call instead of N push calls
-        $flexContents = $this->buildGuardChangeApprovalFlexContents($guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
-        $this->lineService->multicastFlexMessage(
-            $lineUserIds,
-            "คำขอเปลี่ยนเวรยามจาก {$requester->name}",
-            $flexContents
-        );
-    }
-
-    /**
-     * Send a Flex Message for guard change approval request
-     */
-    protected function sendGuardChangeApprovalFlex($recipient, $guardChange, $requester, $replacement, $dutyPosition, $currentStatus)
-    {
-        $flexContents = $this->buildGuardChangeApprovalFlexContents($guardChange, $requester, $replacement, $dutyPosition, $currentStatus);
-
-        $this->lineService->sendFlexMessage(
-            $recipient->line_user_id,
-            "คำขอเปลี่ยนเวรยามจาก {$requester->name}",
-            $flexContents
-        );
-    }
-
-    protected function buildGuardChangeApprovalFlexContents($guardChange, $requester, $replacement, $dutyPosition, $currentStatus): array
-    {
-        $stepLabel = '';
-        if ($currentStatus === 'pending') {
-            $stepLabel = 'ขั้นตอนที่ 1: ผู้เปลี่ยนแทนตอบรับ';
-        } elseif ($currentStatus === 'approved') {
-            $stepLabel = 'ขั้นตอนที่ 2: รอง ผอ. อนุมัติ';
-        } elseif ($currentStatus === 'director_approved') {
-            $stepLabel = 'ขั้นตอนที่ 3: ผอ. อนุมัติ (สุดท้าย)';
-        }
-
-        $detailsContents = [
-            [
-                'type' => 'box',
-                'layout' => 'horizontal',
-                'contents' => [
-                    ['type' => 'text', 'text' => 'ผู้ขอ:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                    ['type' => 'text', 'text' => trim("{$requester->rank} {$requester->name}"), 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
-                ]
-            ],
-            [
-                'type' => 'box',
-                'layout' => 'horizontal',
-                'contents' => [
-                    ['type' => 'text', 'text' => 'ผู้แทน:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                    ['type' => 'text', 'text' => trim("{$replacement->rank} {$replacement->name}"), 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
-                ]
-            ],
-            [
-                'type' => 'box',
-                'layout' => 'horizontal',
-                'contents' => [
-                    ['type' => 'text', 'text' => 'ตำแหน่ง:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                    ['type' => 'text', 'text' => $dutyPosition, 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
-                ]
-            ],
-            [
-                'type' => 'box',
-                'layout' => 'horizontal',
-                'contents' => [
-                    ['type' => 'text', 'text' => 'วันที่เวร:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                    ['type' => 'text', 'text' => Carbon::parse($guardChange->duty_date)->format('d/m/Y'), 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
-                ]
-            ],
-        ];
-
-        if ($guardChange->remarks) {
-            $detailsContents[] = [
-                'type' => 'box',
-                'layout' => 'horizontal',
-                'contents' => [
-                    ['type' => 'text', 'text' => 'หมายเหตุ:', 'size' => 'sm', 'color' => '#aaaaaa', 'flex' => 2],
-                    ['type' => 'text', 'text' => $guardChange->remarks, 'size' => 'sm', 'color' => '#333333', 'flex' => 5, 'wrap' => true],
-                ]
-            ];
-        }
-
-        $detailsContents[] = [
-            'type' => 'box',
-            'layout' => 'horizontal',
-            'margin' => 'md',
-            'contents' => [
-                ['type' => 'text', 'text' => '📍 ' . $stepLabel, 'size' => 'xs', 'color' => '#4f46e5', 'flex' => 0, 'wrap' => true, 'weight' => 'bold'],
-            ]
-        ];
-
-        return [
-            'type' => 'bubble',
-            'size' => 'kilo',
-            'header' => [
-                'type' => 'box',
-                'layout' => 'vertical',
-                'contents' => [
-                    [
-                        'type' => 'text',
-                        'text' => '🔄 คำขอเปลี่ยนเวรยาม',
-                        'weight' => 'bold',
-                        'color' => '#ffffff',
-                        'size' => 'md',
-                    ]
-                ],
-                'backgroundColor' => '#f59e0b',
-            ],
-            'body' => [
-                'type' => 'box',
-                'layout' => 'vertical',
-                'contents' => [
-                    [
-                        'type' => 'text',
-                        'text' => 'คำขอเปลี่ยนเวรยาม',
-                        'weight' => 'bold',
-                        'size' => 'lg',
-                        'wrap' => true,
-                    ],
-                    [
-                        'type' => 'text',
-                        'text' => "สังกัด: " . ($requester->department ?: '-'),
-                        'size' => 'sm',
-                        'color' => '#666666',
-                        'wrap' => true,
-                        'margin' => 'sm',
-                    ],
-                    [
-                        'type' => 'separator',
-                        'margin' => 'md',
-                    ],
-                    [
-                        'type' => 'box',
-                        'layout' => 'vertical',
-                        'margin' => 'md',
-                        'spacing' => 'sm',
-                        'contents' => $detailsContents
-                    ]
-                ]
-            ],
-            'footer' => [
-                'type' => 'box',
-                'layout' => 'vertical',
-                'spacing' => 'sm',
-                'contents' => [
-                    [
-                        'type' => 'button',
-                        'action' => [
-                            'type' => 'postback',
-                            'label' => '✅ อนุมัติ',
-                            'data' => "action=gc_approve&id={$guardChange->id}",
-                            'displayText' => 'ขออนุมัติคำขอเปลี่ยนเวร'
-                        ],
-                        'style' => 'primary',
-                        'color' => '#10b981',
-                    ],
-                    [
-                        'type' => 'button',
-                        'action' => [
-                            'type' => 'postback',
-                            'label' => '❌ ปฏิเสธ',
-                            'data' => "action=gc_reject&id={$guardChange->id}",
-                            'displayText' => 'ขอปฏิเสธคำขอเปลี่ยนเวร'
-                        ],
-                        'style' => 'secondary',
-                        'color' => '#ef4444',
-                    ],
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * Send status update to requester via LINE
-     */
-    protected function sendStatusUpdateToLine($guardChange, $requester, $status, $actor)
-    {
-        if (!$requester->line_user_id) return;
-
-        $title = '';
-        $color = '#4f46e5';
-        $statusText = '';
-
-        switch ($status) {
-            case 'approved':
-                $title = '✅ ผู้เปลี่ยนแทนตอบรับแล้ว';
-                $color = '#10b981';
-                $statusText = "ผ่านขั้นตอนที่ 1 (รอ รอง ผอ. อนุมัติ)";
-                break;
-            case 'director_approved':
-                $title = 'ℹ️ รอง ผอ. อนุมัติแล้ว';
-                $color = '#3b82f6';
-                $statusText = "ผ่านขั้นตอนที่ 2 (รอ ผอ. อนุมัติ)";
-                break;
-            case 'fully_approved':
-                $title = '🎉 อนุมัติเสร็จสมบูรณ์';
-                $color = '#10b981';
-                $statusText = "ผ่านครบทุกขั้นตอนแล้ว";
-                break;
-            case 'rejected':
-                $title = '❌ ถูกปฏิเสธ';
-                $color = '#ef4444';
-                $statusText = "ถูกปฏิเสธโดย {$actor->rank} {$actor->name}";
-                break;
-        }
-
-        $dutyPosition = self::DUTY_POSITIONS[$guardChange->duty_position] ?? $guardChange->duty_position;
-
-        // Build progress indicator
-        $step1 = '✅';
-        $step2 = in_array($status, ['director_approved', 'fully_approved']) ? '✅' : '⬜';
-        $step3 = $status === 'fully_approved' ? '✅' : '⬜';
-
-        if ($status === 'rejected') {
-            $step1 = $guardChange->approver_id ? '✅' : '❌';
-            $step2 = $guardChange->director_approver_id ? '✅' : ($guardChange->approver_id ? '❌' : '⬜');
-            $step3 = '⬜';
-        }
-
-        $progressText = "{$step1} ผู้แทน → {$step2} รอง ผอ. → {$step3} ผอ.";
-
-        $flexContents = [
-            'type' => 'bubble',
-            'header' => [
-                'type' => 'box',
-                'layout' => 'vertical',
-                'contents' => [
-                    [
-                        'type' => 'text',
-                        'text' => $title,
-                        'weight' => 'bold',
-                        'color' => '#ffffff',
-                    ]
-                ],
-                'backgroundColor' => $color,
-            ],
-            'body' => [
-                'type' => 'box',
-                'layout' => 'vertical',
-                'contents' => [
-                    [
-                        'type' => 'text',
-                        'text' => '🔄 คำขอเปลี่ยนเวรยาม',
-                        'weight' => 'bold',
-                        'size' => 'lg',
-                    ],
-                    [
-                        'type' => 'text',
-                        'text' => "ตำแหน่ง: {$dutyPosition}",
-                        'size' => 'sm',
-                        'color' => '#666666',
-                        'margin' => 'sm',
-                    ],
-                    [
-                        'type' => 'text',
-                        'text' => "วันที่: " . Carbon::parse($guardChange->duty_date)->format('d/m/Y'),
-                        'size' => 'sm',
-                        'color' => '#666666',
-                    ],
-                    [
-                        'type' => 'separator',
-                        'margin' => 'md',
-                    ],
-                    [
-                        'type' => 'text',
-                        'text' => "สถานะ: {$statusText}",
-                        'size' => 'md',
-                        'margin' => 'md',
-                        'color' => '#333333',
-                        'wrap' => true,
-                    ],
-                    [
-                        'type' => 'text',
-                        'text' => "โดย: {$actor->rank} {$actor->name}",
-                        'size' => 'sm',
-                        'color' => '#666666',
-                    ],
-                    [
-                        'type' => 'separator',
-                        'margin' => 'md',
-                    ],
-                    [
-                        'type' => 'text',
-                        'text' => '📊 ความคืบหน้า',
-                        'size' => 'sm',
-                        'color' => '#4f46e5',
-                        'weight' => 'bold',
-                        'margin' => 'md',
-                    ],
-                    [
-                        'type' => 'text',
-                        'text' => $progressText,
-                        'size' => 'sm',
-                        'margin' => 'sm',
-                        'wrap' => true,
-                    ],
-                ]
-            ],
-        ];
-
-        $this->lineService->sendFlexMessage(
-            $requester->line_user_id,
-            $title,
-            $flexContents
-        );
-    }
-
-    /**
-     * Send initial LINE notification when a guard change request is created
-     */
-    public function sendNewRequestNotification(GuardChangeRequest $guardChange)
-    {
-        $this->notifyNextApproverViaLine($guardChange, 'pending');
     }
 
     /**

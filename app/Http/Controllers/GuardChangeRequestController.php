@@ -104,10 +104,6 @@ class GuardChangeRequestController extends Controller
             }
         }
 
-        // Send LINE notification to replacement user
-        $guardChangeRequest->load(['user', 'replacementUser']);
-        $this->guardChangeService->sendNewRequestNotification($guardChangeRequest);
-
         // อัปเดตตารางเวร (Duty Roster) ทันทีเมื่อส่งคำขอ
         $this->updateDutyRosterOnRequest($guardChangeRequest);
 

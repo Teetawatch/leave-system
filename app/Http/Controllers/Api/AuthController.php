@@ -7,6 +7,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -132,6 +133,58 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'FCM Token updated',
+        ]);
+    }
+
+    /**
+     * Generate Telegram deep link for account linking.
+     */
+    public function generateTelegramLink(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->telegram_chat_id) {
+            return response()->json([
+                'success' => true,
+                'message' => 'บัญชี Telegram เชื่อมต่อแล้ว',
+                'data' => [
+                    'linked' => true,
+                    'chat_id' => $user->telegram_chat_id,
+                ],
+            ]);
+        }
+
+        $token = Str::random(32);
+        $user->update(['telegram_link_token' => $token]);
+
+        $botUsername = env('TELEGRAM_BOT_USERNAME', 'NassLeaveBot');
+        $deepLink = "https://t.me/{$botUsername}?start={$token}";
+
+        return response()->json([
+            'success' => true,
+            'message' => 'สร้างลิงก์เชื่อมต่อ Telegram สำเร็จ',
+            'data' => [
+                'linked' => false,
+                'deep_link' => $deepLink,
+                'bot_username' => $botUsername,
+            ],
+        ]);
+    }
+
+    /**
+     * Unlink Telegram account.
+     */
+    public function unlinkTelegram(Request $request)
+    {
+        $user = $request->user();
+        $user->update([
+            'telegram_chat_id' => null,
+            'telegram_link_token' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'ยกเลิกการเชื่อมต่อ Telegram สำเร็จ',
         ]);
     }
 }

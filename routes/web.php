@@ -216,6 +216,10 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Telegram Link/Unlink
+    Route::post('/profile/telegram-link', [ProfileController::class, 'generateTelegramLink'])->name('profile.telegram-link');
+    Route::post('/profile/telegram-unlink', [ProfileController::class, 'unlinkTelegram'])->name('profile.telegram-unlink');
+
     // Leave Routes
     Route::put('/leave-request/{leaveRequest}/cancel', [LeaveRequestController::class, 'cancel'])->name('leave-request.cancel');
     Route::get('/leave-request/{leaveRequest}/pdf', [LeaveRequestController::class, 'exportPdf'])->name('leave-request.pdf');
@@ -317,98 +321,41 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
 });
 
 // =============================================================================
+// Telegram Bot Webhook (No auth - verified by secret token in header)
+// =============================================================================
+
+Route::post('/telegram/webhook/{secret}', [App\Http\Controllers\TelegramBotController::class, 'webhook'])
+    ->name('telegram.webhook');
+
+// =============================================================================
 // External Cron Routes (Shared Hosting Workaround)
 // =============================================================================
 
-// Trigger daily leave summary to LINE group
-Route::get('/cron/daily-leave-summary/{secret}', function ($secret) {
-    if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {
+// Telegram Daily Summary (call daily at 07:00)
+Route::get('/telegram-daily-summary/{secret}', function ($secret) {
+    if ($secret !== config('services.telegram.webhook_secret')) {
         abort(403, 'Unauthorized');
     }
-
-    $exitCode = Artisan::call('line:daily-leave-summary');
-
+    $exitCode = Artisan::call('telegram:daily-summary');
     return response()->json([
-        'message' => 'Daily leave summary executed',
+        'message' => 'Telegram daily summary executed',
         'exit_code' => $exitCode,
-        'output' => Artisan::output()
+        'output' => Artisan::output(),
     ]);
 });
 
-// Trigger daily duty roster notification to LINE group
-Route::get('/cron/daily-duty-roster/{secret}', function ($secret) {
-    if ($secret !== env('QUEUE_WORKER_SECRET', 'my-secret-key')) {
+// Telegram Duty Roster Notify (call daily at 07:00)
+Route::get('/telegram-duty-roster/{secret}', function ($secret) {
+    if ($secret !== config('services.telegram.webhook_secret')) {
         abort(403, 'Unauthorized');
     }
-
-    $exitCode = Artisan::call('line:daily-duty-roster');
-
-    $logs = [];
-    try {
-        $logFile = storage_path('logs/laravel.log');
-        if (file_exists($logFile)) {
-            $lines = array_slice(file($logFile), -30);
-            $logs = array_values(array_filter($lines, fn($l) => str_contains($l, 'duty') || str_contains($l, 'LINE') || str_contains($l, 'Error')));
-        }
-    } catch (\Exception $e) {}
-
+    $exitCode = Artisan::call('telegram:duty-roster-notify');
     return response()->json([
-        'message' => 'Daily duty roster notification executed',
+        'message' => 'Telegram duty roster notification executed',
         'exit_code' => $exitCode,
         'output' => Artisan::output(),
-        'line_group_id_set' => !empty(env('LINE_GROUP_ID')),
-        'line_token_set' => !empty(env('LINE_CHANNEL_ACCESS_TOKEN')),
-        'recent_logs' => $logs,
     ]);
 });
-
-
-// New LINE Bot 2 Routes (for daily reports)
-Route::get('/line/daily-leave-summary', function () {
-    $exitCode = Artisan::call('line:daily-leave-summary');
-    $groupId = env('LINE_GROUP_ID_2', '');
-    $token = env('LINE_CHANNEL_ACCESS_TOKEN_2', '');
-
-    $logs = [];
-    try {
-        $logFile = storage_path('logs/laravel.log');
-        if (file_exists($logFile)) {
-            $lines = array_slice(file($logFile), -50);
-            $logs = array_values(array_filter($lines, fn($l) => str_contains($l, 'LINE Bot 2') || str_contains($l, 'Error')));
-        }
-    } catch (\Exception $e) {}
-
-    return response()->json([
-        'message' => 'Daily leave summary (Bot 2) executed',
-        'exit_code' => $exitCode,
-        'output' => Artisan::output(),
-        'debug' => [
-            'bot2_token_set' => !empty($token),
-            'bot2_token_prefix' => $token ? substr($token, 0, 8) . '...' : null,
-            'bot2_group_id_set' => !empty($groupId),
-            'bot2_group_id_preview' => $groupId ? substr($groupId, 0, 6) . '...' . substr($groupId, -4) : null,
-        ],
-        'recent_line_logs' => $logs,
-    ]);
-});
-
-Route::get('/line/daily-duty-roster', function () {
-    $exitCode = Artisan::call('line:daily-duty-roster');
-    $groupId = env('LINE_GROUP_ID_2', '');
-    $token = env('LINE_CHANNEL_ACCESS_TOKEN_2', '');
-    return response()->json([
-        'message' => 'Daily duty roster (Bot 2) executed',
-        'exit_code' => $exitCode,
-        'output' => Artisan::output(),
-        'debug' => [
-            'bot2_token_set' => !empty($token),
-            'bot2_token_prefix' => $token ? substr($token, 0, 8) . '...' : null,
-            'bot2_group_id_set' => !empty($groupId),
-            'bot2_group_id_preview' => $groupId ? substr($groupId, 0, 6) . '...' . substr($groupId, -4) : null,
-        ],
-    ]);
-});
-
 
 Route::get('/queue-work/{secret}', function ($secret) {
     // Check if the secret matches the one in .env
@@ -431,3 +378,24 @@ Route::get('/queue-work/{secret}', function ($secret) {
 
 require __DIR__ . '/auth.php';
 
+
+// =============================================================================
+// Admin Telegram Webhook Setup (Secure Method)
+// =============================================================================
+ 
+Route::get('/admin/telegram/set-webhook/{secret}', function ($secret) {
+    // ตรวจสอบ secret key
+    if ($secret !== 'nass_admin_2026_secret') {
+        abort(403, 'Unauthorized');
+    }
+    
+    // รันคำสั่ง set webhook
+    $exitCode = Artisan::call('telegram:set-webhook');
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Telegram Webhook set successfully',
+        'exit_code' => $exitCode,
+        'output' => Artisan::output()
+    ]);
+})->name('admin.telegram.set-webhook');

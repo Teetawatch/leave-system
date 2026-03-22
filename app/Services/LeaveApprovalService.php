@@ -30,12 +30,6 @@ class LeaveApprovalService
             throw new Exception("คุณไม่มีสิทธิ์อนุมัติใบลาของ {$requester->name} ในขั้นตอนนี้");
         }
 
-        // 0.5 Check signature for LINE approvals (no inline drawing on LINE)
-        if (!$signaturePath && !$actor->signature && $actor->line_user_id) {
-            $profileUrl = url('/profile');
-            throw new Exception("⚠️ คุณยังไม่มีลายเซ็นในระบบ\n\nกรุณาอัปโหลดรูปภาพลายเซ็นที่หน้าโปรไฟล์ก่อนอนุมัติผ่าน LINE\n\n👉 {$profileUrl}");
-        }
-
         // 1. Determine which step we are at
         $status = $leaveRequest->status;
         $nextStatus = null;
@@ -99,9 +93,9 @@ class LeaveApprovalService
             'approver_id' => $actor->id,
             'step' => $stepName,
             'action' => $action,
-            'comment' => $comment ?: ($actor->line_user_id ? 'อนุมัติผ่าน LINE' : null),
+            'comment' => $comment ?: null,
             'signature' => $signaturePath,
-            'ip_address' => request()->ip() ?: 'LINE_API'
+            'ip_address' => request()->ip()
         ]);
 
         // 5. Deduct Balance if fully approved
@@ -132,8 +126,8 @@ class LeaveApprovalService
             'approver_id' => $actor->id,
             'step' => $step,
             'action' => 'rejected',
-            'comment' => $comment ?: ($actor->line_user_id ? 'ปฏิเสธผ่าน LINE' : 'ไม่ได้ระบุเหตุผล'),
-            'ip_address' => request()->ip() ?: 'LINE_API'
+            'comment' => $comment ?: 'ไม่ได้ระบุเหตุผล',
+            'ip_address' => request()->ip()
         ]);
 
         event(new LeaveRequestStatusChanged($leaveRequest, 'rejected', $actor));

@@ -283,7 +283,6 @@ class LeaveRequestController extends Controller
                 'status'      => $leaveRequest->status,
                 'user_id'     => $leaveRequest->user_id,
                 'supervisor'  => optional($leaveRequest->user)->supervisor_id,
-                'line_user_id'=> optional(\App\Models\User::find(optional($leaveRequest->user)->supervisor_id))->line_user_id ?? 'N/A',
             ]);
             event(new \App\Events\LeaveRequestSubmitted($leaveRequest));
             Log::info('[LeaveNotify] event dispatched OK');

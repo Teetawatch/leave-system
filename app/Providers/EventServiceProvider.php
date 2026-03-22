@@ -19,10 +19,10 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         \App\Events\LeaveRequestSubmitted::class => [
-            \App\Listeners\SendLineLeaveNotification::class,
+            \App\Listeners\SendTelegramLeaveSubmitted::class,
         ],
         \App\Events\LeaveRequestStatusChanged::class => [
-            \App\Listeners\SendLineStatusNotification::class,
+            \App\Listeners\SendTelegramLeaveStatusChanged::class,
         ],
     ];
 
@@ -40,7 +40,6 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $subscribe = [
-        \App\Listeners\SendLegacyLeaveNotifications::class,
     ];
 
     /**

@@ -26,6 +26,8 @@ class AttendanceReportController extends Controller
         $courseId = $request->input('course_id');
         $startDate = $request->input('start_date', now()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->format('Y-m-d'));
+        $sort = $request->input('sort', 'date_desc'); // date_desc | earliest | latest
+        $empSort = $request->input('emp_sort', 'date_desc'); // date_desc | earliest | latest
 
         // Get courses for filter dropdown
         $courses = FaCourse::orderBy('created_at', 'desc')->get();
@@ -39,19 +41,31 @@ class AttendanceReportController extends Controller
             });
         }
 
-        $logs = $studentLogsQuery->select('student_id', \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'))
-            ->groupBy('student_id', 'scan_date')
-            ->orderBy('scan_date', 'desc')
-            ->paginate(20);
+        // Apply sort: earliest/latest sorts by the morning (first) scan time of each grouped row
+        $studentLogsQuery->select(
+            'student_id',
+            \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'),
+            \Illuminate\Support\Facades\DB::raw('MIN(scan_time) as first_scan_time')
+        )->groupBy('student_id', 'scan_date');
 
-        // Get approved leave requests for STUDENTS — loaded before transform so it can be used inside
+        if ($sort === 'earliest') {
+            $studentLogsQuery->orderBy('first_scan_time', 'asc');
+        } elseif ($sort === 'latest') {
+            $studentLogsQuery->orderBy('first_scan_time', 'desc');
+        } else {
+            $studentLogsQuery->orderBy('scan_date', 'desc');
+        }
+
+        $logs = $studentLogsQuery->paginate(20);
+
+        // Get active leave requests for STUDENTS — loaded before transform so it can be used inside
         $studentUsersOnLeave = \App\Models\User::whereHas('leaveRequests', function ($q) use ($startDate, $endDate) {
-            $q->where('status', 'approved')
+            $q->whereNotIn('status', ['rejected', 'cancelled'])
                 ->whereDate('start_date', '<=', $endDate)
                 ->whereDate('end_date', '>=', $startDate);
         })->with([
                     'leaveRequests' => function ($q) use ($startDate, $endDate) {
-                        $q->where('status', 'approved')
+                        $q->whereNotIn('status', ['rejected', 'cancelled'])
                             ->whereDate('start_date', '<=', $endDate)
                             ->whereDate('end_date', '>=', $startDate);
                     },
@@ -187,9 +201,9 @@ class AttendanceReportController extends Controller
 
         // ===== ข้อมูลข้าราชการ (Employees) =====
 
-        // Get ALL approved leave requests for the date range (needed before transform)
+        // Get ALL active leave requests for the date range (needed before transform)
         $leaveRequests = LeaveRequest::with(['leaveType', 'user'])
-            ->where('status', 'approved')
+            ->whereNotIn('status', ['rejected', 'cancelled'])
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereDate('start_date', '<=', $endDate)
                     ->whereDate('end_date', '>=', $startDate);
@@ -208,10 +222,22 @@ class AttendanceReportController extends Controller
             ->whereBetween('scan_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
         // Group employee logs by employee_id and scan_date for morning/afternoon view
-        $employeeLogsGrouped = $employeeLogsQuery->select('employee_id', \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'))
-            ->groupBy('employee_id', 'scan_date')
-            ->orderBy('scan_date', 'desc')
-            ->paginate(20, ['*'], 'emp_page');
+        $employeeLogsGrouped = $employeeLogsQuery->select(
+                'employee_id',
+                \Illuminate\Support\Facades\DB::raw('DATE(scan_time) as scan_date'),
+                \Illuminate\Support\Facades\DB::raw('MIN(scan_time) as first_scan_time')
+            )
+            ->groupBy('employee_id', 'scan_date');
+
+        if ($empSort === 'earliest') {
+            $employeeLogsGrouped->orderBy('first_scan_time', 'asc');
+        } elseif ($empSort === 'latest') {
+            $employeeLogsGrouped->orderBy('first_scan_time', 'desc');
+        } else {
+            $employeeLogsGrouped->orderBy('scan_date', 'desc');
+        }
+
+        $employeeLogsGrouped = $employeeLogsGrouped->paginate(20, ['*'], 'emp_page');
 
         // Map grouped items to include morning and afternoon scan details
         $employeeLogsGrouped->getCollection()->transform(function ($item) use ($leaveRequests, $usersOnLeave) {
@@ -252,19 +278,21 @@ class AttendanceReportController extends Controller
             $emp = $item->employee;
             $matchedRequest = null;
             if ($emp) {
-                $empFullName = trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
+                $empFirstName = trim($emp->first_name ?? '');
+                $empLastName  = trim($emp->last_name ?? '');
                 if ($emp->user_id) {
                     $matchedRequest = $leaveRequests->first(fn($req) => $req->user_id == $emp->user_id);
                 }
                 if (!$matchedRequest && $usersOnLeave->isNotEmpty()) {
-                    $matchedUser = $usersOnLeave->first(function ($user) use ($emp, $empFullName) {
+                    $matchedUser = $usersOnLeave->first(function ($user) use ($emp, $empFirstName, $empLastName) {
                         if ($emp->user_id && $emp->user_id == $user->id) return true;
-                        $userParts = array_filter(explode(' ', $user->name));
+                        $userParts = array_values(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($user->name)))));
                         if (empty($userParts)) return false;
-                        foreach ($userParts as $part) {
-                            if (!str_contains($empFullName, trim($part))) return false;
-                        }
-                        return true;
+                        $userSurname   = end($userParts);
+                        $userFirstName = $userParts[0] ?? '';
+                        $surnameMatch = str_contains($empLastName, $userSurname) || str_contains($empFirstName, $userSurname);
+                        if (!$surnameMatch) return false;
+                        return str_contains($empFirstName, $userFirstName);
                     });
                     if ($matchedUser) {
                         $matchedRequest = $leaveRequests->firstWhere('user_id', $matchedUser->id);
@@ -310,7 +338,6 @@ class AttendanceReportController extends Controller
 
         foreach ($absentEmployeesRaw as $emp) {
             $matchedRequest = null;
-            $empFullName = trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
 
             // 1. Try Match by User ID
             if ($emp->user_id) {
@@ -321,21 +348,27 @@ class AttendanceReportController extends Controller
 
             // 2. Try Match by Name (if no match yet)
             if (!$matchedRequest && $usersOnLeave->isNotEmpty()) {
-                $matchedUser = $usersOnLeave->first(function ($user) use ($emp, $empFullName) {
+                $empFirstName = trim($emp->first_name ?? '');
+                $empLastName  = trim($emp->last_name ?? '');
+                $matchedUser = $usersOnLeave->first(function ($user) use ($emp, $empFirstName, $empLastName) {
                     if ($emp->user_id && $emp->user_id == $user->id)
                         return true;
 
-                    // Fallback: Check if Employee Name (Longer, with title) contains User Name (Shorter, no title)
-                    $userParts = array_filter(explode(' ', $user->name));
+                    // Normalize double-spaces in user.name, split into parts
+                    $userParts = array_values(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($user->name)))));
                     if (empty($userParts))
                         return false;
 
-                    foreach ($userParts as $part) {
-                        if (!str_contains($empFullName, trim($part))) {
-                            return false;
-                        }
-                    }
-                    return true;
+                    // Last word of user.name is the surname — must appear in emp last_name or first_name
+                    $userSurname   = end($userParts);
+                    $userFirstName = $userParts[0] ?? '';
+
+                    $surnameMatch = str_contains($empLastName, $userSurname) || str_contains($empFirstName, $userSurname);
+                    if (!$surnameMatch)
+                        return false;
+
+                    // First name word must also appear somewhere in emp first_name
+                    return str_contains($empFirstName, $userFirstName);
                 });
 
                 if ($matchedUser) {
@@ -376,12 +409,14 @@ class AttendanceReportController extends Controller
         $absentEmployeeCount = $trueAbsentEmployees->count();
         $onLeaveCount = $onLeaveEmployees->count();
 
-        return Inertia::render('AttendanceReports/Index', compact(
+return Inertia::render('AttendanceReports/Index', compact(
             'logs',
             'courses',
             'courseId',
             'startDate',
             'endDate',
+            'sort',
+            'empSort',
             'totalScansCount',
             'uniqueStudentsCount',
             'totalStudents',
@@ -402,7 +437,12 @@ class AttendanceReportController extends Controller
             'lateEmployeeCount',
             'lateEmployeeCount',
             'onLeaveCount',
-            'onLeaveEmployees'
+            'onLeaveEmployees',
+            // Earliest / Latest Arrival
+            'earliestStudentLog',
+            'latestStudentLog',
+            'earliestEmployeeLog',
+            'latestEmployeeLog'
         ));
     }
 
@@ -474,14 +514,14 @@ class AttendanceReportController extends Controller
             ];
         })->values();
 
-        // Get approved leave requests for STUDENTS (using student name matching approach)
+        // Get active leave requests for STUDENTS (using student name matching approach)
         $usersOnLeave = \App\Models\User::whereHas('leaveRequests', function ($q) use ($date) {
-            $q->where('status', 'approved')
+            $q->whereNotIn('status', ['rejected', 'cancelled'])
                 ->whereDate('start_date', '<=', $date)
                 ->whereDate('end_date', '>=', $date);
         })->with([
                     'leaveRequests' => function ($q) use ($date) {
-                        $q->where('status', 'approved')
+                        $q->whereNotIn('status', ['rejected', 'cancelled'])
                             ->whereDate('start_date', '<=', $date)
                             ->whereDate('end_date', '>=', $date);
                     },
@@ -570,9 +610,9 @@ class AttendanceReportController extends Controller
         // Get employee IDs who have scanned on this date
         $scannedEmployeeIds = $employeeLogRecords->pluck('employee_id')->unique();
 
-        // Get ALL approved leave requests for the selected date
+        // Get ALL active leave requests for the selected date
         $allLeaveRequests = LeaveRequest::with(['leaveType', 'user'])
-            ->where('status', 'approved')
+            ->whereNotIn('status', ['rejected', 'cancelled'])
             ->whereDate('start_date', '<=', $date)
             ->whereDate('end_date', '>=', $date)
             ->get();
@@ -585,24 +625,32 @@ class AttendanceReportController extends Controller
 
         // Helper to check leave/duty (Robust ID/Name Match)
         $checkLeaveStatus = function ($employee) use ($allLeaveRequests, $usersOnLeave) {
-            $empFullName = trim(($employee->first_name ?? '') . ' ' . ($employee->last_name ?? ''));
+            // 1. Direct user_id match
+            if ($employee->user_id) {
+                $req = $allLeaveRequests->first(fn($r) => $r->user_id == $employee->user_id);
+                if ($req) return $req;
+            }
 
-            // Match User
-            $matchedUser = $usersOnLeave->first(function ($user) use ($employee, $empFullName) {
+            // 2. Name-based match: surname + first name against FaEmployee first_name/last_name
+            $empFirstName = trim($employee->first_name ?? '');
+            $empLastName  = trim($employee->last_name ?? '');
+
+            $matchedUser = $usersOnLeave->first(function ($user) use ($employee, $empFirstName, $empLastName) {
                 if ($employee->user_id && $employee->user_id == $user->id)
                     return true;
 
-                // Fallback: Check if Employee Name contains User Name
-                $userParts = array_filter(explode(' ', $user->name));
+                $userParts = array_values(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($user->name)))));
                 if (empty($userParts))
                     return false;
 
-                foreach ($userParts as $part) {
-                    if (!str_contains($empFullName, trim($part))) {
-                        return false;
-                    }
-                }
-                return true;
+                $userSurname   = end($userParts);
+                $userFirstName = $userParts[0] ?? '';
+
+                $surnameMatch = str_contains($empLastName, $userSurname) || str_contains($empFirstName, $userSurname);
+                if (!$surnameMatch)
+                    return false;
+
+                return str_contains($empFirstName, $userFirstName);
             });
 
             if ($matchedUser) {

@@ -21,7 +21,6 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'line_user_id',
         'password',
         'role',
         'department',
@@ -32,6 +31,8 @@ class User extends Authenticatable
         'deputy_id',
         'manager_id',
         'fcm_token',
+        'telegram_chat_id',
+        'telegram_link_token',
         'avatar',
         'signature',
         'is_registered',

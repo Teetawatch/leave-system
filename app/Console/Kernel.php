@@ -12,20 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // ส่งแจ้งเตือนเวรยามประจำวันเข้ากลุ่ม LINE ทุกวัน เวลา 07:00 น.
-        $schedule->command('line:daily-duty-roster')
-                 ->dailyAt('07:00')
-                 ->timezone('Asia/Bangkok')
-                 ->withoutOverlapping()
-                 ->onOneServer();
+        // Telegram: ส่งสรุปการลาประจำวัน ทุกวัน 07:00 น.
+        $schedule->command('telegram:daily-summary')->dailyAt('07:00');
 
-        // ส่งสรุปการลาประจำวันเข้ากลุ่ม LINE ทุกวัน เวลา 07:30 น.
-        // (เว้นห่างจาก duty-roster 30 นาที เพื่อหลีกเลี่ยง LINE API rate limit)
-        $schedule->command('line:daily-leave-summary')
-                 ->dailyAt('07:30')
-                 ->timezone('Asia/Bangkok')
-                 ->withoutOverlapping()
-                 ->onOneServer();
+        // Telegram: แจ้งเตือนตารางเวรประจำวัน ทุกวัน 07:00 น.
+        $schedule->command('telegram:duty-roster-notify')->dailyAt('07:00');
     }
 
     /**
