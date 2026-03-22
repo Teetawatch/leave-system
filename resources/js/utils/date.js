@@ -1,79 +1,177 @@
 /**
- * Central date/time formatting utilities for Thai locale
- * Usage: import { thaiDate, thaiDateTime, thaiMonth, thaiDay, thaiYear, thaiFullDate } from '@/utils/date';
+ * Thai Date Utils (Production-grade)
+ * - Fix timezone: Asia/Bangkok
+ * - รองรับ SSR / Browser
+ * - กัน timezone shift
+ * - รองรับ format flexible
  */
+
+const TZ = 'Asia/Bangkok';
 
 const THAI_MONTHS_LONG  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const THAI_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
 /**
- * Parse a date string safely.
- * - YYYY-MM-DD is treated as LOCAL midnight (no UTC shift).
- * - ISO datetime strings (with T) are parsed normally.
+ * ตรวจสอบ valid date
+ */
+function isValidDate(d) {
+    return d instanceof Date && !isNaN(d.getTime());
+}
+
+/**
+ * Parse date อย่างปลอดภัย
  */
 function parseDate(value) {
     if (!value) return null;
-    if (value instanceof Date) return value;
-    const s = String(value);
-    // Pure date string — force local timezone
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s + 'T00:00:00');
-    return new Date(s);
+
+    if (value instanceof Date) {
+        return isValidDate(value) ? value : null;
+    }
+
+    const s = String(value).trim();
+
+    // YYYY-MM-DD → force local (กัน shift)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const d = new Date(s + 'T00:00:00');
+        return isValidDate(d) ? d : null;
+    }
+
+    const d = new Date(s);
+    return isValidDate(d) ? d : null;
 }
+
+/**
+ * ดึง "เวลาประเทศไทย" จาก Date (fix timezone)
+ */
+function getThaiParts(date) {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: TZ,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false
+    }).formatToParts(date);
+
+    const map = {};
+    for (const p of parts) {
+        if (p.type !== 'literal') {
+            map[p.type] = parseInt(p.value, 10);
+        }
+    }
+
+    return {
+        day: map.day,
+        month: map.month - 1,
+        year: map.year,
+        hour: map.hour,
+        minute: map.minute,
+        second: map.second
+    };
+}
+
+/**
+ * Core formatter
+ */
+function formatThai(value, {
+    showTime = false,
+    shortMonth = false,
+    showSeconds = false
+} = {}) {
+    const d = parseDate(value);
+    if (!d) return '-';
+
+    const t = getThaiParts(d);
+
+    const month = shortMonth
+        ? THAI_MONTHS_SHORT[t.month]
+        : THAI_MONTHS_LONG[t.month];
+
+    const yearBE = t.year + 543;
+
+    if (!showTime) {
+        return `${t.day} ${month} ${yearBE}`;
+    }
+
+    const hh = String(t.hour).padStart(2, '0');
+    const mm = String(t.minute).padStart(2, '0');
+    const ss = String(t.second).padStart(2, '0');
+
+    return showSeconds
+        ? `${t.day} ${month} ${yearBE} ${hh}:${mm}:${ss}`
+        : `${t.day} ${month} ${yearBE} ${hh}:${mm}`;
+}
+
+/** =========================
+ * Export functions
+ * ========================= */
 
 /** "22 มีนาคม 2569" */
 export function thaiFullDate(value) {
-    const d = parseDate(value);
-    if (!d || isNaN(d)) return '-';
-    return `${d.getDate()} ${THAI_MONTHS_LONG[d.getMonth()]} ${d.getFullYear() + 543}`;
+    return formatThai(value);
 }
 
 /** "22 มี.ค. 2569" */
 export function thaiDate(value) {
-    const d = parseDate(value);
-    if (!d || isNaN(d)) return '-';
-    return `${d.getDate()} ${THAI_MONTHS_SHORT[d.getMonth()]} ${d.getFullYear() + 543}`;
+    return formatThai(value, { shortMonth: true });
 }
 
 /** "22 มีนาคม 2569 14:24" */
 export function thaiDateTime(value) {
-    const d = parseDate(value);
-    if (!d || isNaN(d)) return '-';
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mm = String(d.getMinutes()).padStart(2, '0');
-    return `${d.getDate()} ${THAI_MONTHS_LONG[d.getMonth()]} ${d.getFullYear() + 543} ${hh}:${mm}`;
+    return formatThai(value, { showTime: true });
+}
+
+/** "22 มีนาคม 2569 14:24:30" */
+export function thaiDateTimeSec(value) {
+    return formatThai(value, { showTime: true, showSeconds: true });
 }
 
 /** "14:24" */
 export function thaiTime(value) {
     const d = parseDate(value);
-    if (!d || isNaN(d)) return '-';
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    if (!d) return '-';
+
+    const t = getThaiParts(d);
+
+    return `${String(t.hour).padStart(2, '0')}:${String(t.minute).padStart(2, '0')}`;
 }
 
-/** Short month "มี.ค." */
+/** "14:24:30" */
+export function thaiTimeSec(value) {
+    const d = parseDate(value);
+    if (!d) return '-';
+
+    const t = getThaiParts(d);
+
+    return `${String(t.hour).padStart(2, '0')}:${String(t.minute).padStart(2, '0')}:${String(t.second).padStart(2, '0')}`;
+}
+
+/** Month short */
 export function thaiMonth(value) {
     const d = parseDate(value);
-    if (!d || isNaN(d)) return '';
-    return THAI_MONTHS_SHORT[d.getMonth()];
+    if (!d) return '';
+    return THAI_MONTHS_SHORT[getThaiParts(d).month];
 }
 
-/** Long month "มีนาคม" */
+/** Month long */
 export function thaiMonthLong(value) {
     const d = parseDate(value);
-    if (!d || isNaN(d)) return '';
-    return THAI_MONTHS_LONG[d.getMonth()];
+    if (!d) return '';
+    return THAI_MONTHS_LONG[getThaiParts(d).month];
 }
 
-/** Day number */
+/** Day */
 export function thaiDay(value) {
     const d = parseDate(value);
-    if (!d || isNaN(d)) return '';
-    return d.getDate();
+    if (!d) return '';
+    return getThaiParts(d).day;
 }
 
-/** Buddhist year e.g. 2569 */
+/** Year (B.E.) */
 export function thaiYear(value) {
     const d = parseDate(value);
-    if (!d || isNaN(d)) return '';
-    return d.getFullYear() + 543;
+    if (!d) return '';
+    return getThaiParts(d).year + 543;
 }

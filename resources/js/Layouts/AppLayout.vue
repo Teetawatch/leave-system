@@ -31,6 +31,18 @@ const mobileProfileOpen = ref(false);
 const mobileNotifOpen = ref(false);
 const showAvatarModal = ref(false);
 
+const profileDropdownRef = ref(null);
+const notifDropdownRef = ref(null);
+
+function handleClickOutside(e) {
+    if (profileDropdownRef.value && !profileDropdownRef.value.contains(e.target)) {
+        profileOpen.value = false;
+    }
+    if (notifDropdownRef.value && !notifDropdownRef.value.contains(e.target)) {
+        notifOpen.value = false;
+    }
+}
+
 const currentUrl = computed(() => page.url);
 
 // Auto-expand sidebar menus based on current route
@@ -213,6 +225,7 @@ onMounted(() => {
     clockInterval = setInterval(updateClock, 1000);
     autoExpandMenus();
     fetchEnvStatus();
+    document.addEventListener('click', handleClickOutside);
     
     // Check avatar
     if (user.value && !user.value.avatar && !currentUrl.value.includes('/profile')) {
@@ -225,6 +238,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (clockInterval) clearInterval(clockInterval);
+    document.removeEventListener('click', handleClickOutside);
 });
 
 // Re-init lucide after Inertia navigation & show flash
@@ -639,8 +653,8 @@ function notifStatusColor(status) {
                         </div>
 
                         <!-- Desktop Notifications -->
-                        <div class="relative">
-                            <button @click="notifOpen = !notifOpen" @click.away="notifOpen = false" aria-label="แจ้งเตือน" class="relative p-2.5 text-slate-400 hover:text-brand-600 transition-all rounded-xl hover:bg-slate-50 focus:outline-none cursor-pointer focus-ring">
+                        <div class="relative" ref="notifDropdownRef">
+                            <button @click="notifOpen = !notifOpen" aria-label="แจ้งเตือน" class="relative p-2.5 text-slate-400 hover:text-brand-600 transition-all rounded-xl hover:bg-slate-50 focus:outline-none cursor-pointer focus-ring">
                                 <i data-lucide="bell" class="w-5 h-5"></i>
                                 <span v-if="notificationCount > 0" class="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>
                             </button>
@@ -688,8 +702,8 @@ function notifStatusColor(status) {
                         <div class="h-8 w-px bg-slate-100"></div>
 
                         <!-- Desktop User Profile Dropdown -->
-                        <div class="relative">
-                            <button @click="profileOpen = !profileOpen" @click.away="profileOpen = false" aria-label="เมนูผู้บัญชาการ" class="flex items-center gap-3 focus:outline-none group cursor-pointer focus-ring p-1.5 rounded-2xl hover:bg-slate-50 transition-all">
+                        <div class="relative" ref="profileDropdownRef">
+                            <button @click="profileOpen = !profileOpen" aria-label="เมนูผู้บัญชาการ" class="flex items-center gap-3 focus:outline-none group cursor-pointer focus-ring p-1.5 rounded-2xl hover:bg-slate-50 transition-all">
                                 <div class="text-right hidden md:block">
                                     <p class="text-sm font-bold text-slate-900 group-hover:text-brand-600 transition-colors tracking-tight">{{ user?.rank }} {{ user?.name }}</p>
                                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">{{ user?.department || 'กองบังคับการ' }}</p>

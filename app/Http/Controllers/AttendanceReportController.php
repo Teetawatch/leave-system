@@ -435,15 +435,9 @@ return Inertia::render('AttendanceReports/Index', compact(
             'lateEmployees',
             'absentEmployeeCount',
             'lateEmployeeCount',
-            'lateEmployeeCount',
             'onLeaveCount',
             'onLeaveEmployees',
-            // Earliest / Latest Arrival
-            'earliestStudentLog',
-            'latestStudentLog',
-            'earliestEmployeeLog',
-            'latestEmployeeLog'
-        ));
+        ) + ['presentEmployeeCount' => $uniqueEmployeesCount]);
     }
 
     /**

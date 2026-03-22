@@ -62,7 +62,7 @@ function initCanvas() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 }
@@ -440,7 +440,7 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                         {{ rejectForm.processing ? 'กำลังดำเนินการ...' : 'ยืนยันไม่อนุมัติ' }}
                                     </button>
                                     <button type="button" @click="closeModal"
-                                        class="flex-1 inline-flex justify-center items-center px-8 py-4 bg-white border border-slate-200 text-slate-400 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-100 transition-all">
+                                         class="flex-1 inline-flex justify-center items-center px-8 py-4 bg-white border border-slate-200 text-slate-400 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-100 transition-all">
                                         ยกเลิก
                                     </button>
                                 </div>
