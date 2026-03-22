@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class ExecutiveDashboardController extends Controller
 {
@@ -137,7 +138,18 @@ class ExecutiveDashboardController extends Controller
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->with(['user', 'leaveType'])
-            ->get();
+            ->get()
+            ->map(fn ($r) => [
+                'id'         => $r->id,
+                'user'       => $r->user ? ['name' => $r->user->name, 'rank' => $r->user->rank, 'department' => $r->user->department, 'avatar' => $r->user->avatar] : null,
+                'leave_type' => $r->leaveType ? ['name' => $r->leaveType->name, 'slug' => $r->leaveType->slug] : null,
+                'start_date'       => $r->start_date->format('Y-m-d'),
+                'end_date'         => $r->end_date->format('Y-m-d'),
+                'start_date_thai'  => $r->start_date->locale('th')->translatedFormat('j M Y'),
+                'end_date_thai'    => $r->end_date->locale('th')->translatedFormat('j M Y'),
+                'total_days'       => $r->total_days + 0,
+                'status'           => $r->status,
+            ]);
 
         // 7. Recent Leave Requests (for quick review)
         $recentRequests = LeaveRequest::with(['user', 'leaveType'])
@@ -150,7 +162,19 @@ class ExecutiveDashboardController extends Controller
             ])
             ->orderByDesc('created_at')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(fn ($r) => [
+                'id'         => $r->id,
+                'user'       => $r->user ? ['name' => $r->user->name, 'rank' => $r->user->rank, 'department' => $r->user->department, 'avatar' => $r->user->avatar] : null,
+                'leave_type' => $r->leaveType ? ['name' => $r->leaveType->name, 'slug' => $r->leaveType->slug] : null,
+                'start_date'       => $r->start_date->format('Y-m-d'),
+                'end_date'         => $r->end_date->format('Y-m-d'),
+                'start_date_thai'  => $r->start_date->locale('th')->translatedFormat('j M Y'),
+                'end_date_thai'    => $r->end_date->locale('th')->translatedFormat('j M Y'),
+                'total_days'       => $r->total_days + 0,
+                'status'           => $r->status,
+                'created_at_human' => $r->created_at->diffForHumans(),
+            ]);
 
         // 8. Department-wise employee count
         $departmentStats = User::select('department')
@@ -176,7 +200,7 @@ class ExecutiveDashboardController extends Controller
             ? round((($thisMonthLeaves - $lastMonthLeaves) / $lastMonthLeaves) * 100, 1)
             : 0;
 
-        return view('executive.dashboard', compact(
+        return Inertia::render('Executive/Dashboard', compact(
             'totalEmployees',
             'totalLeaveRequests',
             'approvedLeaves',

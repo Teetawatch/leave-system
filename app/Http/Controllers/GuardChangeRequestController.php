@@ -13,6 +13,7 @@ use App\Services\GuardChangeApprovalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Inertia\Inertia;
 
 class GuardChangeRequestController extends Controller
 {
@@ -33,7 +34,7 @@ class GuardChangeRequestController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('guard_change.index', compact('requests'));
+        return Inertia::render('GuardChange/Index', ['requests' => $requests]);
     }
 
     /**
@@ -54,7 +55,7 @@ class GuardChangeRequestController extends Controller
             'assistant_duty_officer' => 'ผู้ช่วยนายทหารเวร',
         ];
 
-        return view('guard_change.create', compact('users', 'dutyPositions'));
+        return Inertia::render('GuardChange/Create', ['users' => $users, 'dutyPositions' => $dutyPositions]);
     }
 
     /**
@@ -121,7 +122,7 @@ class GuardChangeRequestController extends Controller
     {
         $guardChange->load(['user', 'replacementUser']);
 
-        return view('guard_change.show', compact('guardChange'));
+        return Inertia::render('GuardChange/Show', ['guardChange' => $guardChange]);
     }
 
     /**
@@ -182,7 +183,7 @@ class GuardChangeRequestController extends Controller
             ->latest()
             ->get();
 
-        return view('guard_change.approvals', compact('requests'));
+        return Inertia::render('GuardChange/Approvals', ['requests' => $requests]);
     }
 
     /**
@@ -312,7 +313,7 @@ class GuardChangeRequestController extends Controller
             ->latest()
             ->get();
 
-        return view('guard_change.director_approvals', compact('requests'));
+        return Inertia::render('GuardChange/DirectorApprovals', ['requests' => $requests]);
     }
 
     /**
@@ -398,7 +399,7 @@ class GuardChangeRequestController extends Controller
             ->latest()
             ->get();
 
-        return view('guard_change.final_approvals', compact('requests'));
+        return Inertia::render('GuardChange/FinalApprovals', ['requests' => $requests]);
     }
 
     /**

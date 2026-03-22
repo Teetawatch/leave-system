@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class RankingController extends Controller
 {
@@ -128,7 +129,7 @@ class RankingController extends Controller
             ->take(5)
             ->get();
 
-        return view('ranking.index', compact(
+        return Inertia::render('Ranking/Index', compact(
             'mostScans',
             'earlyBirds',
             'neverLate',

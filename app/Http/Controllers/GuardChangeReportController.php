@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GuardChangeRequest;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class GuardChangeReportController extends Controller
 {
@@ -62,6 +63,6 @@ class GuardChangeReportController extends Controller
 
         $departments = Department::all();
 
-        return view('reports.guard-change', compact('requests', 'departments', 'stats'));
+        return Inertia::render('Reports/GuardChange', compact('requests', 'departments', 'stats'));
     }
 }

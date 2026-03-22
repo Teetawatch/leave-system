@@ -8,6 +8,7 @@ use App\Models\LeaveBalance;
 use App\Models\LeaveRequest;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class LeaveEntitlementController extends Controller
 {
@@ -70,7 +71,7 @@ class LeaveEntitlementController extends Controller
             $employee->balance_id = $balance ? $balance->id : null;
         }
 
-        return view('leave-entitlements.index', compact('employees', 'departments', 'vacationType'));
+        return Inertia::render('LeaveEntitlements/Index', compact('employees', 'departments', 'vacationType'));
     }
 
     /**

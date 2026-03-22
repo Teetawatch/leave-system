@@ -6,6 +6,7 @@ use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TemporaryLeaveReportController extends Controller
 {
@@ -69,6 +70,11 @@ class TemporaryLeaveReportController extends Controller
         }
 
         $requests = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+        $requests->through(function ($r) {
+            $r->start_date_thai = $r->start_date->locale('th')->translatedFormat('j M Y');
+            $r->end_date_thai   = $r->end_date->locale('th')->translatedFormat('j M Y');
+            return $r;
+        });
 
         // Data for Filters
         if ($isCommander) {
@@ -85,7 +91,7 @@ class TemporaryLeaveReportController extends Controller
         $afternoonCount = (clone $totalTemporaryLeaves)->where('temporary_leave_period', 'afternoon')->count();
         $totalCount = $totalTemporaryLeaves->count();
 
-        return view('reports.temporary-leave', compact(
+        return Inertia::render('Reports/TemporaryLeave', compact(
             'requests',
             'departments',
             'totalCount',

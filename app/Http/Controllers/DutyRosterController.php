@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\DutyRosterTemplateExport;
 use App\Imports\DutyRosterImport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Inertia\Inertia;
 
 class DutyRosterController extends Controller
 {
@@ -55,7 +56,7 @@ class DutyRosterController extends Controller
         $monthName = $this->getThaiMonth($month);
         $thaiYear = $year + 543;
 
-        return view('duty_roster.index', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'seniorRosters'));
+        return Inertia::render('DutyRoster/Index', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'seniorRosters'));
     }
 
     /**
@@ -163,7 +164,7 @@ class DutyRosterController extends Controller
 
         $exemptUserIds = User::where('is_duty_exempt', true)->pluck('id')->toArray();
 
-        return view('duty_roster.manage', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'users', 'seniorRosters', 'exemptUserIds'));
+        return Inertia::render('DutyRoster/Manage', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'users', 'seniorRosters', 'exemptUserIds'));
     }
 
     /**

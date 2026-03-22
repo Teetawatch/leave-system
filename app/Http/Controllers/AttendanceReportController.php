@@ -12,6 +12,7 @@ use App\Models\LeaveType;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class AttendanceReportController extends Controller
 {
@@ -375,7 +376,7 @@ class AttendanceReportController extends Controller
         $absentEmployeeCount = $trueAbsentEmployees->count();
         $onLeaveCount = $onLeaveEmployees->count();
 
-        return view('attendance-reports.index', compact(
+        return Inertia::render('AttendanceReports/Index', compact(
             'logs',
             'courses',
             'courseId',

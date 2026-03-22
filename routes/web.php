@@ -170,7 +170,35 @@ Route::get('/dashboard', function () {
         ->take(5)
         ->get();
 
-    return view('dashboard', compact('vacationBalance', 'sickUsageDays', 'sickUsageCount', 'personalUsageDays', 'personalUsageCount', 'pendingCount', 'todayLeaves', 'recentRequests'));
+    // Format recent requests for Vue
+    $recentRequests->load('leaveType');
+    $formattedRequests = $recentRequests->map(fn ($r) => [
+        'id' => $r->id,
+        'leave_type' => $r->leaveType ? ['name' => $r->leaveType->name, 'slug' => $r->leaveType->slug] : null,
+        'start_date_thai' => $r->start_date->locale('th')->isoFormat('D MMM YYYY'),
+        'end_date_thai' => $r->end_date->locale('th')->isoFormat('D MMM YYYY'),
+        'total_days' => $r->total_days + 0,
+        'status' => $r->status,
+        'created_at_human' => $r->created_at->diffForHumans(),
+    ]);
+
+    return \Inertia\Inertia::render('Dashboard', [
+        'vacationBalance' => $vacationBalance ? [
+            'total_days' => $vacationBalance->total_days + 0,
+            'used_days' => $vacationBalance->used_days + 0,
+            'remaining_days' => $vacationBalance->remaining_days + 0,
+        ] : null,
+        'sickUsageDays' => $sickUsageDays + 0,
+        'sickUsageCount' => $sickUsageCount,
+        'personalUsageDays' => $personalUsageDays + 0,
+        'personalUsageCount' => $personalUsageCount,
+        'pendingCount' => $pendingCount,
+        'todayLeaves' => $todayLeaves->map(fn ($l) => [
+            'id' => $l->id,
+            'user' => $l->user ? ['name' => $l->user->name, 'avatar' => $l->user->avatar] : null,
+        ]),
+        'recentRequests' => $formattedRequests,
+    ]);
 })->middleware(['auth', 'verified', 'ensure.avatar'])->name('dashboard');
 
 Route::middleware(['auth', 'ensure.avatar'])->group(function () {

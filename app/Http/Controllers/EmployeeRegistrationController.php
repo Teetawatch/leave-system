@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
 
 class EmployeeRegistrationController extends Controller
 {
@@ -15,7 +16,7 @@ class EmployeeRegistrationController extends Controller
      */
     public function showForm()
     {
-        return view('auth.employee-register');
+        return Inertia::render('Auth/EmployeeRegister');
     }
 
     /**

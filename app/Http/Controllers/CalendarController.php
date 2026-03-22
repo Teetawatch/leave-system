@@ -7,6 +7,7 @@ use App\Models\GuardChangeRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class CalendarController extends Controller
 {
@@ -28,7 +29,10 @@ class CalendarController extends Controller
         // Get leave types with colors
         $leaveTypes = \App\Models\LeaveType::all();
 
-        return view('calendar.index', compact('departments', 'leaveTypes'));
+        return Inertia::render('Calendar/Index', [
+            'departments' => $departments,
+            'leaveTypes' => $leaveTypes->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'slug' => $t->slug]),
+        ]);
     }
 
     /**

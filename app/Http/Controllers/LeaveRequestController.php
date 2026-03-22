@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Inertia\Inertia;
 
 class LeaveRequestController extends Controller
 {
@@ -22,7 +23,21 @@ class LeaveRequestController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('leave_request.index', compact('requests'));
+        return Inertia::render('LeaveRequest/Index', [
+            'requests' => $requests->through(fn ($r) => [
+                'id' => $r->id,
+                'leave_type' => $r->leaveType ? ['name' => $r->leaveType->name, 'slug' => $r->leaveType->slug] : null,
+                'start_date' => $r->start_date->format('Y-m-d'),
+                'end_date' => $r->end_date->format('Y-m-d'),
+                'start_date_thai' => $r->start_date->locale('th')->isoFormat('D MMMM YYYY'),
+                'end_date_thai' => $r->end_date->locale('th')->isoFormat('D MMMM YYYY'),
+                'total_days' => $r->total_days + 0,
+                'reason' => $r->reason,
+                'status' => $r->status,
+                'attachment_path' => $r->attachment_path,
+                'created_at_human' => $r->created_at->diffForHumans(),
+            ]),
+        ]);
     }
 
 
@@ -58,7 +73,22 @@ class LeaveRequestController extends Controller
             ->get()
             ->keyBy('leave_type_id');
 
-        return view('leave_request.create', compact('leaveTypes', 'leaveBalances'));
+        return Inertia::render('LeaveRequest/Create', [
+            'leaveTypes' => $leaveTypes->map(fn ($t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'slug' => $t->slug,
+                'max_days_per_year' => $t->max_days_per_year,
+                'requires_advance_notice' => $t->requires_advance_notice,
+                'advance_notice_days' => $t->advance_notice_days,
+            ]),
+            'leaveBalances' => $leaveBalances->map(fn ($b) => [
+                'leave_type_id' => $b->leave_type_id,
+                'total_days' => $b->total_days + 0,
+                'used_days' => $b->used_days + 0,
+                'remaining_days' => $b->remaining_days + 0,
+            ]),
+        ]);
     }
 
     public function store(Request $request)
@@ -269,7 +299,38 @@ class LeaveRequestController extends Controller
     public function show(LeaveRequest $leaveRequest)
     {
         // Simple show for now
-        return view('leave_request.show', compact('leaveRequest'));
+        $leaveRequest->load(['user', 'leaveType', 'approvals.approver']);
+        return Inertia::render('LeaveRequest/Show', [
+            'leaveRequest' => [
+                'id' => $leaveRequest->id,
+                'user' => $leaveRequest->user ? [
+                    'name' => $leaveRequest->user->name,
+                    'rank' => $leaveRequest->user->rank,
+                    'department' => $leaveRequest->user->department,
+                    'avatar' => $leaveRequest->user->avatar,
+                ] : null,
+                'leave_type' => $leaveRequest->leaveType ? ['name' => $leaveRequest->leaveType->name, 'slug' => $leaveRequest->leaveType->slug] : null,
+                'start_date' => $leaveRequest->start_date->format('Y-m-d'),
+                'end_date' => $leaveRequest->end_date->format('Y-m-d'),
+                'start_date_thai' => $leaveRequest->start_date->locale('th')->isoFormat('D MMMM YYYY'),
+                'end_date_thai' => $leaveRequest->end_date->locale('th')->isoFormat('D MMMM YYYY'),
+                'total_days' => $leaveRequest->total_days + 0,
+                'reason' => $leaveRequest->reason,
+                'status' => $leaveRequest->status,
+                'contact_address' => $leaveRequest->contact_address,
+                'temporary_leave_period' => $leaveRequest->temporary_leave_period,
+                'attachment_path' => $leaveRequest->attachment_path,
+                'created_at' => $leaveRequest->created_at->format('Y-m-d H:i:s'),
+                'created_at_human' => $leaveRequest->created_at->diffForHumans(),
+                'approvals' => $leaveRequest->approvals->map(fn ($a) => [
+                    'step' => $a->step,
+                    'status' => $a->status,
+                    'comment' => $a->comment,
+                    'approved_at' => $a->approved_at,
+                    'approver' => $a->approver ? ['name' => $a->approver->name, 'rank' => $a->approver->rank] : null,
+                ]),
+            ],
+        ]);
     }
 
     public function exportPdf(LeaveRequest $leaveRequest)

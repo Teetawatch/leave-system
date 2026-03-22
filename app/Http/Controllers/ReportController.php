@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Exports\LeaveRequestsExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Inertia\Inertia;
 
 class ReportController extends Controller
 {
@@ -61,6 +62,11 @@ class ReportController extends Controller
         }
 
         $requests = $query->orderBy('start_date', 'desc')->paginate(15)->withQueryString();
+        $requests->through(function ($r) {
+            $r->start_date_thai = $r->start_date->locale('th')->translatedFormat('j M Y');
+            $r->end_date_thai   = $r->end_date->locale('th')->translatedFormat('j M Y');
+            return $r;
+        });
 
         // Data for Filters
         if ($isCommander) {
@@ -199,7 +205,7 @@ class ReportController extends Controller
             'total_days' => $monthlyRaw->get($m)?->total_days ?? 0,
         ]);
 
-        return view('reports.index', compact(
+        return Inertia::render('Reports/Index', compact(
             'requests', 'departments', 'leaveTypes',
             'topLeavers', 'popularLeaveTypes', 'totalApprovedLeaves',
             'departmentStats', 'monthlyTrend', 'currentYear'

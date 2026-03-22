@@ -160,6 +160,7 @@ return [
          * Package Service Providers...
          */
         Barryvdh\DomPDF\ServiceProvider::class,
+        Inertia\ServiceProvider::class,
 
         /*
          * Application Service Providers...

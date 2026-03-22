@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\LeaveApprovalService;
+use Inertia\Inertia;
 
 class ApprovalController extends Controller
 {
@@ -56,7 +57,37 @@ class ApprovalController extends Controller
             ->with(['user.supervisor', 'user.manager', 'user.deputy', 'leaveType', 'approvals.approver'])
             ->paginate(10);
 
-        return view('approvals.index', compact('requests'));
+        return Inertia::render('Approvals/Index', [
+            'requests' => $requests->through(fn ($req) => [
+                'id' => $req->id,
+                'user' => $req->user ? [
+                    'id' => $req->user->id,
+                    'name' => $req->user->name,
+                    'rank' => $req->user->rank,
+                    'department' => $req->user->department,
+                    'avatar' => $req->user->avatar,
+                    'supervisor' => $req->user->supervisor ? ['name' => $req->user->supervisor->name, 'rank' => $req->user->supervisor->rank, 'avatar' => $req->user->supervisor->avatar] : null,
+                    'manager' => $req->user->manager ? ['name' => $req->user->manager->name, 'rank' => $req->user->manager->rank, 'avatar' => $req->user->manager->avatar] : null,
+                ] : null,
+                'leave_type' => $req->leaveType ? ['name' => $req->leaveType->name, 'slug' => $req->leaveType->slug] : null,
+                'start_date' => $req->start_date->format('Y-m-d'),
+                'end_date' => $req->end_date->format('Y-m-d'),
+                'start_date_thai' => $req->start_date->locale('th')->isoFormat('D MMMM YYYY'),
+                'end_date_thai' => $req->end_date->locale('th')->isoFormat('D MMMM YYYY'),
+                'total_days' => $req->total_days + 0,
+                'reason' => $req->reason,
+                'status' => $req->status,
+                'attachment_path' => $req->attachment_path,
+                'created_at_human' => $req->created_at->diffForHumans(),
+                'approvals' => $req->approvals->map(fn ($a) => [
+                    'step' => $a->step,
+                    'status' => $a->status,
+                    'comment' => $a->comment,
+                    'approved_at' => $a->approved_at,
+                    'approver' => $a->approver ? ['name' => $a->approver->name, 'rank' => $a->approver->rank, 'avatar' => $a->approver->avatar] : null,
+                ]),
+            ]),
+        ]);
     }
 
     public function approve(Request $request, LeaveRequest $leaveRequest)

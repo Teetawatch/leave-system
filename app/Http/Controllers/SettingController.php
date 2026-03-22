@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\LeaveType;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SettingController extends Controller
 {
     public function index()
     {
         $leaveTypes = LeaveType::all();
-        return view('settings.index', compact('leaveTypes'));
+        return Inertia::render('Settings/Index', ['leaveTypes' => $leaveTypes]);
     }
 
     public function update(Request $request)

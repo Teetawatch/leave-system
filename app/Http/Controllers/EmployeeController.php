@@ -10,6 +10,7 @@ use App\Imports\EmployeeImport;
 use App\Exports\EmployeeTemplateExport;
 use App\Exports\EmployeeDataExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Inertia\Inertia;
 
 class EmployeeController extends Controller
 {
@@ -37,7 +38,7 @@ class EmployeeController extends Controller
         $employees = $query->orderBy('name')->paginate(10);
         $departments = \App\Models\Department::all();
 
-        return view('employees.index', compact('employees', 'departments'));
+        return Inertia::render('Employees/Index', compact('employees', 'departments'));
     }
 
     /**
@@ -47,7 +48,7 @@ class EmployeeController extends Controller
     {
         $supervisors = User::all();
         $departments = \App\Models\Department::all();
-        return view('employees.create', compact('supervisors', 'departments'));
+        return Inertia::render('Employees/Create', compact('supervisors', 'departments'));
     }
 
     /**
@@ -113,7 +114,7 @@ class EmployeeController extends Controller
             }
         }
 
-        return view('employees.edit', compact('employee', 'supervisors', 'departments', 'currentVacationQuota'));
+        return Inertia::render('Employees/Edit', compact('employee', 'supervisors', 'departments', 'currentVacationQuota'));
     }
 
     /**
@@ -225,7 +226,7 @@ class EmployeeController extends Controller
      */
     public function importForm()
     {
-        return view('employees.import');
+        return Inertia::render('Employees/Import');
     }
 
     /**
@@ -338,7 +339,7 @@ class EmployeeController extends Controller
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
 
-        return view('employees.pending-registrations', compact('pendingUsers'));
+        return Inertia::render('Employees/PendingRegistrations', compact('pendingUsers'));
     }
 
     /**
