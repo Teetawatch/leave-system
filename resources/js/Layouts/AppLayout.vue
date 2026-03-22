@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { usePage, Link, router } from '@inertiajs/vue3';
+import Swal from 'sweetalert2';
+import { Toast } from '@/utils/swal';
 
 const props = defineProps({
     title: { type: String, default: '' },
@@ -178,18 +180,18 @@ function initLucide() {
 
 // SweetAlert2 flash messages
 function showFlashMessages() {
-    if (typeof window.Swal === 'undefined') return;
-    
     const f = flash.value;
     if (f.status || f.success) {
-        window.Swal.fire({
-            icon: 'success', title: 'สำเร็จ!', text: f.status || f.success,
-            confirmButtonText: 'ตกลง', confirmButtonColor: '#4f46e5',
-            timer: 3000, timerProgressBar: true,
-        });
+        Toast.fire({ icon: 'success', title: f.status || f.success });
+    }
+    if (f.warning) {
+        Toast.fire({ icon: 'warning', title: f.warning });
+    }
+    if (f.info) {
+        Toast.fire({ icon: 'info', title: f.info });
     }
     if (f.error) {
-        window.Swal.fire({
+        Swal.fire({
             icon: 'error', title: 'เกิดข้อผิดพลาด', text: f.error,
             confirmButtonText: 'ตกลง', confirmButtonColor: '#ef4444',
         });
@@ -199,7 +201,7 @@ function showFlashMessages() {
         let html = '<ul class="text-left text-sm space-y-1">';
         Object.values(errs).forEach(e => { html += `<li>• ${e}</li>`; });
         html += '</ul>';
-        window.Swal.fire({
+        Swal.fire({
             icon: 'error', title: 'กรุณาตรวจสอบข้อมูล', html,
             confirmButtonText: 'ตกลง', confirmButtonColor: '#ef4444',
         });

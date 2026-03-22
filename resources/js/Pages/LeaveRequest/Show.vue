@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
+import { confirmCancel } from '@/utils/swal';
 import { thaiDate, thaiFullDate, thaiMonth, thaiMonthLong, thaiDay, thaiYear, thaiDateTime } from '@/utils/date';
 
 const props = defineProps({ leaveRequest: Object });
@@ -25,8 +26,9 @@ const formatMonth    = (d) => thaiMonth(d).toUpperCase();
 const formatDay      = thaiDay;
 const formatYear     = thaiYear;
 
-function cancelRequest() {
-    if (confirm('คุณต้องการยกเลิกคำขอนี้หรือไม่?')) {
+async function cancelRequest() {
+    const result = await confirmCancel({ title: 'ยืนยันการยกเลิก?', text: 'คุณต้องการยกเลิกคำขอนี้หรือไม่?', confirmText: 'ยกเลิกคำขอ' });
+    if (result.isConfirmed) {
         router.put(`/leave-request/${props.leaveRequest.id}/cancel`);
     }
 }

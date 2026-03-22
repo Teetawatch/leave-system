@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
+import { confirmCancel } from '@/utils/swal';
 import { thaiMonth, thaiDay, thaiYear, thaiDateTime } from '@/utils/date';
 
 const props = defineProps({ guardChange: Object });
@@ -26,8 +27,9 @@ const formatDay      = thaiDay;
 const formatYear     = thaiYear;
 const formatDateTime = thaiDateTime;
 
-function cancelRequest() {
-    if (confirm('ยืนยันการยกเลิกคำขอเปลี่ยนเวรนี้?')) {
+async function cancelRequest() {
+    const result = await confirmCancel({ title: 'ยืนยันการยกเลิก?', text: 'ยืนยันการยกเลิกคำขอเปลี่ยนเวรนี้?', confirmText: 'ยกเลิกคำขอ' });
+    if (result.isConfirmed) {
         router.put(`/guard-change/${props.guardChange.id}/cancel`);
     }
 }

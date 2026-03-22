@@ -2,11 +2,15 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
+import { confirmDialog } from '@/utils/swal';
 
 const props = defineProps({ pendingUsers: Object });
 
 function approve(id) { router.post(`/employees/${id}/approve-registration`); }
-function reject(id) { if (confirm('ปฏิเสธการลงทะเบียนนี้?')) router.post(`/employees/${id}/reject-registration`); }
+async function reject(id) {
+    const result = await confirmDialog({ title: 'ปฏิเสธการลงทะเบียน?', text: 'คุณต้องการปฏิเสธการลงทะเบียนนี้หรือไม่?', icon: 'warning', confirmText: 'ปฏิเสธ', confirmColor: '#ef4444' });
+    if (result.isConfirmed) router.post(`/employees/${id}/reject-registration`);
+}
 
 onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100); });
 </script>

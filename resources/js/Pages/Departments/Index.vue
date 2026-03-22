@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
+import { confirmDelete } from '@/utils/swal';
 
 const props = defineProps({ departments: Object });
 
@@ -13,7 +14,7 @@ function submitAdd() { addForm.post('/departments', { onSuccess: () => addForm.r
 function startEdit(dept) { editingId.value = dept.id; editForm.name = dept.name; }
 function cancelEdit() { editingId.value = null; editForm.reset(); }
 function submitEdit(id) { editForm.put(`/departments/${id}`, { onSuccess: () => cancelEdit() }); }
-function deleteDept(id) { if (confirm('ลบแผนกนี้?')) { useForm({}).delete(`/departments/${id}`); } }
+async function deleteDept(id) { const result = await confirmDelete({ title: 'ลบแผนก?', text: 'ข้อมูลแผนกนี้จะถูกลบออกถาวร' }); if (result.isConfirmed) { useForm({}).delete(`/departments/${id}`); } }
 
 const colors = ['indigo', 'emerald', 'amber', 'rose', 'violet', 'cyan', 'orange', 'teal'];
 function colorCls(i) {

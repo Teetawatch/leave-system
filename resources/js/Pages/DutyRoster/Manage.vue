@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useForm, Link, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
+import { confirmDialog } from '@/utils/swal';
 
 const props = defineProps({ days: Array, year: Number, month: Number, monthName: String, thaiYear: Number, users: Array, seniorRosters: Array, exemptUserIds: Array });
 
@@ -45,14 +46,16 @@ async function saveDay(dateStr) {
     f.saving = false;
 }
 
-function autoSchedule() {
-    if (confirm('ยืนยันการจัดเวรอัตโนมัติสำหรับเดือนนี้?')) {
+async function autoSchedule() {
+    const result = await confirmDialog({ title: 'ยืนยันการจัดเวรอัตโนมัติ?', text: 'ระบบจะจัดตารางเวรสำหรับเดือนนี้โดยอัตโนมัติ', icon: 'question', confirmText: 'จัดเวรอัตโนมัติ', confirmColor: '#4f46e5' });
+    if (result.isConfirmed) {
         router.post('/duty-roster/auto-schedule', { year: props.year, month: props.month });
     }
 }
 
-function clearMonth() {
-    if (confirm('ยืนยันการล้างข้อมูลเวรทั้งหมดสำหรับเดือนนี้?')) {
+async function clearMonth() {
+    const result = await confirmDialog({ title: 'ล้างข้อมูลเวรทั้งหมด?', text: 'รายการเวรทั้งหมดของเดือนนี้จะถูกลบออก ไม่สามารถย้อนกลับได้', icon: 'warning', confirmText: 'ล้างข้อมูล', confirmColor: '#ef4444' });
+    if (result.isConfirmed) {
         router.delete('/duty-roster/clear-month', { data: { year: props.year, month: props.month } });
     }
 }

@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import { ref, onMounted, nextTick } from 'vue';
+import { confirmCancel } from '@/utils/swal';
 import { thaiDate, thaiFullDate, thaiMonthLong, thaiDay, thaiYear } from '@/utils/date';
 
 const props = defineProps({ requests: Object });
@@ -50,8 +51,9 @@ function isPending(status) {
     return status && status.startsWith('pending_');
 }
 
-function cancelRequest(id) {
-    if (confirm('ท่านต้องการยกเลิกคำขอลาใช่หรือไม่?')) {
+async function cancelRequest(id) {
+    const result = await confirmCancel({ title: 'ยืนยันการยกเลิก?', text: 'ท่านต้องการยกเลิกคำขอลาใช่หรือไม่?', confirmText: 'ยกเลิกคำขอลา' });
+    if (result.isConfirmed) {
         router.put(`/leave-request/${id}/cancel`);
     }
 }

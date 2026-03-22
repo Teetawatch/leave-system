@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
+import { confirmDelete } from '@/utils/swal';
 
 const props = defineProps({ employees: Object, departments: Array });
 const search = ref('');
@@ -12,8 +13,9 @@ function applyFilter() {
     router.get('/employees', { search: search.value, department: selectedDept.value }, { preserveState: true });
 }
 
-function deleteEmployee(id) {
-    if (confirm('คุณต้องการลบพนักงานนี้หรือไม่?')) router.delete(`/employees/${id}`);
+async function deleteEmployee(id) {
+    const result = await confirmDelete({ title: 'ลบข้อมูลบุคลากร?', text: 'คุณต้องการลบบุคลากรนี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้' });
+    if (result.isConfirmed) router.delete(`/employees/${id}`);
 }
 
 function roleLabel(role) {
