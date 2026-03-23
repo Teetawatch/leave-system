@@ -62,8 +62,8 @@ function snapshotUrl(path, type = 'student') {
     if (!path) return null;
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
     const baseUrl = type === 'employee'
-        ? 'https://faceattendance.nass.ac.th/storage-file?path=snapshots'
-        : 'https://faceattendance.nass.ac.th/storage-file?path=snapshots';
+        ? 'https://faceattendance.nass.ac.th/storage-file?path='
+        : 'https://faceattendance.nass.ac.th/storage-file?path=';
     return baseUrl + encodeURIComponent(path);
 }
 
@@ -83,12 +83,24 @@ function formatTime(val) {
     if (!val) return '-';
     const str = String(val);
     const match = str.match(/(\d{2}:\d{2})/);
-    return match ? match[1] : str;
+    if (!match) return str;
+    const [h, m] = match[1].split(':').map(Number);
+    const date = new Date(2000, 0, 1, h, m);
+    return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function formatDate(val) {
     if (!val) return '-';
-    return String(val).substring(0, 10);
+    const dateStr = String(val).substring(0, 10);
+    const [y, m, d] = dateStr.split('-').map(Number);
+    if (!y || !m || !d) return dateStr;
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        calendar: 'buddhist',
+    });
 }
 
 const absentStudentsList = computed(() => {
