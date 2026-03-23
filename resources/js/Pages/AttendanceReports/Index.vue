@@ -84,9 +84,7 @@ function formatTime(val) {
     const str = String(val);
     const match = str.match(/(\d{2}:\d{2})/);
     if (!match) return str;
-    const [h, m] = match[1].split(':').map(Number);
-    const date = new Date(2000, 0, 1, h, m);
-    return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return match[1];
 }
 
 function formatDate(val) {

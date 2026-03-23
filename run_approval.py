@@ -1,153 +1,6 @@
-<script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
-import { thaiFullDate } from '@/utils/date';
+import re
 
-const props = defineProps({ requests: Object });
-const page = usePage();
-const authUser = computed(() => page.props.auth?.user);
-const savedSignatureUrl = computed(() => authUser.value?.signature ? `/storage/${authUser.value.signature}` : null);
-
-const approveForm = useForm({ comment: '', signature: '', use_saved_signature: '0' });
-const rejectForm = useForm({ comment: '' });
-const activeModal = ref(null);
-const activeRequest = ref(null);
-
-// Signature pad
-const signatureCanvas = ref(null);
-const isDrawing = ref(false);
-const signatureMode = ref('saved'); // 'saved' | 'draw'
-let lastX = 0, lastY = 0;
-
-function openApprove(req) {
-    activeRequest.value = req;
-    activeModal.value = 'approve';
-    approveForm.signature = '';
-    approveForm.use_saved_signature = savedSignatureUrl.value ? '1' : '0';
-    signatureMode.value = savedSignatureUrl.value ? 'saved' : 'draw';
-    nextTick(() => {
-        if (window.lucide) window.lucide.createIcons();
-        if (signatureMode.value === 'draw') initCanvas();
-    });
-}
-function openReject(req) {
-    activeRequest.value = req;
-    activeModal.value = 'reject';
-    nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
-}
-function openAttachment(req) {
-    activeRequest.value = req;
-    activeModal.value = 'attachment';
-    nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
-}
-function closeModal() {
-    activeModal.value = null;
-    activeRequest.value = null;
-    approveForm.reset();
-    rejectForm.reset();
-    signatureMode.value = 'saved';
-}
-
-function switchSignatureMode(mode) {
-    signatureMode.value = mode;
-    if (mode === 'saved') {
-        approveForm.use_saved_signature = '1';
-        approveForm.signature = '';
-    } else {
-        approveForm.use_saved_signature = '0';
-        approveForm.signature = '';
-        nextTick(() => initCanvas());
-    }
-}
-
-function initCanvas() {
-    const canvas = signatureCanvas.value;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-}
-
-function getPos(e, canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    if (e.touches) {
-        return {
-            x: (e.touches[0].clientX - rect.left) * scaleX,
-            y: (e.touches[0].clientY - rect.top) * scaleY,
-        };
-    }
-    return {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
-    };
-}
-
-function startDraw(e) {
-    e.preventDefault();
-    isDrawing.value = true;
-    const canvas = signatureCanvas.value;
-    const pos = getPos(e, canvas);
-    lastX = pos.x; lastY = pos.y;
-}
-
-function draw(e) {
-    e.preventDefault();
-    if (!isDrawing.value) return;
-    const canvas = signatureCanvas.value;
-    const ctx = canvas.getContext('2d');
-    const pos = getPos(e, canvas);
-    ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    lastX = pos.x; lastY = pos.y;
-}
-
-function stopDraw(e) {
-    if (!isDrawing.value) return;
-    isDrawing.value = false;
-    const canvas = signatureCanvas.value;
-    approveForm.signature = canvas.toDataURL('image/png');
-}
-
-function clearCanvas() {
-    approveForm.signature = '';
-    initCanvas();
-}
-
-function submitApprove() {
-    approveForm.post(`/approvals/${activeRequest.value.id}/approve`, { onSuccess: () => closeModal() });
-}
-function submitReject() {
-    rejectForm.post(`/approvals/${activeRequest.value.id}/reject`, { onSuccess: () => closeModal() });
-}
-
-const formatDate = thaiFullDate;
-
-function actionLabel(status) {
-    const map = {
-        pending_supervisor: 'อนุญาต',
-        pending_deputy_director: 'รับทราบ',
-    };
-    return map[status] || 'อนุมัติ';
-}
-
-const isLoaded = ref(false);
-onMounted(() => { 
-    setTimeout(() => { 
-        if (window.lucide) window.lucide.createIcons(); 
-        isLoaded.value = true;
-    }, 150); 
-});
-</script>
-
-
+new_template = """
 <template>
     <AppLayout title="ระบบอนุมัติใบลา">
         <div class="premium-wrapper min-h-screen -m-4 md:-m-8 pb-32 relative overflow-hidden bg-slate-50 font-sans selection:bg-indigo-200">
@@ -632,3 +485,25 @@ onMounted(() => {
 .animation-delay-2000 { animation-delay: 2s; }
 .animation-delay-4000 { animation-delay: 4s; }
 </style>
+"""
+
+import sys
+
+with open('d:/Project/leave-system/resources/js/Pages/Approvals/Index.vue', 'r', encoding='utf-8') as f:
+    text = f.read()
+
+# SPLIT ON </script> 
+if '</script>' in text:
+    script_part = text.split('</script>')[0] + '</script>\n\n'
+    
+    # inject isLoaded ref into script part safely
+    if 'const isLoaded = ref(false);' not in script_part:
+        script_part = script_part.replace('const activeRequest = ref(null);', 'const activeRequest = ref(null);\nconst isLoaded = ref(false);')
+        script_part = script_part.replace('onMounted(() => {', 'onMounted(() => {\n    setTimeout(() => { isLoaded.value = true; }, 150);')
+    
+    final_content = script_part + new_template
+    with open('d:/Project/leave-system/resources/js/Pages/Approvals/Index.vue', 'w', encoding='utf-8') as f:
+        f.write(final_content)
+    print("Approvals/Index.vue updated correctly!")
+else:
+    print("Could not find script part. Fail.")

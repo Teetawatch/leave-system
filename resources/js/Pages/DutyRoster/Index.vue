@@ -1,9 +1,11 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link } from '@inertiajs/vue3';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({ days: Array, year: Number, month: Number, monthName: String, thaiYear: Number, seniorRosters: Array });
+
+const isLoaded = ref(false);
 
 const prevMonth = computed(() => {
     let m = props.month - 1, y = props.year;
@@ -29,16 +31,10 @@ function isWeekend(dateStr) {
 
 function getRowClasses(day) {
     const classes = [];
-    if (isToday(day.date)) classes.push('today');
-    else if (isWeekend(day.date)) classes.push('weekend');
-    else if (day.roster) classes.push('assigned');
+    if (isToday(day.date)) classes.push('bg-blue-50/60 shadow-[inset_4px_0_0_#3b82f6]');
+    else if (isWeekend(day.date)) classes.push('bg-rose-50/40');
+    else if (day.roster) classes.push('bg-white/50');
     return classes.join(' ');
-}
-
-function getDateClasses(day) {
-    if (isToday(day.date)) return 'today';
-    if (isWeekend(day.date)) return 'weekend';
-    return 'normal';
 }
 
 function formatThaiDate(dateStr) {
@@ -51,556 +47,267 @@ function formatThaiDate(dateStr) {
     return `${day} ${month} ${year}`;
 }
 
-onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100); });
+onMounted(() => { 
+    setTimeout(() => { 
+        if (window.lucide) window.lucide.createIcons(); 
+        isLoaded.value = true;
+    }, 100); 
+});
 </script>
 
 <template>
     <AppLayout title="ตารางเวรประจำเดือน">
-        <div class="roster-container">
-            <!-- Background decoration -->
-            <div class="bg-decoration">
-                <div class="bg-circle circle-1"></div>
-                <div class="bg-circle circle-2"></div>
-                <div class="bg-circle circle-3"></div>
+        <div class="premium-wrapper min-h-screen -m-4 md:-m-8 pb-32 relative overflow-hidden bg-slate-50 font-sans selection:bg-blue-200">
+            <!-- Animated Liquid Background Shapes -->
+            <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+                <div class="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[80px] mix-blend-multiply animate-blob"></div>
+                <div class="absolute top-[30%] left-[-10%] w-[500px] h-[500px] bg-indigo-400/20 rounded-full blur-[80px] mix-blend-multiply animate-blob animation-delay-2000"></div>
+                <div class="absolute bottom-[-10%] right-[10%] w-[700px] h-[700px] bg-cyan-300/20 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-4000"></div>
             </div>
 
-            <!-- Header -->
-            <header class="roster-header">
-                <div class="header-badge">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    ตารางเวร
-                </div>
-                <h1 class="page-title">ตารางเวรประจำเดือน</h1>
-                <p class="page-subtitle">ระบบจัดการเวรปฏิบัติหน้าที่ โรงเรียนพลาธิการ</p>
-
-                <div class="header-actions">
-                    <div class="legend-group">
-                        <div class="legend-item">
-                            <span class="legend-dot officer"></span>
-                            <span class="legend-text">นายทหารเวร</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot assistant"></span>
-                            <span class="legend-text">ผู้ช่วยนายทหารเวร</span>
-                        </div>
+            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+                <!-- Header -->
+                <div class="mb-8" :class="{ 'opacity-100 translate-y-0': isLoaded, 'opacity-0 translate-y-4': !isLoaded }" style="transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-badge mb-6 shadow-sm border border-blue-100/50">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                        </span>
+                        <span class="text-blue-700 text-[11px] font-black uppercase tracking-[0.2em]">Duty Roster Management</span>
                     </div>
-                    <a :href="`/duty-roster/export-pdf?year=${year}&month=${month}`" target="_blank" class="export-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        ส่งออก PDF
-                    </a>
-                </div>
-            </header>
-
-            <!-- Month Navigation -->
-            <div class="month-nav-card">
-                <Link :href="`/duty-roster?year=${prevMonth.year}&month=${prevMonth.month}`" class="nav-btn nav-prev">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                </Link>
-                <div class="month-info">
-                    <h2 class="month-title">{{ monthName }} {{ thaiYear }}</h2>
-                    <p class="month-stats">กำหนดเวรแล้ว <span class="stat-highlight">{{ rosterCount }}</span> วัน / <span class="stat-total">{{ days?.length || 0 }}</span> วัน</p>
-                </div>
-                <Link :href="`/duty-roster?year=${nextMonth.year}&month=${nextMonth.month}`" class="nav-btn nav-next">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-                </Link>
-            </div>
-
-            <!-- Senior Duty Rosters -->
-            <section v-if="seniorRosters && seniorRosters.length > 0" class="senior-section">
-                <h3 class="section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    นายทหารเวรอาวุโส
-                </h3>
-                <div class="senior-grid">
-                    <div v-for="sr in seniorRosters" :key="sr.id" class="senior-card">
-                        <div class="senior-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-3">
+                                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">ตารางเวร</span> ประจำเดือน
+                            </h1>
+                            <p class="text-slate-500 font-medium text-lg flex items-center gap-2">
+                                <i data-lucide="shield-check" class="w-5 h-5 text-indigo-500"></i>
+                                ระบบจัดการเวรปฏิบัติหน้าที่ โรงเรียนพลาธิการ
+                            </p>
                         </div>
-                        <div class="senior-content">
-                            <div class="senior-label">นายทหารเวรอาวุโส</div>
-                            <div class="senior-name">{{ sr.senior_officer?.rank }} {{ sr.senior_officer?.name }}</div>
-                            <div class="senior-period">{{ sr.start_date }} — {{ sr.end_date }}</div>
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                            <!-- Legend -->
+                            <div class="glass-card px-4 py-2 rounded-xl flex items-center gap-4 border border-white/60">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></span>
+                                    <span class="text-xs font-bold text-slate-700">นายทหารเวร</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 shadow-sm"></span>
+                                    <span class="text-xs font-bold text-slate-700">ผู้ช่วยนายทหารเวร</span>
+                                </div>
+                            </div>
+                            <a :href="`/duty-roster/export-pdf?year=${year}&month=${month}`" target="_blank" 
+                               class="glass-btn px-5 py-2.5 rounded-xl text-sm font-bold text-blue-700 hover:text-blue-800 hover:bg-white/80 flex items-center gap-2 transition-all">
+                                <i data-lucide="printer" class="w-4 h-4"></i> พิมพ์ PDF
+                            </a>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- Daily Roster Table -->
-            <main class="roster-main">
-                <div class="table-wrapper">
-                    <table class="roster-table">
-                        <thead>
-                            <tr>
-                                <th class="col-date">
-                                    <div class="header-cell">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                                        วันที่
-                                    </div>
-                                </th>
-                                <th class="col-officer">
-                                    <div class="header-cell">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                        นายทหารเวร
-                                    </div>
-                                </th>
-                                <th class="col-assistant">
-                                    <div class="header-cell">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                        ผู้ช่วยนายทหารเวร
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="day in days" :key="day.date" class="roster-row" :class="getRowClasses(day)">
-                                <td class="cell-date">
-                                    <div class="date-cell">
-                                        <span v-if="isToday(day.date)" class="today-indicator"></span>
-                                        <span class="date-text" :class="getDateClasses(day)">{{ formatThaiDate(day.date) }}</span>
-                                    </div>
-                                </td>
-                                <td class="cell-officer">
-                                    <div v-if="day.roster?.duty_officer" class="officer-badge officer">
-                                        <span class="officer-rank">{{ day.roster.duty_officer.rank }}</span>
-                                        <span class="officer-name">{{ day.roster.duty_officer.name }}</span>
-                                    </div>
-                                    <span v-else class="empty-cell">—</span>
-                                </td>
-                                <td class="cell-assistant">
-                                    <div v-if="day.roster?.assistant_duty_officer" class="officer-badge assistant">
-                                        <span class="officer-rank">{{ day.roster.assistant_duty_officer.rank }}</span>
-                                        <span class="officer-name">{{ day.roster.assistant_duty_officer.name }}</span>
-                                    </div>
-                                    <span v-else class="empty-cell">—</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Month Navigation -->
+                <div class="glass-card rounded-[2rem] p-6 flex items-center justify-between mb-8 overflow-hidden relative group"
+                     :class="{ 'opacity-100 translate-y-0': isLoaded, 'opacity-0 translate-y-4': !isLoaded }" style="transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: 150ms;">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-50/40 via-transparent to-indigo-50/40 opacity-50 pointer-events-none"></div>
+                    
+                    <Link :href="`/duty-roster?year=${prevMonth.year}&month=${prevMonth.month}`" 
+                          class="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/60 text-slate-500 hover:bg-blue-50 hover:text-blue-600 border border-white/80 shadow-sm hover:shadow-md transition-all duration-300 relative z-10 group-hover:-translate-x-1">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </Link>
+                    
+                    <div class="text-center relative z-10">
+                        <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight mb-1">
+                            {{ monthName }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">{{ thaiYear }}</span>
+                        </h2>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/50 border border-blue-100 mt-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                            <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                                กำหนดเวรแล้ว <span class="text-emerald-500">{{ rosterCount }}</span> / <span class="text-slate-400">{{ days?.length || 0 }}</span> วัน
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <Link :href="`/duty-roster?year=${nextMonth.year}&month=${nextMonth.month}`" 
+                          class="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/60 text-slate-500 hover:bg-blue-50 hover:text-blue-600 border border-white/80 shadow-sm hover:shadow-md transition-all duration-300 relative z-10 group-hover:translate-x-1">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </Link>
                 </div>
-            </main>
+
+                <!-- Senior Duty Rosters -->
+                <section v-if="seniorRosters && seniorRosters.length > 0" class="mb-8"
+                         :class="{ 'opacity-100 translate-y-0': isLoaded, 'opacity-0 translate-y-4': !isLoaded }" style="transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: 300ms;">
+                    <div class="flex items-center gap-3 mb-4 pl-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center shadow-md">
+                            <i data-lucide="star" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-800 tracking-tight">นายทหารเวรอาวุโส</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div v-for="(sr, index) in seniorRosters" :key="sr.id" 
+                             class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-400 hover:-translate-y-1 transition-transform duration-300 flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 mt-0.5 border border-amber-100 overflow-hidden shadow-sm">
+                                <img v-if="sr.senior_officer?.avatar" :src="`/storage/${sr.senior_officer.avatar}`" class="w-full h-full object-cover">
+                                <i v-else data-lucide="user-check" class="w-5 h-5 relative z-10"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-slate-800 mb-0.5">{{ sr.senior_officer?.rank }} {{ sr.senior_officer?.name }}</h4>
+                                <p class="text-xs font-bold text-slate-400 mb-2">นายทหารเวรอาวุโส</p>
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 text-orange-600 text-[10px] font-black border border-orange-100">
+                                    <i data-lucide="calendar" class="w-3 h-3"></i>
+                                    {{ sr.start_date }} — {{ sr.end_date }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Daily Roster Table -->
+                <main class="glass-card rounded-[2rem] overflow-hidden" :class="{ 'opacity-100 translate-y-0': isLoaded, 'opacity-0 translate-y-8': !isLoaded }" style="transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: 450ms;">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white/40 border-b border-white/60">
+                                    <th class="px-6 py-5 font-black text-slate-400 text-[11px] uppercase tracking-widest pl-8 w-1/3">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="calendar-days" class="w-4 h-4"></i> วันที่
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-5 font-black text-slate-400 text-[11px] uppercase tracking-widest w-1/3">
+                                        <div class="flex items-center gap-2 text-blue-600">
+                                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> นายทหารเวร
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-5 font-black text-slate-400 text-[11px] uppercase tracking-widest pr-8 w-1/3">
+                                        <div class="flex items-center gap-2 text-pink-600">
+                                            <span class="w-2 h-2 rounded-full bg-pink-500"></span> ผู้ช่วยนายทหารเวร
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/40 border-t border-white/60">
+                                <tr v-for="(day, index) in days" :key="day.date" 
+                                    class="group transition-colors duration-300 hover:bg-white/70"
+                                    :class="getRowClasses(day)">
+                                    
+                                    <!-- Date column -->
+                                    <td class="px-6 py-4 pl-8 align-middle">
+                                        <div class="flex items-center gap-3 relative">
+                                            <div v-if="isToday(day.date)" class="absolute -left-5 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+                                            <div v-if="isToday(day.date)" class="absolute -left-5 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.8)]"></div>
+                                            
+                                            <span class="font-bold text-base" :class="isToday(day.date) ? 'text-blue-600' : isWeekend(day.date) ? 'text-rose-500' : 'text-slate-700'">
+                                                {{ formatThaiDate(day.date) }}
+                                            </span>
+                                            <span v-if="isToday(day.date)" class="ml-2 px-2 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-600 border border-blue-200 uppercase">วันนี้</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Duty Officer column -->
+                                    <td class="px-6 py-4 align-middle">
+                                        <div v-if="day.roster?.duty_officer" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 shadow-sm group-hover:shadow transition-shadow">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs shrink-0 border border-blue-200 overflow-hidden shadow-sm">
+                                                <img v-if="day.roster.duty_officer?.avatar" :src="`/storage/${day.roster.duty_officer.avatar}`" class="w-full h-full object-cover">
+                                                <span v-else>{{ day.roster.duty_officer.name?.charAt(0) }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-xs font-black text-blue-800 leading-tight">{{ day.roster.duty_officer.rank }}</span>
+                                                <span class="text-sm font-bold text-slate-800 leading-tight">{{ day.roster.duty_officer.name }}</span>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-slate-300 font-bold px-4">—</div>
+                                    </td>
+
+                                    <!-- Assistant Duty Officer column -->
+                                    <td class="px-6 py-4 pr-8 align-middle">
+                                        <div v-if="day.roster?.assistant_duty_officer" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-50/80 to-pink-50/80 border border-rose-100 shadow-sm group-hover:shadow transition-shadow">
+                                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200 overflow-hidden shadow-sm">
+                                                <img v-if="day.roster.assistant_duty_officer?.avatar" :src="`/storage/${day.roster.assistant_duty_officer.avatar}`" class="w-full h-full object-cover">
+                                                <span v-else>{{ day.roster.assistant_duty_officer.name?.charAt(0) }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-xs font-black text-rose-800 leading-tight">{{ day.roster.assistant_duty_officer.rank }}</span>
+                                                <span class="text-sm font-bold text-slate-800 leading-tight">{{ day.roster.assistant_duty_officer.name }}</span>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-slate-300 font-bold px-4">—</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </main>
+            </div>
         </div>
     </AppLayout>
 </template>
 
 <style scoped>
-/* ── Variables ─────────────────────────────────── */
-:root {
-    --navy: #1e3a5f;
-    --navy-mid: #2d5282;
-    --blue: #1a6db5;
-    --blue-light: #3b82f6;
-    --blue-pale: #dbeafe;
-    --sky: #0ea5e9;
-    --white: #ffffff;
-    --gray-50: #f8fafc;
-    --gray-100: #f1f5f9;
-    --gray-200: #e2e8f0;
-    --gray-400: #94a3b8;
-    --gray-500: #64748b;
-    --gray-700: #334155;
-    --gray-900: #0f172a;
-    --amber: #f59e0b;
-    --amber-light: #fef3c7;
-    --amber-pale: #fefce8;
-    --emerald: #10b981;
-    --emerald-light: #d1fae5;
-    --emerald-pale: #ecfdf5;
-    --rose: #f43f5e;
-    --rose-light: #fecaca;
-    --rose-pale: #fef2f2;
-    --radius: 0.75rem;
-    --radius-sm: 0.5rem;
-    --radius-lg: 1rem;
-    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.07), 0 20px 40px -15px rgba(30,58,95,0.12);
+/* Liquid Glass Aesthetic */
+.glass-badge {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
-/* ── Reset / Base ───────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ── Layout ─────────────────────────────────────── */
-.roster-container {
-    min-height: 100vh;
-    font-family: 'Sarabun', 'Noto Sans Thai', 'Inter', sans-serif;
-    background: var(--gray-50);
-    position: relative;
-    overflow: hidden;
-    padding: 2rem 1.5rem;
+.glass-btn {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+}
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.08), inset 0 2px 4px rgba(255, 255, 255, 1);
 }
 
-/* ── Background decoration ──────────────────────── */
-.bg-decoration { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.bg-circle {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    animation: breathe 8s ease-in-out infinite;
+.glass-card {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
-.circle-1 { width: 600px; height: 600px; background: radial-gradient(circle, #bfdbfe 0%, transparent 70%); top: -200px; right: -100px; opacity: 0.7; }
-.circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, #e0f2fe 0%, transparent 70%); bottom: -150px; left: -100px; opacity: 0.6; animation-delay: -3s; }
-.circle-3 { width: 400px; height: 400px; background: radial-gradient(circle, #ede9fe 0%, transparent 70%); top: 40%; left: 30%; opacity: 0.4; animation-delay: -5s; }
-@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-
-/* ── Header ─────────────────────────────────────── */
-.roster-header {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    margin-bottom: 2.5rem;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 15px 50px -10px rgba(59, 130, 246, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-.header-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: rgba(26,109,181,0.1);
-    border: 1px solid rgba(26,109,181,0.2);
-    color: var(--blue);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 0.375rem 0.875rem;
-    border-radius: 100px;
-    margin-bottom: 1.5rem;
-    backdrop-filter: blur(8px);
+/* Animations */
+@keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
 }
 
-.page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
+.animate-blob {
+    animation: blob 15s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.page-subtitle {
-    font-size: 1rem;
-    color: var(--gray-500);
-    margin-bottom: 2rem;
+.animation-delay-2000 {
+    animation-delay: 2s;
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+.animation-delay-4000 {
+    animation-delay: 4s;
 }
 
-.legend-group {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    background: var(--white);
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--gray-200);
-    box-shadow: var(--shadow);
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
 }
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
 }
-
-.legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(203, 213, 225, 0.5);
+    border-radius: 10px;
 }
-.legend-dot.officer { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.legend-dot.assistant { background: linear-gradient(135deg, #ec4899, #db2777); }
-
-.legend-text {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--gray-700);
-}
-
-.export-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, var(--navy), var(--blue));
-    color: white;
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--radius-lg);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.25s;
-    box-shadow: var(--shadow);
-}
-.export-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
-}
-
-/* ── Month Navigation ───────────────────────────── */
-.month-nav-card {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow);
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.nav-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px; height: 44px;
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    color: var(--gray-500);
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.nav-btn:hover {
-    background: var(--white);
-    border-color: var(--blue-light);
-    color: var(--blue-light);
-    transform: scale(1.05);
-}
-
-.month-info { text-align: center; }
-.month-title {
-    font-size: 1.375rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 0.25rem;
-}
-.month-stats {
-    font-size: 0.875rem;
-    color: var(--gray-500);
-}
-.stat-highlight { color: var(--emerald); font-weight: 600; }
-.stat-total { color: var(--gray-400); }
-
-/* ── Senior Section ───────────────────────────────── */
-.senior-section {
-    position: relative;
-    z-index: 1;
-    margin-bottom: 2rem;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 1rem;
-}
-
-.senior-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-}
-
-.senior-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: linear-gradient(135deg, var(--amber-pale) 0%, var(--amber-light) 50%, #fde68a 100%);
-    border: 1px solid var(--amber);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem;
-    transition: all 0.25s;
-    position: relative;
-    overflow: hidden;
-}
-.senior-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to bottom, var(--amber), #f59e0b);
-}
-.senior-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.senior-icon {
-    width: 48px; height: 48px;
-    background: rgba(245,158,11,0.15);
-    border-radius: var(--radius);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--amber);
-    flex-shrink: 0;
-}
-
-.senior-content {
-    flex: 1;
-}
-.senior-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--amber);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-}
-.senior-name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--gray-900);
-    margin-bottom: 0.25rem;
-}
-.senior-period {
-    font-size: 0.8125rem;
-    color: var(--gray-500);
-}
-
-/* ── Roster Table ───────────────────────────────── */
-.roster-main {
-    position: relative;
-    z-index: 1;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.table-wrapper {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-}
-
-.roster-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.roster-table thead th {
-    background: var(--gray-50);
-    border-bottom: 1px solid var(--gray-200);
-    padding: 1rem 1.25rem;
-    text-align: left;
-    font-weight: 700;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--gray-500);
-}
-
-.header-cell {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.roster-table tbody tr {
-    border-bottom: 1px solid var(--gray-100);
-    transition: background-color 0.2s;
-}
-.roster-table tbody tr:hover {
-    background: var(--gray-50);
-}
-
-.roster-table tbody tr.today {
-    background: var(--blue-pale);
-    box-shadow: inset 3px 0 0 var(--blue-light);
-}
-.roster-table tbody tr.weekend {
-    background: var(--rose-pale);
-}
-.roster-table tbody tr.assigned {
-    background: var(--emerald-pale);
-}
-
-.roster-table tbody td {
-    padding: 1rem 1.25rem;
-    vertical-align: middle;
-}
-
-/* Date cell */
-.date-cell {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.today-indicator {
-    width: 8px; height: 8px;
-    background: var(--blue-light);
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-.date-text {
-    font-weight: 600;
-    font-size: 0.9375rem;
-}
-.date-text.today { color: var(--blue-light); }
-.date-text.weekend { color: var(--rose); }
-.date-text.normal { color: var(--gray-700); }
-
-/* Officer badges */
-.officer-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.875rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    border: 1px solid;
-}
-.officer-badge.officer {
-    background: var(--blue-pale);
-    color: var(--blue);
-    border-color: var(--blue-light);
-}
-.officer-badge.assistant {
-    background: var(--rose-pale);
-    color: var(--rose);
-    border-color: var(--rose-light);
-}
-
-.officer-rank {
-    font-weight: 700;
-}
-
-.empty-cell {
-    color: var(--gray-300);
-    font-weight: 600;
-}
-
-/* ── Responsive ───────────────────────────────── */
-@media (max-width: 768px) {
-    .roster-container { padding: 1rem; }
-    .page-title { font-size: 1.5rem; }
-    .header-actions { flex-direction: column; gap: 1rem; }
-    .legend-group { flex-direction: column; gap: 0.75rem; }
-    .month-nav-card { flex-direction: column; gap: 1rem; }
-    .senior-grid { grid-template-columns: 1fr; }
-    .table-wrapper { overflow-x: auto; }
-    .roster-table { min-width: 600px; }
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.8);
 }
 </style>
