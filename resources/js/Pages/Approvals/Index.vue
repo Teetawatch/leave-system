@@ -36,6 +36,11 @@ function openReject(req) {
     activeModal.value = 'reject';
     nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
 }
+function openAttachment(req) {
+    activeRequest.value = req;
+    activeModal.value = 'attachment';
+    nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+}
 function closeModal() {
     activeModal.value = null;
     activeRequest.value = null;
@@ -242,12 +247,12 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
 
                                 <!-- Attachment -->
                                 <div v-if="req.attachment_path" class="mt-6">
-                                    <a :href="`/storage/${req.attachment_path}`" target="_blank"
+                                    <button @click="openAttachment(req)"
                                         class="inline-flex items-center gap-3 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 transition-colors group/attach">
                                         <i data-lucide="paperclip" class="w-4 h-4 group-hover/attach:rotate-12 transition-transform"></i>
                                         ดูเอกสารแนบ
                                         <i data-lucide="maximize-2" class="w-3 h-3 opacity-50"></i>
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
 
@@ -445,6 +450,59 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Attachment Modal -->
+        <Teleport to="body">
+            <Transition enter-active-class="ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
+                leave-active-class="ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="activeModal === 'attachment'" class="fixed inset-0 z-[100] overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+                        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md" @click="closeModal"></div>
+                        <div class="bg-white rounded-[3rem] text-left overflow-hidden shadow-2xl transform transition-all relative w-full max-w-4xl max-h-[90vh] flex flex-col">
+                            <div class="bg-white p-6 md:p-8 flex-shrink-0">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="w-14 h-14 rounded-[1.5rem] bg-indigo-50 text-indigo-500 flex items-center justify-center shadow-inner">
+                                        <i data-lucide="paperclip" class="w-7 h-7"></i>
+                                    </div>
+                                    <button type="button" @click="closeModal" class="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors">
+                                        <i data-lucide="x" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-2">เอกสารแนบ</h3>
+                                <p class="text-slate-500 font-medium text-sm">เอกสารแนบจากคำขอลาของ <span class="font-black text-slate-900">{{ activeRequest?.user?.rank }}{{ activeRequest?.user?.name }}</span></p>
+                            </div>
+                            <div class="flex-1 overflow-auto p-6 md:p-8 bg-slate-50">
+                                <div class="bg-white rounded-2xl shadow-lg overflow-hidden" style="min-height: 500px;">
+                                    <iframe 
+                                        v-if="activeRequest?.attachment_path"
+                                        :src="`/storage/${activeRequest.attachment_path}`" 
+                                        class="w-full h-full min-h-[500px] border-0"
+                                        frameborder="0">
+                                    </iframe>
+                                    <div v-else class="flex items-center justify-center h-96 text-slate-400">
+                                        <div class="text-center">
+                                            <i data-lucide="file-x" class="w-16 h-16 mx-auto mb-4 text-slate-300"></i>
+                                            <p class="text-lg font-medium">ไม่พบเอกสารแนบ</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white px-6 py-4 md:px-8 flex flex-col sm:flex-row-reverse gap-3 border-t border-slate-100">
+                                <a :href="`/storage/${activeRequest?.attachment_path}`" target="_blank"
+                                    class="flex-1 inline-flex justify-center items-center px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-indigo-500/20 transition-all hover:-translate-y-1">
+                                    <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                    ดาวน์โหลดเอกสาร
+                                </a>
+                                <button type="button" @click="closeModal"
+                                    class="flex-1 inline-flex justify-center items-center px-8 py-4 bg-white border border-slate-200 text-slate-400 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-100 transition-all">
+                                    ปิด
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

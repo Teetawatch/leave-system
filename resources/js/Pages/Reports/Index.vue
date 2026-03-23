@@ -1,7 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 
 const props = defineProps({
     requests: Object, departments: Array, leaveTypes: Array,
@@ -43,6 +43,48 @@ function statusLabel(status) {
 function statusCls(status) {
     const map = { approved: 'bg-emerald-100 text-emerald-700', rejected: 'bg-rose-100 text-rose-700', cancelled: 'bg-slate-100 text-slate-600' };
     return map[status] || 'bg-amber-100 text-amber-700';
+}
+
+function isPdf(path) {
+    return path && path.toLowerCase().endsWith('.pdf');
+}
+
+function getFileIcon(path) {
+    if (!path) return 'file';
+    const ext = path.split('.').pop()?.toLowerCase();
+    if (ext === 'pdf') return 'file-text';
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) return 'image';
+    if (['doc', 'docx', 'txt'].includes(ext)) return 'file-text';
+    if (['xls', 'xlsx', 'csv'].includes(ext)) return 'file-spreadsheet';
+    return 'file';
+}
+
+function isImage(path) {
+    if (!path) return false;
+    const ext = path.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
+}
+
+const attachmentModal = ref(false);
+const attachmentRequest = ref(null);
+const attachmentType = ref(''); // 'file' | 'pdf'
+
+function openAttachmentModal(req) {
+    attachmentRequest.value = req;
+    attachmentType.value = 'file';
+    attachmentModal.value = true;
+    nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+}
+function openPdfModal(req) {
+    attachmentRequest.value = req;
+    attachmentType.value = 'pdf';
+    attachmentModal.value = true;
+    nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+}
+function closeAttachmentModal() {
+    attachmentModal.value = false;
+    attachmentRequest.value = null;
+    attachmentType.value = '';
 }
 
 const leaveTypeColors = ['bg-indigo-500','bg-emerald-500','bg-amber-500','bg-rose-500','bg-violet-500','bg-cyan-500','bg-pink-500','bg-teal-500'];
@@ -362,11 +404,13 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                     <th class="px-6 py-5 text-left font-black text-slate-400 text-xs uppercase tracking-widest">วันที่</th>
                                     <th class="px-6 py-5 text-left font-black text-slate-400 text-xs uppercase tracking-widest">จำนวน</th>
                                     <th class="px-10 py-5 text-left font-black text-slate-400 text-xs uppercase tracking-widest">สถานะ</th>
+                                    <th class="px-6 py-5 text-center font-black text-slate-400 text-xs uppercase tracking-widest">ใบลา PDF</th>
+                                    <th class="px-6 py-5 text-center font-black text-slate-400 text-xs uppercase tracking-widest">หลักฐาน</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-if="(requests?.data || []).length === 0">
-                                    <td colspan="5" class="px-10 py-16 text-center">
+                                    <td colspan="7" class="px-10 py-16 text-center">
                                         <div class="flex flex-col items-center gap-3">
                                             <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center">
                                                 <i data-lucide="inbox" class="w-8 h-8 text-slate-200"></i>
@@ -398,6 +442,27 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                     <td class="px-10 py-5">
                                         <span class="px-3 py-1 rounded-full text-[10px] font-black" :class="statusCls(r.status)">{{ statusLabel(r.status) }}</span>
                                     </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex justify-center">
+                                            <button @click="openPdfModal(r)"
+                                                class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all group bg-red-50 text-red-600 hover:bg-red-100 border border-red-100">
+                                                <i data-lucide="file-text" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
+                                                <span>PDF</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div v-if="r.attachment_path" class="flex justify-center">
+                                            <button @click="openAttachmentModal(r)"
+                                                class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black transition-all group bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100">
+                                                <i :data-lucide="getFileIcon(r.attachment_path)" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
+                                                <span>{{ isImage(r.attachment_path) ? 'รูป' : 'ดู' }}</span>
+                                            </button>
+                                        </div>
+                                        <div v-else class="flex justify-center">
+                                            <span class="text-slate-300 text-xs font-medium">-</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -416,6 +481,96 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                 </div>
             </div>
         </div>
+
+        <!-- Attachment / PDF Modal -->
+        <Teleport to="body">
+            <Transition enter-active-class="ease-out duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100"
+                leave-active-class="ease-in duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="attachmentModal" class="fixed inset-0 z-[100] overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-10 text-center sm:p-0">
+                        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md" @click="closeAttachmentModal"></div>
+                        <div class="bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all relative w-full max-w-4xl flex flex-col" style="max-height: 90vh;">
+                            <!-- Header -->
+                            <div class="bg-white px-8 pt-8 pb-5 flex-shrink-0 border-b border-slate-100">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-[1.2rem] flex items-center justify-center shadow-inner"
+                                            :class="attachmentType === 'pdf' ? 'bg-red-50 text-red-500' : 'bg-indigo-50 text-indigo-500'">
+                                            <i :data-lucide="attachmentType === 'pdf' ? 'file-text' : getFileIcon(attachmentRequest?.attachment_path)" class="w-6 h-6"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-xl font-black text-slate-900 tracking-tight">
+                                                {{ attachmentType === 'pdf' ? 'ใบลา PDF' : 'หลักฐานการลา' }}
+                                            </h3>
+                                            <p class="text-slate-400 text-xs font-bold mt-0.5">{{ attachmentRequest?.user?.rank }}{{ attachmentRequest?.user?.name }}</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="closeAttachmentModal" class="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                                        <i data-lucide="x" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Body -->
+                            <div class="flex-1 overflow-auto bg-slate-50 p-6" style="min-height: 480px;">
+                                <!-- PDF ใบลา -->
+                                <template v-if="attachmentType === 'pdf'">
+                                    <iframe
+                                        :src="`/leave-request/${attachmentRequest?.id}/pdf`"
+                                        class="w-full border-0 rounded-2xl shadow bg-white"
+                                        style="height: 60vh; min-height: 480px;"
+                                        frameborder="0">
+                                    </iframe>
+                                </template>
+                                <!-- หลักฐานการลา -->
+                                <template v-else>
+                                    <!-- รูปภาพ -->
+                                    <div v-if="isImage(attachmentRequest?.attachment_path)" class="flex items-center justify-center h-full">
+                                        <img :src="`/storage/${attachmentRequest?.attachment_path}`"
+                                            class="max-w-full max-h-[60vh] rounded-2xl shadow-lg object-contain"
+                                            alt="หลักฐานการลา">
+                                    </div>
+                                    <!-- PDF หลักฐาน -->
+                                    <iframe
+                                        v-else-if="isPdf(attachmentRequest?.attachment_path)"
+                                        :src="`/storage/${attachmentRequest?.attachment_path}`"
+                                        class="w-full border-0 rounded-2xl shadow bg-white"
+                                        style="height: 60vh; min-height: 480px;"
+                                        frameborder="0">
+                                    </iframe>
+                                    <!-- ไฟล์อื่นๆ -->
+                                    <div v-else class="flex items-center justify-center h-64 text-slate-400">
+                                        <div class="text-center">
+                                            <i data-lucide="file" class="w-16 h-16 mx-auto mb-4 text-slate-300"></i>
+                                            <p class="text-lg font-bold text-slate-500 mb-1">ไม่สามารถแสดงตัวอย่างได้</p>
+                                            <p class="text-xs text-slate-400">กรุณาดาวน์โหลดเพื่อเปิดไฟล์</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <!-- Footer -->
+                            <div class="bg-white px-8 py-4 flex-shrink-0 border-t border-slate-100 flex flex-col sm:flex-row-reverse gap-3">
+                                <a v-if="attachmentType === 'pdf'"
+                                    :href="`/leave-request/${attachmentRequest?.id}/pdf`" target="_blank"
+                                    class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-lg transition-all hover:-translate-y-0.5">
+                                    <i data-lucide="external-link" class="w-4 h-4 mr-2"></i>
+                                    เปิดในแท็บใหม่
+                                </a>
+                                <a v-else-if="attachmentRequest?.attachment_path"
+                                    :href="`/storage/${attachmentRequest?.attachment_path}`" target="_blank"
+                                    class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-lg transition-all hover:-translate-y-0.5">
+                                    <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                    ดาวน์โหลด
+                                </a>
+                                <button type="button" @click="closeAttachmentModal"
+                                    class="flex-1 inline-flex justify-center items-center px-6 py-3 bg-white border border-slate-200 text-slate-500 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-50 transition-all">
+                                    ปิด
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </AppLayout>
 </template>
 

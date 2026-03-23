@@ -33,7 +33,7 @@ function handleSignature(e) {
 }
 
 function submitProfile() {
-    profileForm.post('/profile', { method: 'patch', forceFormData: true, preserveScroll: true });
+    profileForm.transform(data => ({ ...data, _method: 'PATCH' })).post('/profile', { forceFormData: true, preserveScroll: true });
 }
 function submitPassword() {
     passwordForm.put('/password', { preserveScroll: true, onSuccess: () => passwordForm.reset() });

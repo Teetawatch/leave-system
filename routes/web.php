@@ -380,6 +380,24 @@ require __DIR__ . '/auth.php';
 
 
 // =============================================================================
+// Admin Cache Clear (Shared Hosting - No SSH)
+// =============================================================================
+
+Route::get('/admin/clear-cache/{secret}', function ($secret) {
+    if ($secret !== 'nass_admin_2026_secret') {
+        abort(403, 'Unauthorized');
+    }
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('view:clear');
+    return response()->json([
+        'success' => true,
+        'message' => 'Cache cleared: route, config, cache, view',
+    ]);
+});
+
+// =============================================================================
 // Admin Telegram Webhook Setup (Secure Method)
 // =============================================================================
  
@@ -388,14 +406,34 @@ Route::get('/admin/telegram/set-webhook/{secret}', function ($secret) {
     if ($secret !== 'nass_admin_2026_secret') {
         abort(403, 'Unauthorized');
     }
-    
+
+    $token = config('services.telegram.bot_token');
+    $tokenPreview = $token ? (substr($token, 0, 8) . '...' . substr($token, -4)) : 'NOT SET';
+
+    // Test outbound connection to Telegram API
+    $canConnect = false;
+    $apiResponse = null;
+    try {
+        $res = \Illuminate\Support\Facades\Http::timeout(10)
+            ->get('https://api.telegram.org/bot' . $token . '/getMe');
+        $canConnect = true;
+        $apiResponse = $res->json();
+    } catch (\Exception $e) {
+        $apiResponse = ['error' => $e->getMessage()];
+    }
+
     // รันคำสั่ง set webhook
     $exitCode = Artisan::call('telegram:set-webhook');
-    
+
     return response()->json([
-        'success' => true,
+        'success' => $exitCode === 0,
         'message' => 'Telegram Webhook set successfully',
         'exit_code' => $exitCode,
-        'output' => Artisan::output()
+        'output' => Artisan::output(),
+        'debug' => [
+            'token_preview' => $tokenPreview,
+            'can_connect_to_telegram' => $canConnect,
+            'getMe_response' => $apiResponse,
+        ],
     ]);
 })->name('admin.telegram.set-webhook');

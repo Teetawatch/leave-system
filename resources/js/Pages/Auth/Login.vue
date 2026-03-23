@@ -1,5 +1,5 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { useForm, Head, Link } from '@inertiajs/vue3';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import { ref } from 'vue';
 
@@ -27,585 +27,250 @@ function submit() {
     <GuestLayout>
         <Head title="เข้าสู่ระบบ" />
 
-        <div class="login-container">
-            <!-- Background decoration -->
-            <div class="bg-decoration">
-                <div class="bg-circle circle-1"></div>
-                <div class="bg-circle circle-2"></div>
-                <div class="bg-circle circle-3"></div>
+        <div class="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50">
+            <!-- Animated Dynamic Background (Light Theme) -->
+            <div class="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+                <!-- Soft glowing orbs -->
+                <div class="absolute w-[600px] h-[600px] rounded-full bg-blue-400/20 blur-[100px] -top-32 -left-32 animate-blob mix-blend-multiply"></div>
+                <div class="absolute w-[600px] h-[600px] rounded-full bg-cyan-300/20 blur-[120px] top-1/4 right-0 animate-blob animation-delay-2000 mix-blend-multiply"></div>
+                <div class="absolute w-[500px] h-[500px] rounded-full bg-purple-300/20 blur-[100px] bottom-0 left-1/3 animate-blob animation-delay-4000 mix-blend-multiply"></div>
+                
+                <!-- Grid pattern overlay -->
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgwLCAwLCAwLCAwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] z-0"></div>
             </div>
 
-            <!-- Left panel (branding) -->
-            <div class="left-panel">
-                <div class="left-panel-inner">
-                    <div class="brand-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        HRMIS
-                    </div>
-                    <div class="brand-logo">
-                        <img src="/images/logonavy.png" alt="Logo" class="brand-logo-img">
-                    </div>
-                    <h2 class="brand-title">ระบบบริหารจัดการ<br>งานธุรการด้านกำลังพล</h2>
-                    <p class="brand-subtitle">โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ</p>
-
-                    <div class="feature-list">
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            <div class="container mx-auto px-4 py-8 z-10 flex justify-center items-center">
+                <!-- Main Glass Card - Split Layout -->
+                <div class="w-full max-w-5xl flex flex-col md:flex-row rounded-[2rem] overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 bg-white/40 backdrop-blur-xl transition-all duration-500 hover:shadow-[0_25px_65px_-15px_rgba(0,0,0,0.15)] ring-1 ring-slate-900/5 min-h-[600px]">
+                    
+                    <!-- Left Brand Side (Bright Premium Color) -->
+                    <div class="w-full md:w-[45%] p-10 md:p-12 hidden md:flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-500 text-white">
+                        <!-- Decorative shapes -->
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full border border-white/20"></div>
+                        <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-white/5 backdrop-blur-3xl border border-white/20"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold tracking-wider mb-8 uppercase shadow-lg">
+                                <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse shadow-[0_0_8px_#86efac]"></span>
+                               HRMIS
                             </div>
-                            <span>จัดการการลาออนไลน์</span>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </div>
-                            <span>บริหารกำลังพล</span>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                            </div>
-                            <span>รายงานและสถิติ</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right panel (form) -->
-            <div class="right-panel">
-                <div class="login-card" :class="{ 'card-loading': form.processing }">
-                    <div class="card-header">
-                        <div class="card-logo-mobile">
-                            <img src="/images/logonavy.png" alt="Logo" class="card-logo-img">
-                        </div>
-                        <h1 class="card-title">เข้าสู่ระบบ</h1>
-                        <p class="card-subtitle">กรุณากรอกข้อมูลเพื่อเข้าใช้งาน</p>
-                    </div>
-
-                    <!-- Status -->
-                    <div v-if="status" class="session-status">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        {{ status }}
-                    </div>
-
-                    <!-- Form -->
-                    <form @submit.prevent="submit" class="login-form">
-                        <!-- Email -->
-                        <div class="form-field">
-                            <label for="email" class="field-label">อีเมล</label>
-                            <div class="input-box" :class="{ 'input-error': form.errors.email, 'input-focused': false }">
-                                <span class="input-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                                </span>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    v-model="form.email"
-                                    class="field-input"
-                                    placeholder="กรอกอีเมลของคุณ"
-                                    required
-                                    autofocus
-                                    autocomplete="username"
-                                >
-                            </div>
-                            <p v-if="form.errors.email" class="error-msg">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-                                {{ form.errors.email }}
+                            
+                            <h2 class="text-4xl font-extrabold text-white leading-[1.3] mb-5 drop-shadow-sm">
+ระบบบริหารจัดการงานกำลังพล<br/>
+                            </h2>
+                            <p class="text-white/80 mb-8 max-w-sm text-sm leading-relaxed font-light">
+                                โรงเรียนพลาธิการ กรมพลาธิการทหารเรือ
                             </p>
                         </div>
 
-                        <!-- Password -->
-                        <div class="form-field">
-                            <div class="field-label-row">
-                                <label for="password" class="field-label">รหัสผ่าน</label>
-                                <Link v-if="canResetPassword" href="/forgot-password" class="forgot-link">ลืมรหัสผ่าน?</Link>
+                        <div class="relative z-10 flex flex-col gap-6">
+                            <!-- Feature Items -->
+                            <div class="flex items-center gap-4 group cursor-default p-3 rounded-2xl hover:bg-white/10 transition-colors">
+                                <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center border border-white/20 group-hover:-translate-y-1 transition-transform duration-300 shadow-md">
+                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-semibold text-sm">รวดเร็ว และ ทันสมัย</h4>
+                                    <p class="text-white/70 text-xs mt-0.5">ดำเนินการอนุมัติได้ทันทีแบบเรียลไทม์</p>
+                                </div>
                             </div>
-                            <div class="input-box" :class="{ 'input-error': form.errors.password }">
-                                <span class="input-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                </span>
-                                <input
-                                    id="password"
-                                    :type="showPassword ? 'text' : 'password'"
-                                    v-model="form.password"
-                                    class="field-input"
-                                    placeholder="กรอกรหัสผ่าน"
-                                    required
-                                    autocomplete="current-password"
-                                >
-                                <button type="button" class="eye-btn" @click="showPassword = !showPassword" :title="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
-                                    <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                            <div class="flex items-center gap-4 group cursor-default p-3 rounded-2xl hover:bg-white/10 transition-colors">
+                                <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center border border-white/20 group-hover:-translate-y-1 transition-transform duration-300 shadow-md">
+                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-semibold text-sm">ปลอดภัย แม่นยำ</h4>
+                                    <p class="text-white/70 text-xs mt-0.5">ระบบมีความเสถียร จัดเก็บข้อมูลปลอดภัย</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Brand Logo Bottom -->
+                        <div class="relative z-10 mt-12 pt-8 border-t border-white/20 flex justify-between items-end">
+                            <img src="/images/logonavy.png" alt="Logo" class="w-16 h-16 drop-shadow-md">
+                        </div>
+                    </div>
+
+                    <!-- Right Login Form Side (Pure Bright Clean) -->
+                    <div class="w-full md:w-[55%] p-8 md:p-14 bg-white/95 relative flex flex-col justify-center">
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full pointer-events-none opacity-60"></div>
+                        
+                        <!-- Mobile Logo -->
+                        <div class="flex md:hidden justify-center mb-8">
+                            <div class="relative">
+                                <div class="absolute -inset-4 bg-blue-100 rounded-full blur-xl animate-pulse"></div>
+                                <img src="/images/logonavy.png" alt="Logo" class="w-20 h-20 drop-shadow-sm relative z-10">
+                            </div>
+                        </div>
+
+                        <div class="mb-10 text-center md:text-left">
+                            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-3 tracking-tight">เข้าสู่ระบบ</h1>
+                            <p class="text-slate-500 text-sm font-medium">โปรดกรอกข้อมูลเข้าสู่ระบบเพื่อใช้งาน</p>
+                        </div>
+
+                        <!-- Status Message -->
+                        <div v-if="status" class="mb-8 p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center gap-3 text-sm font-medium shadow-sm animate-fade-in">
+                            <div class="bg-emerald-100 p-2 rounded-full">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            {{ status }}
+                        </div>
+
+                        <form @submit.prevent="submit" class="space-y-6">
+                            <!-- Email -->
+                            <div class="space-y-2.5">
+                                <label for="email" class="text-sm font-bold text-slate-700">อีเมลแอดเดรส</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-focus-within:bg-blue-50 transition-colors">
+                                            <svg class="h-4 w-4 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path></svg>
+                                        </div>
+                                    </div>
+                                    <input 
+                                        id="email" 
+                                        type="email" 
+                                        v-model="form.email" 
+                                        class="w-full pl-14 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm font-medium focus:ring-[3px] focus:ring-blue-100 focus:border-blue-500 focus:bg-white transition-all outline-none shadow-sm hover:border-slate-300" 
+                                        :class="{ 'border-red-400 bg-red-50 focus:ring-red-100 focus:border-red-500 hover:border-red-400': form.errors.email }"
+                                        placeholder="user@example.com" 
+                                        required 
+                                        autofocus 
+                                        autocomplete="username"
+                                    >
+                                </div>
+                                <p v-if="form.errors.email" class="text-red-500 text-xs mt-1.5 flex items-center gap-1.5 font-bold animate-fade-in">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    {{ form.errors.email }}
+                                </p>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <label for="password" class="text-sm font-bold text-slate-700">รหัสผ่าน</label>
+                                    <Link v-if="canResetPassword" href="/forgot-password" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                                        ลืมรหัสผ่านใช่หรือไม่?
+                                    </Link>
+                                </div>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-focus-within:bg-blue-50 transition-colors">
+                                            <svg class="h-4 w-4 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                        </div>
+                                    </div>
+                                    <input 
+                                        id="password" 
+                                        :type="showPassword ? 'text' : 'password'" 
+                                        v-model="form.password" 
+                                        class="w-full pl-14 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm font-medium focus:ring-[3px] focus:ring-blue-100 focus:border-blue-500 focus:bg-white transition-all outline-none shadow-sm hover:border-slate-300" 
+                                        :class="{ 'border-red-400 bg-red-50 focus:ring-red-100 focus:border-red-500 hover:border-red-400': form.errors.password }"
+                                        placeholder="············" 
+                                        required 
+                                        autocomplete="current-password"
+                                    >
+                                    <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-600 transition-colors focus:outline-none" @click="showPassword = !showPassword">
+                                        <svg v-if="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                                    </button>
+                                </div>
+                                <p v-if="form.errors.password" class="text-red-500 text-xs mt-1.5 flex items-center gap-1.5 font-bold animate-fade-in">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    {{ form.errors.password }}
+                                </p>
+                            </div>
+
+                            <!-- Remember Me & Submit -->
+                            <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                <label class="flex items-center gap-3 cursor-pointer group w-fit">
+                                    <div class="relative flex items-center justify-center">
+                                        <input type="checkbox" v-model="form.remember" class="peer sr-only">
+                                        <div class="w-5 h-5 border-2 border-slate-300 bg-slate-50 rounded-md peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all duration-200 peer-focus:ring-[3px] peer-focus:ring-blue-100 group-hover:border-blue-400 shadow-sm"></div>
+                                        <svg class="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition-colors">จดจำการเข้าสู่ระบบ</span>
+                                </label>
+
+                                <button type="submit" :disabled="form.processing" class="relative overflow-hidden rounded-xl bg-slate-800 text-white font-bold py-3.5 px-8 transition-all duration-300 hover:bg-blue-600 hover:shadow-[0_8px_25px_rgba(37,99,235,0.3)] disabled:opacity-70 disabled:cursor-not-allowed sm:w-auto w-full group">
+                                    <div class="relative flex items-center justify-center gap-2">
+                                        <svg v-if="form.processing" class="animate-spin -ml-1 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <template v-else>
+                                            <span class="tracking-wide">เข้าสู่ระบบ</span>
+                                            <svg class="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                        </template>
+                                    </div>
                                 </button>
                             </div>
-                            <p v-if="form.errors.password" class="error-msg">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-                                {{ form.errors.password }}
+                        </form>
+
+                        <!-- Footer Links -->
+                        <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                            <p class="text-sm font-semibold text-slate-500">
+                                ยังไม่มีบัญชีผู้ใช้งานใช่ไหม? 
+                                <Link href="/employee-register" class="font-bold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group ml-1">
+                                    ลงทะเบียนข้าราชการ
+                                    <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                </Link>
                             </p>
                         </div>
-
-                        <!-- Remember me -->
-                        <label class="remember-row">
-                            <div class="custom-check">
-                                <input type="checkbox" v-model="form.remember" class="check-input">
-                                <span class="check-box">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                </span>
-                            </div>
-                            <span class="remember-text">จดจำการเข้าสู่ระบบ</span>
-                        </label>
-
-                        <!-- Submit button -->
-                        <button type="submit" class="submit-btn" :disabled="form.processing">
-                            <span v-if="form.processing" class="spinner"></span>
-                            <span v-else class="btn-icon-left">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-                            </span>
-                            {{ form.processing ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ' }}
-                        </button>
-                    </form>
-
-                    <!-- Footer -->
-                    <div class="card-footer">
-                        <span class="footer-text">ยังไม่มีบัญชี?</span>
-                        <Link href="/employee-register" class="register-link">
-                            ลงทะเบียนข้าราชการใหม่
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                        </Link>
                     </div>
                 </div>
 
-                <p class="copyright">
-                    © {{ new Date().getFullYear() }} ระบบบริหารจัดการงานธุรการด้านกำลังพล ·
-                    <span>ออกแบบโดย จ.ท.ธีร์ธวัช พิพัฒน์เดชธน</span>
-                </p>
+                <!-- Footer Text Outside -->
+                <div class="absolute bottom-6 left-0 right-0 text-center z-10 pointer-events-none hidden md:block">
+                    <p class="text-xs font-semibold text-slate-400 tracking-wider">
+                        © {{ new Date().getFullYear() }} ระบบบริหารจัดการกำลังพล ออกแบบและพัฒนาระบบโดย จ.ท.ธีร์ธวัช พิพัฒน์เดชธน
+                    </p>
+                </div>
             </div>
         </div>
     </GuestLayout>
 </template>
 
 <style scoped>
-/* ── Variables ─────────────────────────────────── */
-:root {
-    --navy: #1e3a5f;
-    --navy-mid: #2d5282;
-    --blue: #1a6db5;
-    --blue-light: #3b82f6;
-    --blue-pale: #dbeafe;
-    --sky: #0ea5e9;
-    --white: #ffffff;
-    --gray-50: #f8fafc;
-    --gray-100: #f1f5f9;
-    --gray-200: #e2e8f0;
-    --gray-400: #94a3b8;
-    --gray-500: #64748b;
-    --gray-700: #334155;
-    --gray-900: #0f172a;
-    --error: #dc2626;
-    --error-bg: #fef2f2;
-    --success: #059669;
-    --success-bg: #ecfdf5;
-    --radius: 0.75rem;
-    --radius-sm: 0.5rem;
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+
+* {
+    font-family: 'Sarabun', sans-serif;
 }
 
-/* ── Reset / Base ───────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ── Layout ─────────────────────────────────────── */
-.login-container {
-    min-height: 100vh;
-    display: flex;
-    font-family: 'Sarabun', 'Noto Sans Thai', 'Inter', sans-serif;
-    background: var(--gray-50);
-    position: relative;
-    overflow: hidden;
+@keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
 }
 
-/* ── Background decoration ──────────────────────── */
-.bg-decoration { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.bg-circle {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    animation: breathe 8s ease-in-out infinite;
-}
-.circle-1 { width: 600px; height: 600px; background: radial-gradient(circle, #bfdbfe 0%, transparent 70%); top: -200px; right: -100px; opacity: 0.7; }
-.circle-2 { width: 500px; height: 500px; background: radial-gradient(circle, #e0f2fe 0%, transparent 70%); bottom: -150px; left: -100px; opacity: 0.6; animation-delay: -3s; }
-.circle-3 { width: 400px; height: 400px; background: radial-gradient(circle, #ede9fe 0%, transparent 70%); top: 40%; left: 30%; opacity: 0.4; animation-delay: -5s; }
-@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-
-/* ── Left panel ─────────────────────────────────── */
-.left-panel {
-    display: none;
-    position: relative;
-    z-index: 1;
-    width: 45%;
-    background: linear-gradient(160deg, #1e3a5f 0%, #1a6db5 50%, #0ea5e9 100%);
-    padding: 3rem;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    overflow: hidden;
-}
-.left-panel::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-.left-panel::after {
-    content: '';
-    position: absolute;
-    bottom: -80px; right: -80px;
-    width: 300px; height: 300px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-}
-@media (min-width: 1024px) { .left-panel { display: flex; } }
-
-.left-panel-inner { position: relative; z-index: 1; text-align: center; }
-
-.brand-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    color: rgba(255,255,255,0.9);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 0.375rem 0.875rem;
-    border-radius: 100px;
-    margin-bottom: 2rem;
-    backdrop-filter: blur(8px);
+.animate-blob {
+    animation: blob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.brand-logo { margin-bottom: 1.75rem; display: flex; justify-content: center; align-items: center; }
-.brand-logo-img {
-    width: 110px;
-    height: 110px;
-    object-fit: contain;
-    filter: drop-shadow(0 8px 32px rgba(0,0,0,0.3)) brightness(1.05);
-    animation: floatLogo 6s ease-in-out infinite;
-}
-@keyframes floatLogo { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-
-.brand-title {
-    font-size: 1.625rem;
-    font-weight: 700;
-    color: white;
-    line-height: 1.4;
-    margin-bottom: 0.625rem;
-    letter-spacing: -0.01em;
-}
-.brand-subtitle {
-    font-size: 0.9375rem;
-    color: rgba(255,255,255,0.75);
-    margin-bottom: 3rem;
-    line-height: 1.5;
+.animation-delay-2000 {
+    animation-delay: 2s;
 }
 
-.feature-list { display: flex; flex-direction: column; gap: 1rem; text-align: left; }
-.feature-item {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
-    color: rgba(255,255,255,0.9);
-    font-size: 0.9375rem;
-}
-.feature-icon {
-    width: 38px; height: 38px;
-    background: rgba(255,255,255,0.15);
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.2);
+.animation-delay-4000 {
+    animation-delay: 4s;
 }
 
-/* ── Right panel ─────────────────────────────────── */
-.right-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1.5rem;
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* ── Login card ──────────────────────────────────── */
-.login-card {
-    width: 100%;
-    max-width: 440px;
-    background: var(--white);
-    border-radius: 1.25rem;
-    border: 1px solid var(--gray-200);
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 20px 40px -15px rgba(30,58,95,0.12);
-    overflow: hidden;
-    animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1);
-    transition: box-shadow 0.3s;
-}
-.login-card:focus-within {
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 25px 50px -15px rgba(30,58,95,0.18);
-}
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Card header ────────────────────────────────── */
-.card-header {
-    padding: 2.25rem 2.25rem 0;
-    text-align: center;
-}
-.card-logo-mobile {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1.25rem;
-}
-@media (min-width: 1024px) { .card-logo-mobile { display: none; } }
-.card-logo-img {
-    width: 72px; height: 72px;
-    object-fit: contain;
-    filter: drop-shadow(0 4px 12px rgba(30,58,95,0.2));
-}
-.card-title {
-    font-size: 1.625rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 0.375rem;
-    letter-spacing: -0.02em;
-}
-.card-subtitle {
-    font-size: 0.9375rem;
-    color: var(--gray-500);
-}
-
-/* ── Session status ─────────────────────────────── */
-.session-status {
-    margin: 1.5rem 2.25rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--success-bg);
-    border: 1px solid #a7f3d0;
-    color: var(--success);
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-/* ── Form ────────────────────────────────────────── */
-.login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    padding: 1.75rem 2.25rem 2rem;
-}
-
-.form-field { display: flex; flex-direction: column; gap: 0.375rem; }
-
-.field-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--gray-700);
-}
-.field-label-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0;
-}
-
-/* Input box */
-.input-box {
-    display: flex;
-    align-items: center;
-    background: var(--gray-50);
-    border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    position: relative;
-    overflow: hidden;
-}
-.input-box:focus-within {
-    background: var(--white);
-    border-color: var(--blue-light);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-}
-.input-box.input-error {
-    border-color: var(--error);
-    background: var(--error-bg);
-}
-.input-box.input-error:focus-within {
-    box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
-}
-
-.input-icon {
-    display: flex;
-    align-items: center;
-    padding: 0 0.875rem;
-    color: var(--gray-400);
-    flex-shrink: 0;
-    transition: color 0.2s;
-}
-.input-box:focus-within .input-icon { color: var(--blue-light); }
-
-.field-input {
-    flex: 1;
-    padding: 0.8125rem 0.75rem 0.8125rem 0;
-    border: none;
-    background: transparent;
-    color: var(--gray-900);
-    font-size: 0.9375rem;
-    font-family: inherit;
-    outline: none;
-}
-.field-input::placeholder { color: var(--gray-400); }
-
-.eye-btn {
-    background: none;
-    border: none;
-    padding: 0 0.875rem;
-    color: var(--gray-400);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s;
-    flex-shrink: 0;
-}
-.eye-btn:hover { color: var(--blue-light); }
-
-/* Error message */
-.error-msg {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8125rem;
-    color: var(--error);
-    font-weight: 500;
-}
-
-/* Forgot link */
-.forgot-link {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--blue-light);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-.forgot-link:hover { color: var(--blue); text-decoration: underline; }
-
-/* Remember me */
-.remember-row {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    cursor: pointer;
-    user-select: none;
-}
-.custom-check { position: relative; display: flex; }
-.check-input {
-    position: absolute;
-    opacity: 0;
-    width: 0; height: 0;
-}
-.check-box {
-    width: 18px; height: 18px;
-    border: 1.5px solid var(--gray-200);
-    border-radius: 5px;
-    background: var(--gray-50);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-    color: transparent;
-    flex-shrink: 0;
-}
-.check-input:checked ~ .check-box {
-    background: var(--blue-light);
-    border-color: var(--blue-light);
-    color: white;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-}
-.remember-text { font-size: 0.875rem; color: var(--gray-500); }
-
-/* Submit button */
-.submit-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.625rem;
-    width: 100%;
-    padding: 0.875rem 1.5rem;
-    background: linear-gradient(135deg, #1a6db5 0%, #1e3a5f 100%);
-    border: none;
-    border-radius: var(--radius-sm);
-    color: white;
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.25s;
-    box-shadow: 0 4px 14px rgba(26,109,181,0.35);
-    margin-top: 0.25rem;
-    letter-spacing: 0.01em;
-}
-.submit-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #1e5fa0 0%, #162d4a 100%);
-    box-shadow: 0 6px 20px rgba(26,109,181,0.45);
-    transform: translateY(-1px);
-}
-.submit-btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 8px rgba(26,109,181,0.3); }
-.submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
-
-.btn-icon-left { display: flex; }
-
-/* Spinner */
-.spinner {
-    width: 18px; height: 18px;
-    border: 2.5px solid rgba(255,255,255,0.35);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Card footer ─────────────────────────────────── */
-.card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1.125rem 2.25rem;
-    background: var(--gray-50);
-    border-top: 1px solid var(--gray-200);
-}
-.footer-text { font-size: 0.875rem; color: var(--gray-500); }
-.register-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--blue-light);
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.register-link:hover { color: var(--blue); gap: 0.5rem; }
-
-/* ── Copyright ───────────────────────────────────── */
-.copyright {
-    margin-top: 1.5rem;
-    font-size: 0.75rem;
-    color: var(--gray-400);
-    text-align: center;
-    line-height: 1.6;
+/* Autofill styling fix for clean light mode UX */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #f8fafc inset !important;
+    -webkit-text-fill-color: #1e293b !important;
+    transition: background-color 5000s ease-in-out 0s;
 }
 </style>

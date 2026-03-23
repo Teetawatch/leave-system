@@ -13,7 +13,13 @@ const form = useForm({
     start_date: '',
     end_date: '',
     reason: '',
-    contact_address: { province: '', house: '', road: '', tambon: '', amphoe: '' },
+    addr_house: '',
+    addr_road: '',
+    addr_tambon: '',
+    addr_amphoe: '',
+    addr_province: '',
+    personal_location: '',
+    personal_province: '',
     temporary_leave_period: 'morning',
     attachment: null,
 });
@@ -318,23 +324,28 @@ onMounted(() => {
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     <div class="space-y-3">
                                         <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">บ้านเลขที่</label>
-                                        <input type="text" v-model="form.contact_address.house" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="123/45...">
+                                        <input type="text" v-model="form.addr_house" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="123/45...">
+                                        <p v-if="form.errors.addr_house" class="text-rose-500 text-xs font-bold">{{ form.errors.addr_house }}</p>
                                     </div>
                                     <div class="space-y-3">
                                         <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">ถนน</label>
-                                        <input type="text" v-model="form.contact_address.road" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ถนนพลาธิการ...">
+                                        <input type="text" v-model="form.addr_road" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ถนนพลาธิการ...">
+                                        <p v-if="form.errors.addr_road" class="text-rose-500 text-xs font-bold">{{ form.errors.addr_road }}</p>
                                     </div>
                                     <div class="space-y-3">
                                         <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">ตำบล / แขวง</label>
-                                        <input type="text" v-model="form.contact_address.tambon" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุตำบล...">
+                                        <input type="text" v-model="form.addr_tambon" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุตำบล...">
+                                        <p v-if="form.errors.addr_tambon" class="text-rose-500 text-xs font-bold">{{ form.errors.addr_tambon }}</p>
                                     </div>
                                     <div class="space-y-3">
                                         <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">อำเภอ / เขต</label>
-                                        <input type="text" v-model="form.contact_address.amphoe" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุอำเภอ...">
+                                        <input type="text" v-model="form.addr_amphoe" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุอำเภอ...">
+                                        <p v-if="form.errors.addr_amphoe" class="text-rose-500 text-xs font-bold">{{ form.errors.addr_amphoe }}</p>
                                     </div>
                                     <div class="space-y-3">
                                         <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">จังหวัด</label>
-                                        <input type="text" v-model="form.contact_address.province" list="provinces" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุจังหวัด...">
+                                        <input type="text" v-model="form.addr_province" list="provinces" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุจังหวัด...">
+                                        <p v-if="form.errors.addr_province" class="text-rose-500 text-xs font-bold">{{ form.errors.addr_province }}</p>
                                     </div>
                                 </div>
                             </section>
@@ -353,11 +364,13 @@ onMounted(() => {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div class="space-y-3">
                                         <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">สถานที่ / บ้านเลขที่</label>
-                                        <input type="text" v-model="form.contact_address.house" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="เช่น บ้านพักต่างจังหวัด...">
+                                        <input type="text" v-model="form.personal_location" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="เช่น บ้านพักต่างจังหวัด...">
+                                        <p v-if="form.errors.personal_location" class="text-rose-500 text-xs font-bold">{{ form.errors.personal_location }}</p>
                                     </div>
                                     <div class="space-y-3">
                                         <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">จังหวัด</label>
-                                        <input type="text" v-model="form.contact_address.province" list="provinces" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุจังหวัด...">
+                                        <input type="text" v-model="form.personal_province" list="provinces" class="w-full px-8 py-5 premium-input rounded-[2rem] font-bold text-slate-800 text-lg" placeholder="ระบุจังหวัด...">
+                                        <p v-if="form.errors.personal_province" class="text-rose-500 text-xs font-bold">{{ form.errors.personal_province }}</p>
                                     </div>
                                 </div>
                             </section>

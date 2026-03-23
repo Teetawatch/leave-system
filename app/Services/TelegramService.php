@@ -207,7 +207,8 @@ class TelegramService
                 ->connectTimeout(5)
                 ->post($this->apiBase . $this->botToken . '/' . $method, $payload);
 
-            if ($response->successful()) {
+            $json = $response->json();
+            if ($response->successful() && ($json['ok'] ?? false)) {
                 return true;
             }
 
