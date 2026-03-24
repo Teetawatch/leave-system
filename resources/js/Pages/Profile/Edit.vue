@@ -1,9 +1,9 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, router } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
-const props = defineProps({ user: Object, status: String });
+const props = defineProps({ user: Object, status: String, telegram_link: String });
 
 const profileForm = useForm({
     name: props.user.name || '',
@@ -44,6 +44,16 @@ function roleLabel(role) {
     return map[role] || 'กำลังพล';
 }
 
+function generateTelegramLink() {
+    router.post('/profile/telegram-link', {}, { preserveScroll: true });
+}
+
+function unlinkTelegram() {
+    if (confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเชื่อมต่อ Telegram?')) {
+        router.post('/profile/telegram-unlink', {}, { preserveScroll: true });
+    }
+}
+
 onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100); });
 </script>
 
@@ -76,7 +86,9 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                     <i data-lucide="check-circle" class="w-6 h-6 text-emerald-500 flex-shrink-0"></i>
                     <div>
                         <h3 class="text-sm font-bold text-emerald-800 tracking-tight">ดำเนินการเรียบร้อย</h3>
-                        <p class="text-xs font-semibold text-emerald-600 mt-1">{{ status === 'profile-updated' ? 'อัปเดตโปรไฟล์เรียบร้อยแล้ว' : status }}</p>
+                        <p class="text-xs font-semibold text-emerald-600 mt-1">
+                            {{ status === 'profile-updated' ? 'อัปเดตโปรไฟล์เรียบร้อยแล้ว' : (status === 'telegram-link-generated' ? 'สร้างลิงก์สำหรับการเชื่อมต่อแล้ว' : (status === 'telegram-unlinked' ? 'ยกเลิกการเชื่อมต่อ Telegram สำเร็จแล้ว' : status)) }}
+                        </p>
                     </div>
                 </div>
 
@@ -210,6 +222,45 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                     {{ passwordForm.processing ? 'กำลังเปลี่ยน...' : 'เปลี่ยนรหัสผ่าน' }}
                                 </button>
                             </form>
+                        </div>
+
+                        <!-- Telegram Integration Card -->
+                        <div class="glass-card rounded-[2rem] shadow-xl shadow-indigo-900/5 overflow-hidden group/card hover:shadow-2xl transition-all duration-300">
+                            <div class="px-6 py-5 border-b border-slate-100/50 bg-white/40 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100 text-sky-500 flex items-center justify-center shadow-sm group-hover/card:scale-110 group-hover/card:rotate-3 transition-transform">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="font-extrabold text-slate-800 text-sm tracking-tight">การเชื่อมต่อ Telegram</h3>
+                            </div>
+                            <div class="p-6 sm:p-8 space-y-5">
+                                <div v-if="user.telegram_chat_id" class="flex flex-col items-center text-center space-y-4">
+                                    <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500">
+                                        <i data-lucide="check-circle" class="w-8 h-8"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-700 text-sm">เชื่อมต่อสำเร็จ</p>
+                                        <p class="text-xs text-slate-500 mt-1">Chat ID: {{ user.telegram_chat_id }}</p>
+                                    </div>
+                                    <button @click="unlinkTelegram" type="button" class="w-full py-3 mt-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold uppercase tracking-widest text-xs rounded-xl shadow-sm transition-all">
+                                        ยกเลิกการเชื่อมต่อ
+                                    </button>
+                                </div>
+                                
+                                <div v-else class="flex flex-col items-center text-center space-y-4">
+                                    <p class="text-[12px] font-medium text-slate-500">รับการแจ้งเตือนการลาและการตรวจสอบสถานะผ่าน Telegram โดยตรง</p>
+                                    <button v-if="!telegram_link" @click="generateTelegramLink" type="button" class="w-full py-4 bg-[#0088cc] hover:bg-[#0077b3] text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-1">
+                                        สร้างลิงก์เชื่อมต่อ
+                                    </button>
+                                    <div v-else class="w-full text-center space-y-3">
+                                        <p class="text-xs font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100">
+                                            ดึงแอปพลิเคชัน Telegram บนอุปกรณ์ของคุณ หรือกดที่ปุ่มด้านล่าง จากนั้นกดบรรทัด "Start"
+                                        </p>
+                                        <a :href="telegram_link" target="_blank" class="block w-full py-4 bg-[#0088cc] hover:bg-[#0077b3] text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all">
+                                            เปิดแอป Telegram ทันที
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Tip Card -->

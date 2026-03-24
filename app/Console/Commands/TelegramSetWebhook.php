@@ -15,9 +15,12 @@ class TelegramSetWebhook extends Command
         $telegram = new TelegramService();
         $url = $this->argument('url');
 
-        if (!$url) {
-            $secret = 'nass126612';
-            $url = 'https://hrmis.nass.ac.th/telegram/webhook/' . $secret;
+if (!$url) {
+            // ดึงจากไฟล์ .env
+            $secret = (string) config('services.telegram.webhook_secret', 'nass126612'); 
+            
+            // ใช้ฟังก์ชัน route() ของ Laravel เพื่อแปลเป็น URL ให้ตรงกับ Domain ของโฮสต์แทนการฟิกซ์ตายตัว
+            $url = route('telegram.webhook', ['secret' => $secret]);
         }
 
         $this->info("Setting webhook to: {$url}");

@@ -25,12 +25,15 @@ class ProfileController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'rank' => $user->rank,
+                'role' => $user->role,
                 'department' => $user->department,
                 'avatar' => $user->avatar,
                 'signature' => $user->signature,
                 'phone' => $user->phone ?? '',
+                'telegram_chat_id' => $user->telegram_chat_id,
             ],
             'status' => session('status'),
+            'telegram_link' => session('telegram_link'),
         ]);
     }
 
@@ -97,10 +100,12 @@ class ProfileController extends Controller
      */
     public function unlinkTelegram(Request $request): RedirectResponse
     {
-        $request->user()->update([
-            'telegram_chat_id' => null,
-            'telegram_link_token' => null,
-        ]);
+        \Illuminate\Support\Facades\Log::info('unlinkTelegram called for user: ' . $request->user()->id);
+        
+        $user = $request->user();
+        $user->telegram_chat_id = null;
+        $user->telegram_link_token = null;
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'telegram-unlinked');
     }
