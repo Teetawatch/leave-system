@@ -138,6 +138,22 @@ function actionLabel(status) {
     return map[status] || 'อนุมัติ';
 }
 
+function getPendingApprover(req) {
+    if (req.status === 'pending_supervisor' && req.user?.supervisor) {
+        return { name: (req.user.supervisor.rank || '') + req.user.supervisor.name, role: 'ผู้บังคับบัญชาชั้นต้น', avatar: req.user.supervisor.avatar };
+    }
+    if (req.status === 'pending_manager' && req.user?.manager) {
+        return { name: (req.user.manager.rank || '') + req.user.manager.name, role: 'ผู้บังคับบัญชาตามลำดับชั้น', avatar: req.user.manager.avatar };
+    }
+    if (req.status === 'pending_deputy_director') {
+        return { name: 'รองผู้อำนวยการ', role: 'ผู้ตรวจสอบ', avatar: null };
+    }
+    if (req.status === 'pending_director') {
+        return { name: 'ผู้อำนวยการ', role: 'ผู้อนุมัติ', avatar: null };
+    }
+    return { name: 'อยู่ระหว่างดำเนินการ', role: req.status ? req.status.replace(/_/g, ' ') : 'PENDING', avatar: null };
+}
+
 const isLoaded = ref(false);
 onMounted(() => { 
     setTimeout(() => { 
@@ -307,32 +323,50 @@ onMounted(() => {
                                             <!-- Previous Approvals -->
                                             <div v-for="(approval, aIdx) in req.approvals" :key="aIdx" class="relative group/time">
                                                 <!-- Node point -->
-                                                <div class="absolute -left-[35px] top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm transition-transform group-hover/time:scale-125"
+                                                <div class="absolute -left-[35px] top-2 w-4 h-4 rounded-full border-4 border-white shadow-sm transition-transform group-hover/time:scale-125"
                                                      :class="approval.status === 'approved' ? 'bg-emerald-500' : (approval.status === 'rejected' ? 'bg-rose-500' : 'bg-slate-400')"></div>
                                                 
-                                                <div class="flex flex-col gap-1">
-                                                        <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                                                            <span class="text-xs font-black tracking-wide uppercase"
-                                                                :class="approval.status === 'approved' ? 'text-emerald-600' : (approval.status === 'rejected' ? 'text-rose-600' : 'text-slate-600')">
+                                                <div class="flex items-start gap-3">
+                                                    <!-- Avatar -->
+                                                    <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center text-slate-400 font-black text-xs">
+                                                        <img v-if="approval.approver?.avatar" :src="`/storage/${approval.approver.avatar}`" class="w-full h-full object-cover">
+                                                        <span v-else>{{ approval.approver?.name?.charAt(0) || '?' }}</span>
+                                                    </div>
+                                                    <!-- Info -->
+                                                    <div class="flex flex-col gap-0.5 flex-1 min-w-0 pb-1">
+                                                        <div class="flex items-center gap-2 flex-wrap">
+                                                            <p class="text-[12px] font-black text-slate-800">{{ approval.approver?.rank || '' }}{{ approval.approver?.name || 'ผู้พิจารณา' }}</p>
+                                                            <span class="text-[9px] font-black tracking-wide uppercase px-2 py-0.5 rounded-md"
+                                                                :class="approval.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : (approval.status === 'rejected' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-600 border border-slate-200')">
                                                                 {{ approval.status === 'approved' ? 'อนุมัติแล้ว' : (approval.status === 'rejected' ? 'ไม่อนุมัติ' : 'พิจารณาแล้ว') }}
                                                             </span>
-                                                            <span class="text-[10px] font-bold text-slate-400" v-if="approval.approved_at">&bull; {{ new Date(approval.approved_at).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'}) }}</span>
                                                         </div>
-                                                        <p class="text-[11px] font-bold text-slate-700 mt-0.5">{{ approval.approver?.rank }}{{ approval.approver?.name }}<span v-if="approval.step" class="text-slate-400 font-normal ml-1">({{ approval.step }})</span></p>
-                                                        <div v-if="approval.comment" class="mt-2 bg-white/70 px-3 py-2 rounded-xl border border-white text-[11px] text-slate-600 font-medium italic relative shadow-sm">
-                                                            "{{ approval.comment }}"
+                                                        <p class="text-[10px] font-bold text-slate-400" v-if="approval.approved_at">{{ new Date(approval.approved_at).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) }} น.</p>
+                                                        <div v-if="approval.comment" class="mt-2 text-[11px] text-slate-600 font-medium italic relative">
+                                                            <div class="bg-white/70 px-3 py-2 rounded-xl border border-white shadow-sm relative z-10 inline-block">
+                                                                "{{ approval.comment }}"
+                                                            </div>
                                                         </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             
                                             <!-- Current Pending Step -->
                                             <div class="relative group/time">
-                                                <div class="absolute -left-[35px] top-1 w-4 h-4 rounded-full border-4 border-amber-50 bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)] animate-pulse"></div>
-                                                <div>
-                                                    <span class="text-xs font-black text-amber-600 tracking-wide uppercase flex items-center gap-1.5">
-                                                        <i data-lucide="clock" class="w-3.5 h-3.5"></i> รอพิจารณา
-                                                    </span>
-                                                    <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{{ req.status ? req.status.replace(/_/g, ' ') : 'PENDING' }}</p>
+                                                <div class="absolute -left-[35px] top-2 w-4 h-4 rounded-full border-4 border-amber-50 bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)] animate-pulse"></div>
+                                                
+                                                <div class="flex items-start gap-3 opacity-90">
+                                                    <!-- Avatar -->
+                                                    <div class="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center text-amber-500 font-black text-xs relative">
+                                                        <div class="absolute inset-0 bg-amber-400/20 animate-pulse"></div>
+                                                        <img v-if="getPendingApprover(req).avatar" :src="`/storage/${getPendingApprover(req).avatar}`" class="w-full h-full object-cover">
+                                                        <i v-else data-lucide="clock" class="w-4 h-4 relative z-10 text-amber-500"></i>
+                                                    </div>
+                                                    <div class="pb-1">
+                                                        <span class="text-[10px] font-black text-amber-600 tracking-wide uppercase flex items-center gap-1.5 mb-0.5">รอพิจารณาขั้นต่อไป</span>
+                                                        <p class="text-[12px] font-black text-slate-700">{{ getPendingApprover(req).name }}</p>
+                                                        <p class="text-[10px] font-bold text-slate-400">{{ getPendingApprover(req).role }}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

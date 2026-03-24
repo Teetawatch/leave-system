@@ -82,6 +82,20 @@ function employeeFullName(log) {
 function formatTime(val) {
     if (!val) return '-';
     const str = String(val);
+    
+    // Check if the value is an ISO 8601 string containing UTC datetime
+    if (str.includes('T')) {
+        const dateObj = new Date(str);
+        if (!isNaN(dateObj.getTime())) {
+            return dateObj.toLocaleTimeString('en-US', {
+                timeZone: 'Asia/Bangkok',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            });
+        }
+    }
+
     const match = str.match(/(\d{2}:\d{2})/);
     if (!match) return str;
     return match[1];
@@ -144,6 +158,20 @@ const onLeaveEmployeesList = computed(() => {
 });
 
 const activeTab = ref('student');
+
+const showImageModal = ref(false);
+const modalImageUrl = ref('');
+
+function openImageModal(url) {
+    if (!url) return;
+    modalImageUrl.value = url;
+    showImageModal.value = true;
+}
+
+function closeImageModal() {
+    showImageModal.value = false;
+    setTimeout(() => { modalImageUrl.value = ''; }, 300);
+}
 
 onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100); });
 </script>
@@ -287,7 +315,7 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                             <div class="flex flex-col items-center gap-1.5">
                                                 <span class="text-xs font-bold" :class="log.morning.is_late ? 'text-amber-600' : 'text-emerald-600'">{{ formatTime(log.morning.scan_time) }}</span>
                                                 <span v-if="log.morning.is_late" class="text-[9px] font-black text-amber-500 bg-amber-50 rounded px-1">สาย</span>
-                                                <div v-if="snapshotUrl(log.morning.snapshot_path, 'student')" class="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                                <div v-if="snapshotUrl(log.morning.snapshot_path, 'student')" @click="openImageModal(snapshotUrl(log.morning.snapshot_path, 'student'))" class="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-500/50 transition-all">
                                                     <img :src="snapshotUrl(log.morning.snapshot_path, 'student')" class="w-full h-full object-cover" alt="snapshot">
                                                 </div>
                                                 <div v-else class="w-16 h-16 rounded-lg bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center"><i data-lucide="image-off" class="w-4 h-4 text-slate-300"></i></div>
@@ -299,7 +327,7 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                         <template v-if="log.afternoon">
                                             <div class="flex flex-col items-center gap-1.5">
                                                 <span class="text-xs font-bold text-slate-600">{{ formatTime(log.afternoon.scan_time) }}</span>
-                                                <div v-if="snapshotUrl(log.afternoon.snapshot_path, 'student')" class="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                                <div v-if="snapshotUrl(log.afternoon.snapshot_path, 'student')" @click="openImageModal(snapshotUrl(log.afternoon.snapshot_path, 'student'))" class="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-500/50 transition-all">
                                                     <img :src="snapshotUrl(log.afternoon.snapshot_path, 'student')" class="w-full h-full object-cover" alt="snapshot">
                                                 </div>
                                                 <div v-else class="w-16 h-16 rounded-lg bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center"><i data-lucide="image-off" class="w-4 h-4 text-slate-300"></i></div>
@@ -451,7 +479,7 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                             <div class="flex flex-col items-center gap-1.5">
                                                 <span class="text-xs font-bold" :class="log.morning.is_late ? 'text-amber-600' : 'text-emerald-600'">{{ formatTime(log.morning.scan_time) }}</span>
                                                 <span v-if="log.morning.is_late" class="text-[9px] font-black text-amber-500 bg-amber-50 rounded px-1">สาย</span>
-                                                <div v-if="snapshotUrl(log.morning.snapshot_path, 'employee')" class="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                                <div v-if="snapshotUrl(log.morning.snapshot_path, 'employee')" @click="openImageModal(snapshotUrl(log.morning.snapshot_path, 'employee'))" class="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm cursor-pointer hover:shadow-md hover:ring-2 hover:ring-blue-500/50 transition-all">
                                                     <img :src="snapshotUrl(log.morning.snapshot_path, 'employee')" class="w-full h-full object-cover" alt="snapshot">
                                                 </div>
                                                 <div v-else class="w-16 h-16 rounded-lg bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center"><i data-lucide="image-off" class="w-4 h-4 text-slate-300"></i></div>
@@ -539,6 +567,28 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
             </div><!-- /employee tab -->
 
         </div>
+
+        <!-- Image Viewer Modal -->
+        <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+        >
+            <div v-if="showImageModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" @click="closeImageModal"></div>
+                <div class="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-3xl w-full max-h-[90vh] flex flex-col transform transition-all z-10">
+                    <button @click="closeImageModal" class="absolute top-4 right-4 w-10 h-10 bg-black/20 hover:bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all z-20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    <div class="w-full h-full flex items-center justify-center p-2 bg-slate-900">
+                        <img :src="modalImageUrl" alt="Snapshot Full View" class="max-w-full max-h-[calc(90vh-1rem)] object-contain rounded-xl">
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </AppLayout>
 </template>
 
