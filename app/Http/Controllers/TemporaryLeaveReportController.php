@@ -69,10 +69,14 @@ class TemporaryLeaveReportController extends Controller
             }
         }
 
-        $requests = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+        $requests = $query->orderBy('created_at', 'desc')->paginate(50)->withQueryString();
         $requests->through(function ($r) {
             $r->start_date_thai = $r->start_date->locale('th')->translatedFormat('j M Y');
             $r->end_date_thai   = $r->end_date->locale('th')->translatedFormat('j M Y');
+            // Ensure user relation data is included properly for grouping
+            if ($r->user) {
+                $r->user->makeVisible(['id']);
+            }
             return $r;
         });
 

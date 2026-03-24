@@ -387,4 +387,27 @@ class LeaveRequestController extends Controller
 
         return $pdf->stream('leave-request-' . $leaveRequest->id . '.pdf');
     }
+
+    public function destroy(LeaveRequest $leaveRequest)
+    {
+        $user = Auth::user();
+
+        // Authorize: admin/commander roles can delete any, otherwise only owner can delete their own
+        $isCommander = in_array($user->role, [
+            \App\Enums\UserRole::ADMIN->value,
+            \App\Enums\UserRole::DIRECTOR->value,
+            \App\Enums\UserRole::DEPUTY_DIRECTOR->value,
+            \App\Enums\UserRole::DEPARTMENT_HEAD->value,
+            'supervisor',
+        ]);
+
+        if (!$isCommander && $leaveRequest->user_id !== $user->id) {
+            abort(403, 'ไม่มีสิทธิ์ลบรายการนี้');
+        }
+
+        $leaveRequest->delete();
+
+        return redirect()->route('reports.temporary-leave')
+            ->with('success', 'ลบรายการลาเรียบร้อยแล้ว');
+    }
 }

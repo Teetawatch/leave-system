@@ -22,41 +22,73 @@ class ReportController extends Controller
             \App\Enums\UserRole::DEPARTMENT_HEAD->value,
         ]);
 
+        // Define a base filtering query for consistency across all statistics
+        $applyFilters = function ($q) use ($request, $isCommander, $user) {
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $q->where(function ($sub) use ($request) {
+                    $sub->whereDate('start_date', '<=', $request->end_date)
+                        ->whereDate('end_date', '>=', $request->start_date);
+                });
+            } elseif ($request->filled('start_date')) {
+                $q->whereDate('end_date', '>=', $request->start_date);
+            } elseif ($request->filled('end_date')) {
+                $q->whereDate('start_date', '<=', $request->end_date);
+            }
+
+            if ($request->filled('department')) {
+                $q->whereHas('user', function ($sub) use ($request) {
+                    $sub->where('department', $request->department);
+                });
+            } elseif (!$isCommander) {
+                $q->whereHas('user', function ($sub) use ($user) {
+                    $sub->where('department', $user->department);
+                });
+            }
+
+            if ($request->filled('leave_type_id')) {
+                $q->where('leave_type_id', $request->leave_type_id);
+            }
+
+            if ($request->filled('status')) {
+                $q->where('status', $request->status);
+            } else {
+                // Default to excluding cancelled and rejected for statistics if no specific status is filtered
+                $q->whereNotIn('status', ['cancelled', 'rejected']);
+            }
+        };
+
+        // 1. Data Table Query
         $query = LeaveRequest::with(['user', 'leaveType'])
             ->whereHas('leaveType', function ($q) {
                 $q->where('slug', '!=', 'temporary');
             });
 
-        // Default Filter for Non-Commanders
-        if (!$isCommander) {
-            $query->whereHas('user', function ($q) use ($user) {
-                $q->where('department', $user->department);
-            });
-        }
-
-        // Filter Logic - Use overlapping date range to find all leave requests within the period
+        // Apply filters to table query
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            // Find all leave requests that overlap with the selected date range
             $query->where(function ($q) use ($request) {
                 $q->whereDate('start_date', '<=', $request->end_date)
                     ->whereDate('end_date', '>=', $request->start_date);
             });
         } elseif ($request->filled('start_date')) {
-            // Only start_date specified: find leaves that end on or after this date
             $query->whereDate('end_date', '>=', $request->start_date);
         } elseif ($request->filled('end_date')) {
-            // Only end_date specified: find leaves that start on or before this date
             $query->whereDate('start_date', '<=', $request->end_date);
         }
+
         if ($request->filled('department')) {
-            // Allow filtering by specific department if they have access (Commanders) or if it's their own
             $query->whereHas('user', function ($q) use ($request) {
                 $q->where('department', $request->department);
             });
+        } elseif (!$isCommander) {
+            $query->whereHas('user', function ($q) use ($user) {
+                $q->where('department', $user->department);
+            });
         }
+
         if ($request->filled('leave_type_id')) {
             $query->where('leave_type_id', $request->leave_type_id);
         }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -74,12 +106,10 @@ class ReportController extends Controller
         } else {
             $departments = \App\Models\Department::where('name', $user->department)->get();
         }
-
         $leaveTypes = LeaveType::all();
 
-        // Statistics: Top Leave Takers (all leaves except official-duty and temporary)
+        // 2. Statistics: Top Leave Takers
         $topLeaversQuery = LeaveRequest::selectRaw('user_id, SUM(total_days) as total_leave_days, COUNT(*) as leave_count')
-            ->whereNotIn('status', ['cancelled', 'rejected'])
             ->whereHas('leaveType', function ($q) {
                 $q->where('slug', '!=', 'official-duty')
                     ->where('slug', '!=', 'temporary');
@@ -88,55 +118,34 @@ class ReportController extends Controller
             ->orderByDesc('total_leave_days')
             ->limit(5);
 
-        if (!$isCommander) {
-            $topLeaversQuery->whereHas('user', function ($q) use ($user) {
-                $q->where('department', $user->department);
-            });
-        }
-
+        $applyFilters($topLeaversQuery);
         $topLeavers = $topLeaversQuery->with('user')->get();
 
-        // Statistics: Most Popular Leave Types (all leaves except temporary)
+        // 3. Statistics: Most Popular Leave Types
         $popularLeaveTypesQuery = LeaveRequest::selectRaw('leave_type_id, SUM(total_days) as total_days, COUNT(*) as usage_count')
-            ->whereNotIn('status', ['cancelled', 'rejected'])
             ->whereHas('leaveType', function ($q) {
                 $q->where('slug', '!=', 'temporary');
             })
             ->groupBy('leave_type_id')
             ->orderByDesc('usage_count');
 
-        if (!$isCommander) {
-            $popularLeaveTypesQuery->whereHas('user', function ($q) use ($user) {
-                $q->where('department', $user->department);
-            });
-        }
-
+        $applyFilters($popularLeaveTypesQuery);
         $popularLeaveTypes = $popularLeaveTypesQuery->with('leaveType')->get();
 
-        // Total statistics (excluding temporary)
-        $totalApprovedLeaves = LeaveRequest::whereNotIn('status', ['cancelled', 'rejected'])
-            ->whereHas('leaveType', function ($q) {
-                $q->where('slug', '!=', 'temporary');
-            });
-        if (!$isCommander) {
-            $totalApprovedLeaves->whereHas('user', function ($q) use ($user) {
-                $q->where('department', $user->department);
-            });
-        }
-        $totalApprovedLeaves = $totalApprovedLeaves->count();
+        // 4. Total statistics for stat cards
+        $totalApprovedLeavesQuery = LeaveRequest::whereHas('leaveType', function ($q) {
+            $q->where('slug', '!=', 'temporary');
+        });
+        $applyFilters($totalApprovedLeavesQuery);
+        $totalApprovedLeaves = $totalApprovedLeavesQuery->count();
 
-        // Department breakdown: each department's total leave days, count, top leaver, and leave type distribution
+        // 5. Department breakdown
         $deptBreakdownQuery = LeaveRequest::with(['user', 'leaveType'])
-            ->whereNotIn('status', ['cancelled', 'rejected'])
             ->whereHas('leaveType', function ($q) {
                 $q->where('slug', '!=', 'temporary')
                   ->where('slug', '!=', 'official-duty');
             });
-        if (!$isCommander) {
-            $deptBreakdownQuery->whereHas('user', function ($q) use ($user) {
-                $q->where('department', $user->department);
-            });
-        }
+        $applyFilters($deptBreakdownQuery);
         $allApprovedLeaves = $deptBreakdownQuery->get();
 
         $departmentStats = $allApprovedLeaves
@@ -183,21 +192,35 @@ class ReportController extends Controller
             ->sortByDesc('total_days')
             ->values();
 
-        // Monthly trend for the current year
-        $currentYear = now()->year;
+        // 6. Monthly trend (stays for the current year or respects the year filter)
+        $currentYear = $request->filled('start_date') ? \Carbon\Carbon::parse($request->start_date)->year : now()->year;
         $monthlyTrendQuery = LeaveRequest::selectRaw('MONTH(start_date) as month, COUNT(*) as count, SUM(total_days) as total_days')
             ->whereYear('start_date', $currentYear)
-            ->whereNotIn('status', ['cancelled', 'rejected'])
             ->whereHas('leaveType', function ($q) {
                 $q->where('slug', '!=', 'temporary');
             })
             ->groupBy('month')
             ->orderBy('month');
-        if (!$isCommander) {
+            
+        // For monthly trend, we only apply department/leave_type/status filters, not the date range itself which is monthly
+        if ($request->filled('department')) {
+            $monthlyTrendQuery->whereHas('user', function ($q) use ($request) {
+                $q->where('department', $request->department);
+            });
+        } elseif (!$isCommander) {
             $monthlyTrendQuery->whereHas('user', function ($q) use ($user) {
                 $q->where('department', $user->department);
             });
         }
+        if ($request->filled('leave_type_id')) {
+            $monthlyTrendQuery->where('leave_type_id', $request->leave_type_id);
+        }
+        if ($request->filled('status')) {
+            $monthlyTrendQuery->where('status', $request->status);
+        } else {
+            $monthlyTrendQuery->whereNotIn('status', ['cancelled', 'rejected']);
+        }
+
         $monthlyRaw = $monthlyTrendQuery->get()->keyBy('month');
         $monthlyTrend = collect(range(1, 12))->map(fn($m) => [
             'month'      => $m,

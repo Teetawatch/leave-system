@@ -1,7 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Link } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { Link, router } from '@inertiajs/vue3';
+import { onMounted, ref, computed } from 'vue';
 
 const props = defineProps({
     requests: Object, departments: Array,
@@ -10,11 +10,68 @@ const props = defineProps({
 });
 
 const isLoaded = ref(false);
+const expandedUsers = ref(new Set());
+const deletingId = ref(null);
 
 function avatarUrl(avatar) {
     if (!avatar) return null;
     if (avatar.startsWith('http')) return avatar;
     return '/storage/' + avatar;
+}
+
+// Group requests by user_id, each request counts as 0.5 day
+const groupedRequests = computed(() => {
+    const items = props.requests?.data || [];
+    const map = new Map();
+
+    items.forEach(r => {
+        const uid = r.user?.id ?? r.user_id;
+        if (!map.has(uid)) {
+            map.set(uid, {
+                user: r.user,
+                records: [],
+                totalDays: 0,
+            });
+        }
+        const group = map.get(uid);
+        group.records.push(r);
+        group.totalDays += 0.5; // each temporary leave = 0.5 day
+    });
+
+    return Array.from(map.values());
+});
+
+function toggleUser(uid) {
+    if (expandedUsers.value.has(uid)) {
+        expandedUsers.value.delete(uid);
+    } else {
+        expandedUsers.value.add(uid);
+    }
+    expandedUsers.value = new Set(expandedUsers.value); // trigger reactivity
+}
+
+function isExpanded(uid) {
+    return expandedUsers.value.has(uid);
+}
+
+function deleteRequest(id) {
+    if (!confirm('ยืนยันการลบรายการลานี้?')) return;
+    deletingId.value = id;
+    router.delete(`/leave-request/${id}`, {
+        preserveScroll: true,
+        preserveState: false,
+        onSuccess: () => {
+            deletingId.value = null;
+        },
+        onError: (errors) => {
+            deletingId.value = null;
+            const msg = Object.values(errors).join('\n') || 'เกิดข้อผิดพลาดในการลบ';
+            alert(msg);
+        },
+        onFinish: () => {
+            deletingId.value = null;
+        },
+    });
 }
 
 onMounted(() => { 
@@ -56,7 +113,7 @@ onMounted(() => {
                             </h1>
                         </div>
                         <p class="text-slate-500 font-medium text-lg max-w-2xl leading-relaxed ml-2 md:ml-[4.5rem]">
-                            สถิติสรุปการขออนุญาตออกนอกบริเวณโรงเรียน (ลาครึ่งวัน)
+                            สถิติสรุปการขออนุญาตออกนอกบริเวณโรงเรียน (ลาครึ่งวัน = 0.5 วัน)
                         </p>
                     </div>
                 </div>
@@ -75,6 +132,7 @@ onMounted(() => {
                         </div>
                         <div class="relative z-10">
                             <h3 class="text-4xl font-black text-slate-800 tracking-tight">{{ totalCount }}</h3>
+                            <p class="text-xs text-slate-400 font-bold mt-1">{{ (totalCount * 0.5).toFixed(1) }} วัน</p>
                         </div>
                     </div>
 
@@ -90,6 +148,7 @@ onMounted(() => {
                         </div>
                         <div class="relative z-10">
                             <h3 class="text-4xl font-black text-emerald-600 tracking-tight group-hover:text-emerald-700 transition-colors">{{ approvedCount }}</h3>
+                            <p class="text-xs text-emerald-400 font-bold mt-1">{{ (approvedCount * 0.5).toFixed(1) }} วัน</p>
                         </div>
                     </div>
 
@@ -105,6 +164,7 @@ onMounted(() => {
                         </div>
                         <div class="relative z-10">
                             <h3 class="text-4xl font-black text-amber-500 tracking-tight group-hover:text-amber-600 transition-colors">{{ pendingCount }}</h3>
+                            <p class="text-xs text-amber-400 font-bold mt-1">{{ (pendingCount * 0.5).toFixed(1) }} วัน</p>
                         </div>
                     </div>
 
@@ -120,6 +180,7 @@ onMounted(() => {
                         </div>
                         <div class="relative z-10">
                             <h3 class="text-4xl font-black text-blue-500 tracking-tight group-hover:text-blue-600 transition-colors">{{ morningCount }}</h3>
+                            <p class="text-xs text-blue-400 font-bold mt-1">{{ (morningCount * 0.5).toFixed(1) }} วัน</p>
                         </div>
                     </div>
 
@@ -135,22 +196,26 @@ onMounted(() => {
                         </div>
                         <div class="relative z-10">
                             <h3 class="text-4xl font-black text-purple-500 tracking-tight group-hover:text-purple-600 transition-colors">{{ afternoonCount }}</h3>
+                            <p class="text-xs text-purple-400 font-bold mt-1">{{ (afternoonCount * 0.5).toFixed(1) }} วัน</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Main Data Table -->
+                <!-- Main Data Table (Grouped by User) -->
                 <div class="glass-card rounded-[2.5rem] overflow-hidden" 
                      :class="{ 'opacity-100 translate-y-0': isLoaded, 'opacity-0 translate-y-8': !isLoaded }" style="transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: 400ms;">
                     <div class="px-6 py-5 lg:px-8 border-b border-white/40 flex items-center justify-between bg-white/30">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
-                                <i data-lucide="list" class="w-5 h-5"></i>
+                                <i data-lucide="users" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-black text-slate-900 tracking-tight leading-none mb-1">รายการลาชั่วกาล</h3>
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Leave Records</p>
+                                <h3 class="text-lg font-black text-slate-900 tracking-tight leading-none mb-1">รายการลาชั่วกาลรวมตามบุคคล</h3>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">1 ครั้ง = 0.5 วัน · คลิกเพื่อดูรายละเอียด</p>
                             </div>
+                        </div>
+                        <div class="text-xs font-black text-slate-400 bg-white/60 px-3 py-1.5 rounded-xl border border-white">
+                            {{ groupedRequests.length }} คน
                         </div>
                     </div>
 
@@ -158,62 +223,135 @@ onMounted(() => {
                         <table class="w-full text-sm text-left border-collapse">
                             <thead>
                                 <tr class="bg-white/40 border-b border-white/60">
-                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest w-1/3">ผู้ขอประวัติลา</th>
-                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest">วันที่ลา</th>
-                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">ช่วงเวลา</th>
-                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">สถานะ</th>
+                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest w-8"></th>
+                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest">ชื่อ-สกุล</th>
+                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">จำนวนครั้ง</th>
+                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">รวมวันลา</th>
+                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">ครึ่งเช้า</th>
+                                    <th class="px-6 py-4 font-black text-slate-400 text-[10px] uppercase tracking-widest text-center">ครึ่งบ่าย</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/40 border-t border-white/60 bg-white/10">
-                                <tr v-for="(r, index) in (requests?.data || [])" :key="r.id" 
-                                    class="hover:bg-white/70 transition-colors duration-300 group"
-                                    :style="`animation-delay: ${index * 30}ms;`">
-                                    
-                                    <!-- User Column (with Avatar) -->
-                                    <td class="px-6 py-4 align-middle">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 flex items-center justify-center font-black text-sm overflow-hidden flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                                                <img v-if="avatarUrl(r.user?.avatar)" :src="avatarUrl(r.user?.avatar)" class="w-full h-full object-cover">
-                                                <span v-else>{{ r.user?.name?.charAt(0) }}</span>
+                                <template v-for="(group, index) in groupedRequests" :key="group.user?.id ?? index">
+                                    <!-- Group Header Row -->
+                                    <tr class="hover:bg-white/70 transition-colors duration-200 cursor-pointer group"
+                                        @click="toggleUser(group.user?.id ?? index)">
+                                        
+                                        <!-- Expand Icon -->
+                                        <td class="px-6 py-4 align-middle">
+                                            <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center transition-all duration-300"
+                                                 :class="isExpanded(group.user?.id ?? index) ? 'bg-violet-100 rotate-90' : ''">
+                                                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-500"
+                                                   :class="isExpanded(group.user?.id ?? index) ? 'text-violet-600' : ''"></i>
                                             </div>
-                                            <div>
-                                                <h4 class="font-black text-slate-800 text-sm group-hover:text-violet-700 transition-colors">{{ r.user?.rank }} {{ r.user?.name }}</h4>
-                                                <p class="text-[11px] font-bold text-slate-400 mt-0.5">{{ r.user?.position || r.user?.department || '-' }}</p>
+                                        </td>
+
+                                        <!-- User Column -->
+                                        <td class="px-6 py-4 align-middle">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 flex items-center justify-center font-black text-sm overflow-hidden flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                                                    <img v-if="avatarUrl(group.user?.avatar)" :src="avatarUrl(group.user?.avatar)" class="w-full h-full object-cover">
+                                                    <span v-else>{{ group.user?.name?.charAt(0) }}</span>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-black text-slate-800 text-sm group-hover:text-violet-700 transition-colors">{{ group.user?.rank }} {{ group.user?.name }}</h4>
+                                                    <p class="text-[11px] font-bold text-slate-400 mt-0.5">{{ group.user?.position || group.user?.department || '-' }}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
+                                        </td>
 
-                                    <!-- Date -->
-                                    <td class="px-6 py-4 align-middle">
-                                        <div class="flex items-center gap-2">
-                                            <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
-                                            <span class="font-black text-slate-700">{{ r.start_date_thai || r.start_date }}</span>
-                                        </div>
-                                    </td>
+                                        <!-- Count -->
+                                        <td class="px-6 py-4 align-middle text-center">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 text-violet-700 border border-violet-100 font-black text-sm">
+                                                <i data-lucide="hash" class="w-3.5 h-3.5"></i>
+                                                {{ group.records.length }} ครั้ง
+                                            </span>
+                                        </td>
 
-                                    <!-- Period -->
-                                    <td class="px-6 py-4 align-middle text-center">
-                                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-sm font-black text-[11px]"
-                                             :class="r.temporary_leave_period === 'morning' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-purple-50 text-purple-600 border-purple-100'">
-                                            <i :data-lucide="r.temporary_leave_period === 'morning' ? 'sunrise' : 'sunset'" class="w-3.5 h-3.5"></i>
-                                            {{ r.temporary_leave_period === 'morning' ? 'ครึ่งเช้า' : 'ครึ่งบ่าย' }}
-                                        </div>
-                                    </td>
+                                        <!-- Total Days -->
+                                        <td class="px-6 py-4 align-middle text-center">
+                                            <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-black text-base shadow-sm"
+                                                  :class="group.totalDays >= 1 ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'">
+                                                {{ group.totalDays % 1 === 0 ? group.totalDays.toFixed(0) : group.totalDays.toFixed(1) }} วัน
+                                            </span>
+                                        </td>
 
-                                    <!-- Status -->
-                                    <td class="px-6 py-4 align-middle text-center">
-                                        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border shadow-sm font-black text-[10px]"
-                                             :class="r.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' : 'bg-amber-50 text-amber-600 border-amber-100/50'">
-                                            <span class="w-1.5 h-1.5 rounded-full" :class="r.status === 'approved' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
-                                            {{ r.status === 'approved' ? 'อนุมัติ' : 'รอดำเนินการ' }}
-                                        </div>
-                                    </td>
-                                </tr>
+                                        <!-- Morning Count -->
+                                        <td class="px-6 py-4 align-middle text-center">
+                                            <span class="font-black text-blue-500 text-sm">
+                                                {{ group.records.filter(r => r.temporary_leave_period === 'morning').length }}
+                                            </span>
+                                        </td>
+
+                                        <!-- Afternoon Count -->
+                                        <td class="px-6 py-4 align-middle text-center">
+                                            <span class="font-black text-purple-500 text-sm">
+                                                {{ group.records.filter(r => r.temporary_leave_period === 'afternoon').length }}
+                                            </span>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Expanded Sub-Rows -->
+                                    <template v-if="isExpanded(group.user?.id ?? index)">
+                                        <tr v-for="(r, ri) in group.records" :key="r.id"
+                                            class="bg-slate-50/80 border-l-4 border-violet-300 hover:bg-white/60 transition-colors duration-150"
+                                            :style="`animation-delay: ${ri * 40}ms;`">
+                                            
+                                            <!-- Indent -->
+                                            <td class="px-6 py-3 align-middle">
+                                                <div class="w-1 h-6 bg-violet-200 rounded-full mx-auto"></div>
+                                            </td>
+
+                                            <!-- Sub-row: User (blank / indent) -->
+                                            <td class="px-6 py-3 align-middle pl-14">
+                                                <div class="flex items-center gap-2">
+                                                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+                                                    <span class="font-bold text-slate-700 text-xs">{{ r.start_date_thai || r.start_date }}</span>
+                                                </div>
+                                            </td>
+
+                                            <!-- Sub-row: Count (0.5) -->
+                                            <td class="px-6 py-3 align-middle text-center">
+                                                <span class="text-xs font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">0.5 วัน</span>
+                                            </td>
+
+                                            <!-- Sub-row: Period -->
+                                            <td class="px-6 py-3 align-middle text-center" colspan="1">
+                                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-black text-[10px]"
+                                                     :class="r.temporary_leave_period === 'morning' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-purple-50 text-purple-600 border-purple-100'">
+                                                    <i :data-lucide="r.temporary_leave_period === 'morning' ? 'sunrise' : 'sunset'" class="w-3 h-3"></i>
+                                                    {{ r.temporary_leave_period === 'morning' ? 'ครึ่งเช้า' : 'ครึ่งบ่าย' }}
+                                                </div>
+                                            </td>
+
+                                            <!-- Sub-row: Status -->
+                                            <td class="px-6 py-3 align-middle text-center">
+                                                <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border font-black text-[10px]"
+                                                     :class="r.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' : 'bg-amber-50 text-amber-600 border-amber-100/50'">
+                                                    <span class="w-1.5 h-1.5 rounded-full" :class="r.status === 'approved' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
+                                                    {{ r.status === 'approved' ? 'อนุมัติ' : 'รอดำเนินการ' }}
+                                                </div>
+                                            </td>
+
+                                            <!-- Delete Button -->
+                                            <td class="px-6 py-3 align-middle text-center">
+                                                <button @click.stop="deleteRequest(r.id)"
+                                                        :disabled="deletingId === r.id"
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 text-rose-500 border border-rose-100 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-200 font-black text-[10px] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                                    <i :data-lucide="deletingId === r.id ? 'loader-2' : 'trash-2'" 
+                                                       class="w-3.5 h-3.5" 
+                                                       :class="deletingId === r.id ? 'animate-spin' : ''"></i>
+                                                    {{ deletingId === r.id ? 'กำลังลบ...' : 'ลบ' }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
                             </tbody>
                         </table>
                     </div>
 
-                    <div v-if="!(requests?.data?.length)" class="p-20 text-center">
+                    <div v-if="!groupedRequests.length" class="p-20 text-center">
                         <div class="w-20 h-20 bg-white/50 border border-white rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
                             <i data-lucide="inbox" class="w-10 h-10 text-slate-300"></i>
                         </div>

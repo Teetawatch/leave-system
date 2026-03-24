@@ -44,7 +44,6 @@ class HandleInertiaRequests extends Middleware
                     'signature' => $request->user()->signature,
                     'supervisor_id' => $request->user()->supervisor_id,
                     'manager_id' => $request->user()->manager_id,
-                    'line_user_id' => $request->user()->line_user_id,
                 ] : null,
             ],
             'flash' => [

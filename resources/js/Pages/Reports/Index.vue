@@ -35,6 +35,7 @@ const maxDeptDays = computed(() => Math.max(...(props.departmentStats || []).map
 
 // Max usage_count for popular leave types scaling
 const maxLeaveTypeCount = computed(() => Math.max(...(props.popularLeaveTypes || []).map(l => l.usage_count || 0), 1));
+const totalPopularUsage = computed(() => (props.popularLeaveTypes || []).reduce((s, lt) => s + (lt.usage_count || 0), 0));
 
 function statusLabel(status) {
     const map = { approved: 'อนุมัติ', rejected: 'ปฏิเสธ', cancelled: 'ยกเลิก' };
@@ -301,20 +302,28 @@ onMounted(() => {
                             <div v-for="(lt, i) in popularLeaveTypes" :key="i" class="flex items-center gap-4 group">
                                 <div class="w-10 h-10 rounded-[1.1rem] flex items-center justify-center text-white text-sm font-black flex-shrink-0 shadow-sm group-hover:scale-110 transition-transform" :class="leaveTypeColors[i % leaveTypeColors.length]">{{ i + 1 }}</div>
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-sm font-black text-slate-700 truncate group-hover:text-slate-900 transition-colors">{{ lt.leave_type?.name || '-' }}</span>
-                                        <div class="text-right">
-                                            <span class="text-sm font-black text-slate-900 ml-2 block">{{ lt.usage_count }} ครั้ง</span>
-                                            <span class="text-[10px] font-bold text-slate-400">รวม {{ lt.total_days }} วัน</span>
+                                    <div class="flex justify-between items-end mb-2">
+                                        <div class="flex-1 min-w-0">
+                                            <span class="text-sm font-black text-slate-700 truncate group-hover:text-slate-900 transition-colors block">{{ lt.leave_type?.name || '-' }}</span>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">เฉลี่ย {{ (lt.total_days / (lt.usage_count || 1)).toFixed(1) }} วัน/ครั้ง</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right flex-shrink-0">
+                                            <div class="flex items-baseline justify-end gap-1.5">
+                                                <span class="text-sm font-black text-slate-900">{{ lt.usage_count }}</span>
+                                                <span class="text-[10px] font-bold text-slate-400 uppercase">ครั้ง</span>
+                                                <span class="text-[11px] font-black text-emerald-600 ml-1">({{ totalPopularUsage > 0 ? Math.round((lt.usage_count / totalPopularUsage) * 100) : 0 }}%)</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-slate-400 block mt-0.5">รวม {{ lt.total_days }} วัน</span>
                                         </div>
                                     </div>
-                                    <div class="w-full bg-slate-100/80 rounded-full h-2.5 overflow-hidden shadow-inner hidden">
-                                        <div class="h-full rounded-full transition-all duration-1000" :class="leaveTypeColors[i % leaveTypeColors.length]"
-                                            :style="{ width: Math.round((lt.usage_count / maxLeaveTypeCount) * 100) + '%' }"></div>
-                                    </div>
-                                    <div class="w-full bg-slate-100/80 rounded-full h-2.5 overflow-hidden shadow-inner">
-                                        <div class="h-full rounded-full transition-all duration-1000" :class="leaveTypeColors[i % leaveTypeColors.length]"
-                                            :style="{ width: Math.round((lt.usage_count / maxLeaveTypeCount) * 100) + '%' }"></div>
+                                    <div class="w-full bg-slate-100/80 rounded-full h-2.5 overflow-hidden shadow-inner relative">
+                                        <div class="h-full rounded-full transition-all duration-1000 ease-out" 
+                                            :class="leaveTypeColors[i % leaveTypeColors.length]"
+                                            :style="{ width: Math.round((lt.usage_count / maxLeaveTypeCount) * 100) + '%' }">
+                                            <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
