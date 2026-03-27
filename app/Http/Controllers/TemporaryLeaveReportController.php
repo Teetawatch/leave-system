@@ -96,16 +96,16 @@ class TemporaryLeaveReportController extends Controller
 
         $filters = $request->only(['start_date', 'end_date', 'department', 'period', 'status']);
 
-        return Inertia::render('Reports/TemporaryLeave', compact(
-            'requests',
-            'departments',
-            'totalCount',
-            'approvedCount',
-            'pendingCount',
-            'morningCount',
-            'afternoonCount',
-            'filters'
-        ));
+        return Inertia::render('Reports/TemporaryLeave', [
+            'requests' => $requests,
+            'departments' => $departments,
+            'totalCount' => $totalCount,
+            'approvedCount' => $approvedCount,
+            'pendingCount' => $pendingCount,
+            'morningCount' => $morningCount,
+            'afternoonCount' => $afternoonCount,
+            'filters' => (object) $filters,
+        ]);
     }
 
     public function export(Request $request)

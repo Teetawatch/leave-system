@@ -1,13 +1,17 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Link, router, useForm, Head } from '@inertiajs/vue3';
 import { onMounted, ref, computed } from 'vue';
 
 const props = defineProps({
-    requests: Object, departments: Array,
-    totalCount: Number, approvedCount: Number, pendingCount: Number,
-    morningCount: Number, afternoonCount: Number,
-    filters: Object,
+    requests: { type: Object, default: () => ({ data: [] }) },
+    departments: { type: Array, default: () => [] },
+    totalCount: { type: Number, default: 0 },
+    approvedCount: { type: Number, default: 0 },
+    pendingCount: { type: Number, default: 0 },
+    morningCount: { type: Number, default: 0 },
+    afternoonCount: { type: Number, default: 0 },
+    filters: { type: Object, default: () => ({}) },
 });
 
 const filterForm = useForm({
@@ -54,24 +58,32 @@ function avatarUrl(avatar) {
 
 // Group requests by user_id, each request counts as 0.5 day
 const groupedRequests = computed(() => {
-    const items = props.requests?.data || [];
-    const map = new Map();
+    try {
+        const items = props.requests?.data || [];
+        const map = new Map();
 
-    items.forEach(r => {
-        const uid = r.user?.id ?? r.user_id;
-        if (!map.has(uid)) {
-            map.set(uid, {
-                user: r.user,
-                records: [],
-                totalDays: 0,
-            });
-        }
-        const group = map.get(uid);
-        group.records.push(r);
-        group.totalDays += 0.5; // each temporary leave = 0.5 day
-    });
+        items.forEach(r => {
+            if (!r) return;
+            const uid = r.user?.id ?? r.user_id;
+            if (!uid) return;
+            
+            if (!map.has(uid)) {
+                map.set(uid, {
+                    user: r.user,
+                    records: [],
+                    totalDays: 0,
+                });
+            }
+            const group = map.get(uid);
+            group.records.push(r);
+            group.totalDays += 0.5; // each temporary leave = 0.5 day
+        });
 
-    return Array.from(map.values());
+        return Array.from(map.values());
+    } catch (e) {
+        console.error('Error grouping requests:', e);
+        return [];
+    }
 });
 
 function toggleUser(uid) {
