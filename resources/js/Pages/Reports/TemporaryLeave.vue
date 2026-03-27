@@ -19,7 +19,7 @@ const filterForm = useForm({
 });
 
 function applyFilters() {
-    filterForm.get(route('reports.temporary-leave'), {
+    filterForm.get('/reports/temporary-leave', {
         preserveScroll: true,
         preserveState: true,
     });
@@ -143,7 +143,7 @@ onMounted(() => {
                     </div>
                     <!-- Export Button -->
                     <div class="flex items-center gap-4">
-                        <a :href="route('reports.temporary-leave.export', filterForm.data())" 
+                        <a :href="`/reports/temporary-leave/export?${new URLSearchParams(filterForm.data()).toString()}`" 
                            class="inline-flex items-center gap-2.5 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-[0.15em] text-xs rounded-2xl shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1">
                             <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                             ส่งออกไฟล์ EXCEL
