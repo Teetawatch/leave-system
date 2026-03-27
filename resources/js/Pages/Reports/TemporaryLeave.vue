@@ -1,13 +1,38 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
 import { onMounted, ref, computed } from 'vue';
 
 const props = defineProps({
     requests: Object, departments: Array,
     totalCount: Number, approvedCount: Number, pendingCount: Number,
     morningCount: Number, afternoonCount: Number,
+    filters: Object,
 });
+
+const filterForm = useForm({
+    start_date: props.filters?.start_date || '',
+    end_date: props.filters?.end_date || '',
+    department: props.filters?.department || '',
+    period: props.filters?.period || '',
+    status: props.filters?.status || '',
+});
+
+function applyFilters() {
+    filterForm.get(route('reports.temporary-leave'), {
+        preserveScroll: true,
+        preserveState: true,
+    });
+}
+
+function resetFilters() {
+    filterForm.start_date = '';
+    filterForm.end_date = '';
+    filterForm.department = '';
+    filterForm.period = '';
+    filterForm.status = '';
+    applyFilters();
+}
 
 const isLoaded = ref(false);
 const expandedUsers = ref(new Set());
@@ -115,6 +140,82 @@ onMounted(() => {
                         <p class="text-slate-500 font-medium text-lg max-w-2xl leading-relaxed ml-2 md:ml-[4.5rem]">
                             สถิติสรุปการขออนุญาตออกนอกบริเวณโรงเรียน (ลาครึ่งวัน = 0.5 วัน)
                         </p>
+                    </div>
+                    <!-- Export Button -->
+                    <div class="flex items-center gap-4">
+                        <a :href="route('reports.temporary-leave.export', filterForm.data())" 
+                           class="inline-flex items-center gap-2.5 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-[0.15em] text-xs rounded-2xl shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                            ส่งออกไฟล์ EXCEL
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="glass-card rounded-[2.5rem] p-8 md:p-10 mb-10 overflow-hidden relative"
+                     :class="{ 'opacity-100 translate-y-0': isLoaded, 'opacity-0 translate-y-8': !isLoaded }" style="transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: 50ms;">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shadow-inner">
+                            <i data-lucide="filter" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight">กำหนดเงื่อนไขการสืบค้นข้อมูล</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <!-- Date Start -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-3 h-3 text-violet-400"></i> เริ่มต้น
+                            </label>
+                            <input type="date" v-model="filterForm.start_date"
+                                   class="block w-full rounded-2xl border-slate-200 bg-white/50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all text-sm font-bold text-slate-700">
+                        </div>
+                        
+                        <!-- Date End -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-3 h-3 text-violet-400"></i> สิ้นสุด
+                            </label>
+                            <input type="date" v-model="filterForm.end_date"
+                                   class="block w-full rounded-2xl border-slate-200 bg-white/50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all text-sm font-bold text-slate-700">
+                        </div>
+
+                        <!-- Department -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="building-2" class="w-3 h-3 text-violet-400"></i> แผนก
+                            </label>
+                            <select v-model="filterForm.department"
+                                    class="block w-full rounded-2xl border-slate-200 bg-white/50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all text-sm font-bold text-slate-700">
+                                <option value="">ทุกแผนก</option>
+                                <option v-for="dept in departments" :key="dept.id" :value="dept.name">{{ dept.name }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Period -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <i data-lucide="clock" class="w-3 h-3 text-violet-400"></i> ช่วงเวลา
+                            </label>
+                            <select v-model="filterForm.period"
+                                    class="block w-full rounded-2xl border-slate-200 bg-white/50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all text-sm font-bold text-slate-700">
+                                <option value="">ทุกช่วงเวลา</option>
+                                <option value="morning">ครึ่งเช้า</option>
+                                <option value="afternoon">ครึ่งบ่าย</option>
+                            </select>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-end gap-2 pt-2 md:pt-0">
+                            <button @click="applyFilters"
+                                    class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-violet-600 text-white font-black uppercase tracking-widest text-[11px] rounded-2xl shadow-lg shadow-violet-500/20 hover:bg-violet-700 hover:shadow-violet-500/40 transition-all hover:-translate-y-0.5">
+                                <i data-lucide="search" class="w-3.5 h-3.5"></i> ค้นหา
+                            </button>
+                            <button @click="resetFilters"
+                                    class="inline-flex items-center justify-center w-12 py-3.5 bg-slate-100 text-slate-500 font-black rounded-2xl hover:bg-slate-200 transition-all">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

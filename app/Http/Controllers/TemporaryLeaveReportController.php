@@ -69,11 +69,18 @@ class TemporaryLeaveReportController extends Controller
             }
         }
 
+        // Statistics using the filtered but not paginated query
+        $statsQuery = clone $query;
+        $totalCount = $statsQuery->count();
+        $approvedCount = (clone $statsQuery)->where('status', 'approved')->count();
+        $pendingCount = (clone $statsQuery)->whereIn('status', ['pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director'])->count();
+        $morningCount = (clone $statsQuery)->where('temporary_leave_period', 'morning')->count();
+        $afternoonCount = (clone $statsQuery)->where('temporary_leave_period', 'afternoon')->count();
+
         $requests = $query->orderBy('created_at', 'desc')->paginate(50)->withQueryString();
         $requests->through(function ($r) {
             $r->start_date_thai = $r->start_date->locale('th')->translatedFormat('j M Y');
             $r->end_date_thai   = $r->end_date->locale('th')->translatedFormat('j M Y');
-            // Ensure user relation data is included properly for grouping
             if ($r->user) {
                 $r->user->makeVisible(['id']);
             }
@@ -87,13 +94,7 @@ class TemporaryLeaveReportController extends Controller
             $departments = Department::where('name', $user->department)->get();
         }
 
-        // Statistics
-        $totalTemporaryLeaves = LeaveRequest::whereHas('leaveType', fn($q) => $q->where('slug', 'temporary'));
-        $approvedCount = (clone $totalTemporaryLeaves)->where('status', 'approved')->count();
-        $pendingCount = (clone $totalTemporaryLeaves)->whereIn('status', ['pending_supervisor', 'pending_head', 'pending_deputy_director', 'pending_manager', 'pending_director'])->count();
-        $morningCount = (clone $totalTemporaryLeaves)->where('temporary_leave_period', 'morning')->count();
-        $afternoonCount = (clone $totalTemporaryLeaves)->where('temporary_leave_period', 'afternoon')->count();
-        $totalCount = $totalTemporaryLeaves->count();
+        $filters = $request->only(['start_date', 'end_date', 'department', 'period', 'status']);
 
         return Inertia::render('Reports/TemporaryLeave', compact(
             'requests',
@@ -102,7 +103,8 @@ class TemporaryLeaveReportController extends Controller
             'approvedCount',
             'pendingCount',
             'morningCount',
-            'afternoonCount'
+            'afternoonCount',
+            'filters'
         ));
     }
 
