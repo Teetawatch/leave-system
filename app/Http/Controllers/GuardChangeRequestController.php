@@ -164,6 +164,9 @@ class GuardChangeRequestController extends Controller
         $guardChange->status = 'cancelled';
         $guardChange->save();
 
+        // Revert duty roster
+        $this->revertDutyRoster($guardChange);
+
         return redirect()->route('guard-change.index')->with('status', 'ยกเลิกคำขอเปลี่ยนยามเรียบร้อยแล้ว');
     }
 
@@ -280,6 +283,9 @@ class GuardChangeRequestController extends Controller
             'approved_at' => now(),
         ]);
 
+        // Revert duty roster
+        $this->revertDutyRoster($guardChange);
+
         // Notify requester
         $requester = $guardChange->user;
         $requester->notify(new GuardChangeStatusUpdated($guardChange, 'rejected', $user));
@@ -385,6 +391,51 @@ class GuardChangeRequestController extends Controller
     }
 
     /**
+     * Deputy Director reject a guard change request.
+     */
+    public function directorReject(Request $request, GuardChangeRequest $guardChange)
+    {
+        $user = Auth::user();
+
+        // Only deputy_director or admin can reject at this level
+        if (!in_array($user->role, ['deputy_director', 'admin'])) {
+            abort(403, 'คุณไม่มีสิทธิ์ปฏิเสธคำขอนี้');
+        }
+
+        $request->validate([
+            'comment' => 'required|string|max:500',
+        ], [
+            'comment.required' => 'กรุณาระบุเหตุผลในการปฏิเสธ',
+        ]);
+
+        $guardChange->update([
+            'status' => 'rejected',
+            'director_approver_id' => $user->id,
+            'director_comment' => $request->input('comment'),
+            'director_approved_at' => now(),
+        ]);
+
+        // Revert duty roster
+        $this->revertDutyRoster($guardChange);
+
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'rejected', $user));
+
+        if ($requester->fcm_token) {
+            (new FCMService())->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรถูกปฏิเสธ ❌',
+                "รอง ผอ. {$user->name} ปฏิเสธคำขอเปลี่ยนเวรของคุณ",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
+
+        return redirect()->route('guard-change.director-approvals')
+            ->with('success', 'ปฏิเสธคำขอเปลี่ยนยามเรียบร้อยแล้ว');
+    }
+
+    /**
      * Display guard change requests pending final approval by Director (ผอ.)
      */
     public function finalApprovalIndex()
@@ -456,6 +507,51 @@ class GuardChangeRequestController extends Controller
     }
 
     /**
+     * Director (ผอ.) final reject a guard change request.
+     */
+    public function finalReject(Request $request, GuardChangeRequest $guardChange)
+    {
+        $user = Auth::user();
+
+        // Only director or admin can reject at this level
+        if (!in_array($user->role, ['director', 'admin'])) {
+            abort(403, 'คุณไม่มีสิทธิ์ปฏิเสธคำขอนี้');
+        }
+
+        $request->validate([
+            'comment' => 'required|string|max:500',
+        ], [
+            'comment.required' => 'กรุณาระบุเหตุผลในการปฏิเสธ',
+        ]);
+
+        $guardChange->update([
+            'status' => 'rejected',
+            'final_approver_id' => $user->id,
+            'final_comment' => $request->input('comment'),
+            'final_approved_at' => now(),
+        ]);
+
+        // Revert duty roster
+        $this->revertDutyRoster($guardChange);
+
+        // Notify requester
+        $requester = $guardChange->user;
+        $requester->notify(new GuardChangeStatusUpdated($guardChange, 'rejected', $user));
+
+        if ($requester->fcm_token) {
+            (new FCMService())->sendNotification(
+                $requester->fcm_token,
+                'การขอเปลี่ยนเวรถูกปฏิเสธ ❌',
+                "ผอ. {$user->name} ปฏิเสธคำขอเปลี่ยนเวรของคุณ",
+                ['type' => 'guard_change_status', 'request_id' => $guardChange->id]
+            );
+        }
+
+        return redirect()->route('guard-change.final-approvals')
+            ->with('success', 'ปฏิเสธคำขอเปลี่ยนยามเรียบร้อยแล้ว');
+    }
+
+    /**
      * อัปเดตตารางเวร (Duty Roster) ทันทีเมื่อส่งคำขอเปลี่ยนเวร
      * สลับผู้เข้าเวรเดิมเป็นผู้เข้าเวรแทน
      */
@@ -494,6 +590,48 @@ class GuardChangeRequestController extends Controller
         if ($dutyPosition === 'assistant_duty_officer') {
             if ($roster->assistant_duty_officer_id == $originalUserId) {
                 $roster->update(['assistant_duty_officer_id' => $replacementUserId]);
+            }
+        }
+    }
+
+    /**
+     * คืนค่าตารางเวร (Duty Roster) เมื่อคำขอถูกปฏิเสธ หรือยกเลิก
+     * สลับผู้เข้าเวรกลับเป็นผู้ขอเดิม
+     */
+    private function revertDutyRoster(GuardChangeRequest $guardChange)
+    {
+        $originalUserId = $guardChange->user_id;
+        $dutyPosition = $guardChange->duty_position;
+
+        // กรณีนายทหารเวรอาวุโส → อัปเดต senior_duty_rosters
+        if ($dutyPosition === 'senior_duty_officer') {
+            $seniorRoster = SeniorDutyRoster::where('senior_officer_id', $guardChange->replacement_user_id)
+                ->where('start_date', '<=', $guardChange->duty_date)
+                ->where('end_date', '>=', $guardChange->duty_date)
+                ->first();
+
+            if ($seniorRoster) {
+                $seniorRoster->update(['senior_officer_id' => $originalUserId]);
+            }
+            return;
+        }
+
+        // กรณีนายทหารเวร / ผู้ช่วยนายทหารเวร → อัปเดต duty_rosters
+        $roster = DutyRoster::where('duty_date', $guardChange->duty_date)->first();
+
+        if (!$roster) {
+            return;
+        }
+
+        if ($dutyPosition === 'duty_officer') {
+            if ($roster->duty_officer_id == $guardChange->replacement_user_id) {
+                $roster->update(['duty_officer_id' => $originalUserId]);
+            }
+        }
+
+        if ($dutyPosition === 'assistant_duty_officer') {
+            if ($roster->assistant_duty_officer_id == $guardChange->replacement_user_id) {
+                $roster->update(['assistant_duty_officer_id' => $originalUserId]);
             }
         }
     }

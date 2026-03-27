@@ -118,7 +118,7 @@ function submit() {
 }
 
 function submitReject() {
-    rejectForm.post(`/guard-change/${activeReq.value.id}/reject`, { onSuccess: () => closeModal() });
+    rejectForm.post(`/guard-change/${activeReq.value.id}/final-reject`, { onSuccess: () => closeModal() });
 }
 
 const isLoaded = ref(false);

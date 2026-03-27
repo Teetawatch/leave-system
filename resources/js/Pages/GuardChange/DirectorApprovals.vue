@@ -118,8 +118,7 @@ function submit() {
 }
 
 function submitReject() {
-    // If backend has reject for director, add here. If not, just close for now or handle appropriately.
-    rejectForm.post(`/guard-change/${activeReq.value.id}/reject`, { onSuccess: () => closeModal() });
+    rejectForm.post(`/guard-change/${activeReq.value.id}/director-reject`, { onSuccess: () => closeModal() });
 }
 
 const isLoaded = ref(false);

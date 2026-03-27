@@ -238,10 +238,12 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
     // Guard Change Director Approval Routes (for deputy_director)
     Route::get('/guard-change-director-approvals', [GuardChangeRequestController::class, 'directorApprovalIndex'])->name('guard-change.director-approvals');
     Route::post('/guard-change/{guardChange}/director-approve', [GuardChangeRequestController::class, 'directorApprove'])->name('guard-change.director-approve');
+    Route::post('/guard-change/{guardChange}/director-reject', [GuardChangeRequestController::class, 'directorReject'])->name('guard-change.director-reject');
 
     // Guard Change Final Approval Routes (for director/ผอ.)
     Route::get('/guard-change-final-approvals', [GuardChangeRequestController::class, 'finalApprovalIndex'])->name('guard-change.final-approvals');
     Route::post('/guard-change/{guardChange}/final-approve', [GuardChangeRequestController::class, 'finalApprove'])->name('guard-change.final-approve');
+    Route::post('/guard-change/{guardChange}/final-reject', [GuardChangeRequestController::class, 'finalReject'])->name('guard-change.final-reject');
 
     // Notifications
     Route::post('/notifications/mark-read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');

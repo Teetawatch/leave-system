@@ -51,7 +51,7 @@
     "name": "vue"
   },
   "resources/css/app.css": {
-    "file": "assets/app-48Bebkxs.css",
+    "file": "assets/app-DapOnXRR.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -367,7 +367,7 @@
     ]
   },
   "resources/js/Pages/GuardChange/DirectorApprovals.vue": {
-    "file": "assets/DirectorApprovals-BTySy9X6.js",
+    "file": "assets/DirectorApprovals-BWog0gqg.js",
     "name": "DirectorApprovals",
     "src": "resources/js/Pages/GuardChange/DirectorApprovals.vue",
     "isDynamicEntry": true,
@@ -380,11 +380,11 @@
       "_utils-CACZDMKj.js"
     ],
     "css": [
-      "assets/DirectorApprovals-BCW6gqMh.css"
+      "assets/DirectorApprovals-Bh-TDOMD.css"
     ]
   },
   "resources/js/Pages/GuardChange/FinalApprovals.vue": {
-    "file": "assets/FinalApprovals-Dov44Mhw.js",
+    "file": "assets/FinalApprovals-ImG0MJ_v.js",
     "name": "FinalApprovals",
     "src": "resources/js/Pages/GuardChange/FinalApprovals.vue",
     "isDynamicEntry": true,
@@ -393,7 +393,11 @@
       "_AppLayout-BOgfyyhz.js",
       "_inertia-CDPbtPxn.js",
       "_date-DNEr0NHJ.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
       "_utils-CACZDMKj.js"
+    ],
+    "css": [
+      "assets/FinalApprovals-3hN5DDeW.css"
     ]
   },
   "resources/js/Pages/GuardChange/Index.vue": {
@@ -593,7 +597,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Dmj8xePk.js",
+    "file": "assets/app-C6WMxnkl.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -640,7 +644,7 @@
       "resources/js/Pages/Settings/Index.vue"
     ],
     "css": [
-      "assets/app-48Bebkxs.css"
+      "assets/app-DapOnXRR.css"
     ]
   }
 }
