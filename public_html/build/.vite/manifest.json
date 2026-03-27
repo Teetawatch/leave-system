@@ -565,7 +565,7 @@
     ]
   },
   "resources/js/Pages/Reports/TemporaryLeave.vue": {
-    "file": "assets/TemporaryLeave-DWrIFoQ7.js",
+    "file": "assets/TemporaryLeave-CB2L8_wv.js",
     "name": "TemporaryLeave",
     "src": "resources/js/Pages/Reports/TemporaryLeave.vue",
     "isDynamicEntry": true,
@@ -577,7 +577,7 @@
       "_utils-CACZDMKj.js"
     ],
     "css": [
-      "assets/TemporaryLeave-DU3Y4IYX.css"
+      "assets/TemporaryLeave-BgqLuBsQ.css"
     ]
   },
   "resources/js/Pages/Settings/Index.vue": {
@@ -597,7 +597,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-D5rgAjT5.js",
+    "file": "assets/app-CgXNlgkm.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
