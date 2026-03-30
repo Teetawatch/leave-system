@@ -87,7 +87,7 @@ class ProfileController extends Controller
         $token = Str::random(32);
         $user->update(['telegram_link_token' => $token]);
 
-        $botUsername = env('TELEGRAM_BOT_USERNAME', 'NassLeaveBot');
+        $botUsername = config('services.telegram.bot_username', 'NassLeaveBot');
         $deepLink = "https://t.me/{$botUsername}?start={$token}";
 
         return Redirect::route('profile.edit')
