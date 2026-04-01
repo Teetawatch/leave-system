@@ -12,6 +12,8 @@ const props = defineProps({
     pendingCount: Number,
     todayLeaves: Array,
     recentRequests: Array,
+    todayDuty: Object,
+    todaySeniorDuty: Object,
 });
 
 const page = usePage();
@@ -131,6 +133,76 @@ function avatarUrl(avatar) {
                                     <i data-lucide="arrow-up-right" class="w-10 h-10 text-white/20 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform"></i>
                                 </div>
                             </Link>
+                        </div>
+                        
+                        <!-- Duty Personnel Section -->
+                        <div v-if="todayDuty || todaySeniorDuty" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-2">
+                             <!-- Senior Duty Officer (if exists) -->
+                             <div v-if="todaySeniorDuty" class="bento-card bg-slate-900 border-slate-800 text-white group overflow-hidden relative">
+                                <div class="absolute -right-6 -top-6 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl"></div>
+                                <div class="flex items-center gap-6 relative z-10">
+                                    <div class="w-20 h-20 rounded-[2rem] bg-white/10 p-1 ring-4 ring-white/5 overflow-hidden">
+                                        <img v-if="todaySeniorDuty.senior_officer?.avatar" :src="avatarUrl(todaySeniorDuty.senior_officer.avatar)" class="w-full h-full object-cover">
+                                        <div v-else class="w-full h-full flex items-center justify-center font-bold text-2xl text-brand-400">
+                                            {{ todaySeniorDuty.senior_officer?.name?.charAt(0) }}
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500 text-[10px] font-black uppercase tracking-widest text-white mb-2">
+                                            <i data-lucide="crown" class="w-3 h-3"></i>
+                                            นายทหารเวรอาวุโส
+                                        </div>
+                                        <h4 class="text-2xl font-black tracking-tight leading-tight">
+                                            {{ todaySeniorDuty.senior_officer?.rank }} {{ todaySeniorDuty.senior_officer?.name }}
+                                        </h4>
+                                        <p class="text-slate-400 text-sm font-bold flex items-center gap-2">
+                                            <i data-lucide="shield-check" class="w-4 h-4 text-brand-400"></i>
+                                            ประจำห้วงเวลาวันนี้
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Daily Duty Officers -->
+                            <div v-if="todayDuty" class="bento-card group col-span-1" :class="{'md:col-span-1': todaySeniorDuty, 'md:col-span-2': !todaySeniorDuty}">
+                                <div class="flex flex-col sm:flex-row gap-8 items-center sm:items-start lg:items-center">
+                                    <div class="flex -space-x-8 lg:-space-x-10">
+                                        <div class="w-20 h-20 rounded-[2rem] border-4 border-white bg-slate-100 shadow-xl overflow-hidden relative z-20 group-hover:-translate-x-2 transition-transform duration-500">
+                                            <img v-if="todayDuty.duty_officer?.avatar" :src="avatarUrl(todayDuty.duty_officer.avatar)" class="w-full h-full object-cover">
+                                            <div v-else class="w-full h-full flex items-center justify-center font-bold text-2xl text-brand-500 uppercase">
+                                                {{ todayDuty.duty_officer?.name?.charAt(0) }}
+                                            </div>
+                                        </div>
+                                        <div v-if="todayDuty.assistant_duty_officer" class="w-20 h-20 rounded-[2rem] border-4 border-white bg-white shadow-xl overflow-hidden relative z-10 group-hover:translate-x-2 transition-transform duration-500">
+                                            <img v-if="todayDuty.assistant_duty_officer?.avatar" :src="avatarUrl(todayDuty.assistant_duty_officer.avatar)" class="w-full h-full object-cover">
+                                            <div v-else class="w-full h-full flex items-center justify-center font-bold text-2xl text-slate-400 uppercase">
+                                                {{ todayDuty.assistant_duty_officer?.name?.charAt(0) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-4 text-center sm:text-left">
+                                        <div>
+                                            <p class="text-[10px] font-black text-brand-500 uppercase tracking-[0.3em] mb-2 leading-none">เจ้าหน้าที่เวรวันนี้</p>
+                                            <div class="space-y-1">
+                                                <div v-if="todayDuty.duty_officer" class="flex items-center justify-center sm:justify-start gap-3">
+                                                    <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                                                    <span class="text-sm font-black text-slate-900">น.เวร:</span>
+                                                    <span class="text-sm font-bold text-slate-600">{{ todayDuty.duty_officer.rank }} {{ todayDuty.duty_officer.name }}</span>
+                                                </div>
+                                                <div v-if="todayDuty.assistant_duty_officer" class="flex items-center justify-center sm:justify-start gap-3">
+                                                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                                                    <span class="text-sm font-black text-slate-900">ผช.น.เวร:</span>
+                                                    <span class="text-sm font-bold text-slate-600">{{ todayDuty.assistant_duty_officer.rank }} {{ todayDuty.assistant_duty_officer.name }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Link href="/duty-roster" class="inline-flex items-center gap-2 text-[10px] font-black text-brand-500 uppercase tracking-widest hover:gap-3 transition-all">
+                                            <span>ดูตารางเวรทั้งหมด</span>
+                                            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Stats -->
