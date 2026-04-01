@@ -1,7 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { thaiFullDate } from '@/utils/date';
 
 const props = defineProps({ requests: Array });
@@ -9,7 +9,7 @@ const page = usePage();
 
 const activeModal = ref(null);
 const activeReq = ref(null);
-const approveForm = useForm({ comment: '', signature: '', use_saved_signature: '0' });
+const approveForm = useForm({ comment: '', signature: '', use_saved_signature: '0', save_signature: false });
 const rejectForm = useForm({ comment: '' });
 
 const dutyPositions = {
@@ -20,11 +20,90 @@ const dutyPositions = {
 
 const formatDate = thaiFullDate;
 
-function openApprove(req) { activeReq.value = req; activeModal.value = 'approve'; }
+// User & Signature
+const currentUser = computed(() => page.props.auth.user);
+const savedSignatureUrl = computed(() => currentUser.value.signature ? `/storage/${currentUser.value.signature}` : null);
+
+const signatureMode = ref('saved');
+const signatureCanvas = ref(null);
+const isDrawing = ref(false);
+
+let ctx = null;
+let lastX = 0, lastY = 0;
+
+function switchSignatureMode(mode) {
+    signatureMode.value = mode;
+    approveForm.signature = '';
+    if (mode === 'draw') {
+        setTimeout(() => {
+            if (signatureCanvas.value) {
+                ctx = signatureCanvas.value.getContext('2d');
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round'; // Smoother joins
+                ctx.strokeStyle = '#0000FF'; // Vibrant Blue
+            }
+        }, 100);
+    }
+}
+
+function startDraw(e) {
+    if (signatureMode.value !== 'draw' || !signatureCanvas.value) return;
+    isDrawing.value = true;
+    const rect = signatureCanvas.value.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    lastX = clientX - rect.left;
+    lastY = clientY - rect.top;
+}
+
+function draw(e) {
+    if (!isDrawing.value) return;
+    e.preventDefault();
+    const rect = signatureCanvas.value.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const currentX = clientX - rect.left;
+    const currentY = clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(currentX, currentY);
+    ctx.stroke();
+
+    lastX = currentX;
+    lastY = currentY;
+}
+
+function stopDraw() {
+    if (!isDrawing.value) return;
+    isDrawing.value = false;
+    approveForm.signature = signatureCanvas.value.toDataURL('image/png');
+}
+
+function clearCanvas() {
+    if (!signatureCanvas.value) return;
+    ctx.clearRect(0, 0, signatureCanvas.value.width, signatureCanvas.value.height);
+    approveForm.signature = '';
+}
+
+function openApprove(req) { 
+    activeReq.value = req; 
+    activeModal.value = 'approve'; 
+    switchSignatureMode('saved');
+}
 function openReject(req) { activeReq.value = req; activeModal.value = 'reject'; }
 function closeModal() { activeModal.value = null; activeReq.value = null; approveForm.reset(); rejectForm.reset(); }
 
-function submitApprove() { approveForm.post(`/guard-change/${activeReq.value.id}/approve`, { onSuccess: () => closeModal() }); }
+function submitApprove() { 
+    if (signatureMode.value === 'saved') {
+        approveForm.use_saved_signature = '1';
+        approveForm.signature = '';
+    } else {
+        approveForm.use_saved_signature = '0';
+    }
+    approveForm.post(`/guard-change/${activeReq.value.id}/approve`, { onSuccess: () => closeModal() }); 
+}
 function submitReject() { rejectForm.post(`/guard-change/${activeReq.value.id}/reject`, { onSuccess: () => closeModal() }); }
 
 onMounted(() => {
@@ -175,6 +254,73 @@ onMounted(() => {
                                     <h3 class="text-3xl font-black text-slate-900 tracking-tight mb-2">ยืนยันการอนุมัติ</h3>
                                     <p class="text-slate-500 font-medium mb-8">พิจารณาอนุมัติคำขอเปลี่ยนเวรยามของ <span class="font-black text-slate-900">{{ activeReq?.user?.rank }}{{ activeReq?.user?.name }}</span></p>
                                     <div class="space-y-6">
+                                        <!-- Signature Section -->
+                                        <div class="mb-6">
+                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-3">
+                                                <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>
+                                                ลายเซ็นอิเล็กทรอนิกส์ (E-SIGNATURE)
+                                            </label>
+
+                                            <!-- Mode Toggle -->
+                                            <div class="flex gap-2 mb-4 bg-slate-100 p-1.5 rounded-2xl">
+                                                <button type="button" @click="switchSignatureMode('saved')"
+                                                    :class="signatureMode === 'saved' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                                                    class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.1rem] text-xs font-black uppercase tracking-wider transition-all">
+                                                    <i data-lucide="image" class="w-3.5 h-3.5"></i> ใช้ลายเซ็นที่บันทึก
+                                                </button>
+                                                <button type="button" @click="switchSignatureMode('draw')"
+                                                    :class="signatureMode === 'draw' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                                                    class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[1.1rem] text-xs font-black uppercase tracking-wider transition-all">
+                                                    <i data-lucide="pen" class="w-3.5 h-3.5"></i> เซ็นใหม่
+                                                </button>
+                                            </div>
+
+                                            <!-- Saved Signature Display -->
+                                            <div v-if="signatureMode === 'saved'">
+                                                <div v-if="savedSignatureUrl" class="relative bg-white border border-emerald-100 shadow-inner rounded-2xl p-6 flex flex-col items-center justify-center min-h-[140px]">
+                                                    <img :src="savedSignatureUrl" alt="ลายเซ็น" class="max-h-24 max-w-full object-contain drop-shadow-sm">
+                                                </div>
+                                                <div v-else class="bg-amber-50/50 border border-amber-200/50 rounded-2xl p-6 text-center">
+                                                    <i data-lucide="alert-circle" class="w-8 h-8 text-amber-400 mx-auto mb-3"></i>
+                                                    <p class="text-sm font-bold text-amber-600">ยังไม่มีลายเซ็นที่บันทึกไว้</p>
+                                                    <p class="text-xs text-amber-500/80 mt-1">ตั้งค่าลายเซ็นในโปรไฟล์ หรือคลิก "เซ็นใหม่"</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Draw Signature Canvas -->
+                                            <div v-if="signatureMode === 'draw'" class="space-y-3">
+                                                <div class="relative bg-white border-2 border-dashed border-slate-200 rounded-3xl overflow-hidden" style="touch-action: none;">
+                                                    <canvas ref="signatureCanvas" width="800" height="320"
+                                                        class="w-full cursor-crosshair block bg-white"
+                                                        @mousedown="startDraw" @mousemove="draw" @mouseup="stopDraw" @mouseleave="stopDraw"
+                                                        @touchstart="startDraw" @touchmove="draw" @touchend="stopDraw">
+                                                    </canvas>
+                                                    <div v-if="!approveForm.signature" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <div class="text-center">
+                                                            <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 opacity-30">
+                                                                <i data-lucide="pen-tool" class="w-8 h-8"></i>
+                                                            </div>
+                                                            <span class="text-slate-300 text-sm font-bold tracking-widest uppercase">ลงลายมือชื่อที่นี่...</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex items-center justify-between mt-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <label class="relative inline-flex items-center cursor-pointer group">
+                                                            <input type="checkbox" v-model="approveForm.save_signature" class="sr-only peer">
+                                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                            <span class="ml-3 text-xs font-black text-slate-600 uppercase tracking-widest group-hover:text-blue-600 transition-colors">บันทึกลายเซ็นสำหรับครั้งถัดไป</span>
+                                                        </label>
+                                                    </div>
+                                                    <button type="button" @click="clearCanvas"
+                                                        class="inline-flex items-center gap-2 px-5 py-2.5 text-[11px] font-black text-slate-500 bg-white shadow-sm border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 rounded-2xl transition-all uppercase tracking-widest">
+                                                        <i data-lucide="eraser" class="w-3.5 h-3.5"></i> ล้างข้อมูล
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="space-y-3">
                                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">COMMENT (OPTIONAL)</label>
                                             <textarea v-model="approveForm.comment" rows="2"
@@ -184,7 +330,7 @@ onMounted(() => {
                                     </div>
                                 </div>
                                 <div class="bg-slate-50 px-8 py-6 md:px-12 md:py-8 flex flex-col sm:flex-row-reverse gap-4">
-                                    <button type="submit" :disabled="approveForm.processing"
+                                    <button type="submit" :disabled="approveForm.processing || (signatureMode === 'draw' && !approveForm.signature) || (signatureMode === 'saved' && !savedSignatureUrl)"
                                         class="flex-1 inline-flex justify-center items-center px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-emerald-500/20 transition-all hover:-translate-y-1 disabled:opacity-60">
                                         <i data-lucide="shield-check" class="w-4 h-4 mr-2"></i>
                                         {{ approveForm.processing ? 'กำลังดำเนินการ...' : 'ยืนยันการอนุมัติ' }}

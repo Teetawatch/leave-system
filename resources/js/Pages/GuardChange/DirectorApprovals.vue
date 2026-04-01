@@ -9,7 +9,7 @@ const activeReq = ref(null);
 const showModal = ref(false);
 const showRejectModal = ref(false);
 
-const form = useForm({ comment: '', signature: '', use_saved_signature: '0' });
+const form = useForm({ comment: '', signature: '', use_saved_signature: '0', save_signature: false });
 const rejectForm = useForm({ comment: '' });
 
 const dutyPositions = {
@@ -40,9 +40,10 @@ function switchSignatureMode(mode) {
         setTimeout(() => {
             if (signatureCanvas.value) {
                 ctx = signatureCanvas.value.getContext('2d');
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
-                ctx.strokeStyle = '#6B21A8'; // purple-800
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#0000FF'; // Vibrant Blue
             }
         }, 100);
     }

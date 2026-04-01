@@ -225,6 +225,11 @@ class GuardChangeRequestController extends Controller
             'approved_at' => now(),
         ]);
 
+        // Save signature to user profile if requested
+        if ($request->boolean('save_signature') && $signaturePath) {
+            $user->update(['signature' => $signaturePath]);
+        }
+
         // Notify requester
         $requester = $guardChange->user;
         $requester->notify(new GuardChangeStatusUpdated($guardChange, 'approved', $user));
@@ -359,6 +364,11 @@ class GuardChangeRequestController extends Controller
             'director_approved_at' => now(),
         ]);
 
+        // Save signature to user profile if requested
+        if ($request->boolean('save_signature') && $signaturePath) {
+            $user->update(['signature' => $signaturePath]);
+        }
+
         // Notify requester
         $requester = $guardChange->user;
         $requester->notify(new GuardChangeStatusUpdated($guardChange, 'director_approved', $user));
@@ -488,6 +498,11 @@ class GuardChangeRequestController extends Controller
             'final_comment' => $request->input('comment'),
             'final_approved_at' => now(),
         ]);
+
+        // Save signature to user profile if requested
+        if ($request->boolean('save_signature') && $signaturePath) {
+            $user->update(['signature' => $signaturePath]);
+        }
 
         // Notify requester
         $requester = $guardChange->user;
