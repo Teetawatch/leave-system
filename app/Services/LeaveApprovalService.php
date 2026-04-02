@@ -72,8 +72,8 @@ class LeaveApprovalService
         }
 
         // 2. Handle Signature if not provided but saved exists
-        if (!$signaturePath && $actor->signature && in_array($stepName, ['supervisor', 'head', 'manager', 'director'])) {
-            $extension = pathinfo($actor->signature, PATHINFO_EXTENSION);
+        if (!$signaturePath && $actor->signature && in_array($stepName, ['supervisor', 'head', 'manager', 'deputy_director', 'director'])) {
+            $extension = pathinfo($actor->signature, PATHINFO_EXTENSION) ?: 'png';
             $fileName = 'signatures/sig_auto_' . time() . '_' . $leaveRequest->id . '_' . $actor->id . '.' . $extension;
             if (Storage::disk('public')->exists($actor->signature)) {
                 Storage::disk('public')->copy($actor->signature, $fileName);

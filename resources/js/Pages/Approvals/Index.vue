@@ -7,7 +7,13 @@ import { thaiFullDate } from '@/utils/date';
 const props = defineProps({ requests: Object });
 const page = usePage();
 const authUser = computed(() => page.props.auth?.user);
-const savedSignatureUrl = computed(() => authUser.value?.signature ? `/storage/${authUser.value.signature}` : null);
+const savedSignatureUrl = computed(() => {
+    const sig = authUser.value?.signature;
+    if (!sig) return null;
+    // strip leading slash if any, normalize path
+    const path = sig.replace(/^\/storage\//, '');
+    return `/storage/${path}`;
+});
 
 const approveForm = useForm({ comment: '', signature: '', use_saved_signature: '0' });
 const rejectForm = useForm({ comment: '' });
@@ -23,6 +29,7 @@ let lastX = 0, lastY = 0;
 function openApprove(req) {
     activeRequest.value = req;
     activeModal.value = 'approve';
+    approveForm.reset();
     approveForm.signature = '';
     approveForm.use_saved_signature = savedSignatureUrl.value ? '1' : '0';
     signatureMode.value = savedSignatureUrl.value ? 'saved' : 'draw';
