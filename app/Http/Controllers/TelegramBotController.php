@@ -162,7 +162,8 @@ class TelegramBotController extends Controller
         }
 
         // Unknown command
-        $this->telegram->sendMessage($chatId,
+        $this->telegram->sendMessage(
+            $chatId,
             "❓ ไม่เข้าใจคำสั่ง พิมพ์ /help เพื่อดูคำสั่งที่ใช้ได้"
         );
     }
@@ -174,41 +175,71 @@ class TelegramBotController extends Controller
     protected function handleStartCommand(string $chatId, string $text): void
     {
         // /start <link_token> — auto-link from profile page
-        $parts = explode(' ', $text, 2);
-        if (count($parts) === 2 && !empty($parts[1])) {
-            $linkToken = $parts[1];
+        // Log the text with delimiters to see exact content including spaces
+        Log::info("[Telegram Bot] handleStartCommand text: [{$text}]");
+        
+        // Match /start followed by token. Case-insensitive match for the regex
+        if (preg_match('/^\/start\s+([a-zA-Z0-9_\-]+)/i', $text, $matches)) {
+            // Trim and convert to lowercase for consistent matching
+            $linkToken = strtolower(trim($matches[1]));
+            Log::info("[Telegram Bot] Normalized linking token: [{$linkToken}] from chatId: [{$chatId}]");
+            
+            // First, find the user with this token
             $user = User::where('telegram_link_token', $linkToken)->first();
 
             if ($user) {
+                // Link the account
                 $user->update([
                     'telegram_chat_id' => $chatId,
                     'telegram_link_token' => null,
                 ]);
-                $this->telegram->sendMessage($chatId,
+
+                Log::info("[Telegram Bot] Successfully linked User ID: [{$user->id}] with Chat ID: [{$chatId}]");
+
+                $this->telegram->sendMessage(
+                    $chatId,
                     "✅ เชื่อมต่อสำเร็จ!\n\n"
-                    . "👤 บัญชี: <b>{$user->rank} {$user->name}</b>\n"
-                    . "📌 ตำแหน่ง: {$user->position}\n\n"
-                    . "คุณจะได้รับแจ้งเตือนการลา/อนุมัติผ่าน Telegram แล้ว\n"
-                    . "พิมพ์ /help เพื่อดูคำสั่งทั้งหมด"
+                        . "👤 บัญชี: <b>{$user->rank} {$user->name}</b>\n"
+                        . "📌 ตำแหน่ง: {$user->position}\n\n"
+                        . "คุณจะได้รับแจ้งเตือนการลา/อนุมัติผ่าน Telegram แล้ว\n"
+                        . "พิมพ์ /help เพื่อดูคำสั่งทั้งหมด"
                 );
                 return;
             }
 
-            $this->telegram->sendMessage($chatId,
+            // Fallback: Check if the chatId is already linked
+            $alreadyLinked = User::where('telegram_chat_id', $chatId)->first();
+            if ($alreadyLinked) {
+                Log::info("[Telegram Bot] Chat ID already linked to User ID: [{$alreadyLinked->id}]");
+                $this->telegram->sendMessage(
+                    $chatId,
+                    "👋 สวัสดี <b>{$alreadyLinked->rank} {$alreadyLinked->name}</b>!\n\n"
+                        . "บัญชีของคุณได้รับการเชื่อมต่อเรียบร้อยแล้ว\n"
+                        . "พิมพ์ /help เพื่อดูคำสั่ง"
+                );
+                return;
+            }
+
+            Log::warning("[Telegram Bot] Token not found in database: [{$linkToken}] for Chat ID: [{$chatId}]");
+            $this->telegram->sendMessage(
+                $chatId,
                 "❌ ลิงก์หมดอายุหรือไม่ถูกต้อง กรุณาสร้างลิงก์ใหม่จากหน้าโปรไฟล์"
             );
             return;
         }
 
-        // Plain /start
+        // Plain /start or fallback
+        Log::info("[Telegram Bot] Fallback to plain /start for Chat ID: [{$chatId}] with text: [{$text}]");
         $user = User::where('telegram_chat_id', $chatId)->first();
         if ($user) {
-            $this->telegram->sendMessage($chatId,
+            $this->telegram->sendMessage(
+                $chatId,
                 "👋 สวัสดี <b>{$user->rank} {$user->name}</b>!\n\n"
                 . "บัญชีเชื่อมต่อแล้ว พิมพ์ /help เพื่อดูคำสั่ง"
             );
         } else {
-            $this->telegram->sendMessage($chatId,
+            $this->telegram->sendMessage(
+                $chatId,
                 "👋 สวัสดี! ยินดีต้อนรับสู่ระบบแจ้งเตือนการลา NASS\n\n"
                 . "กรุณาเชื่อมต่อบัญชีผ่านหน้าโปรไฟล์ในระบบ\n"
                 . "หรือพิมพ์ /link เพื่อเชื่อมต่อด้วยรหัส"
@@ -220,14 +251,16 @@ class TelegramBotController extends Controller
     {
         $user = User::where('telegram_chat_id', $chatId)->first();
         if ($user) {
-            $this->telegram->sendMessage($chatId,
+            $this->telegram->sendMessage(
+                $chatId,
                 "✅ บัญชีเชื่อมต่อแล้ว: <b>{$user->rank} {$user->name}</b>\n"
                 . "หากต้องการเปลี่ยนบัญชี พิมพ์ /unlink ก่อน"
             );
             return;
         }
 
-        $this->telegram->sendMessage($chatId,
+        $this->telegram->sendMessage(
+            $chatId,
             "🔗 กรุณาเชื่อมต่อบัญชีจากหน้าโปรไฟล์ในระบบ\n\n"
             . "ไปที่ <b>โปรไฟล์ → เชื่อมต่อ Telegram</b>\n"
             . "กดปุ่ม \"เชื่อมต่อ Telegram\" แล้วระบบจะสร้างลิงก์ให้\n\n"
@@ -244,7 +277,8 @@ class TelegramBotController extends Controller
         }
 
         $user->update(['telegram_chat_id' => null]);
-        $this->telegram->sendMessage($chatId,
+        $this->telegram->sendMessage(
+            $chatId,
             "✅ ยกเลิกการเชื่อมต่อเรียบร้อย\n"
             . "คุณจะไม่ได้รับแจ้งเตือนผ่าน Telegram อีก"
         );
@@ -298,21 +332,22 @@ class TelegramBotController extends Controller
             return;
         }
 
-        $studentCourses  = ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.'];
-        $pendingCivil   = $pendingRequests->filter(fn($lr) => !in_array($lr->user->department ?? '', $studentCourses));
-        $pendingCourse  = $pendingRequests->filter(fn($lr) => in_array($lr->user->department ?? '', $studentCourses));
+        $studentCourses = ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.'];
+        $pendingCivil = $pendingRequests->filter(fn($lr) => !in_array($lr->user->department ?? '', $studentCourses));
+        $pendingCourse = $pendingRequests->filter(fn($lr) => in_array($lr->user->department ?? '', $studentCourses));
 
         $text = "📋 <b>ใบลาที่รอการอนุมัติจากคุณ</b> ({$pendingRequests->count()} ใบ)\n"
             . "━━━━━━━━━━━━━━━━━━\n";
 
         $renderPending = function ($items, string $label) use (&$text) {
-            if ($items->isEmpty()) return;
+            if ($items->isEmpty())
+                return;
             $text .= "\n{$label} ({$items->count()} ใบ)\n";
             foreach ($items->values() as $i => $lr) {
                 $num = $i + 1;
                 $requesterName = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
                 $startStr = $lr->start_date->format('d/m/Y');
-                $endStr   = $lr->end_date->format('d/m/Y');
+                $endStr = $lr->end_date->format('d/m/Y');
 
                 $periodLabel = '';
                 if ($lr->temporary_leave_period === 'morning') {
@@ -327,7 +362,7 @@ class TelegramBotController extends Controller
             }
         };
 
-        $renderPending($pendingCivil,  '👔 <b>ข้าราชการ</b>');
+        $renderPending($pendingCivil, '👔 <b>ข้าราชการ</b>');
         $renderPending($pendingCourse, '🎓 <b>หลักสูตร</b>');
 
         $this->telegram->sendMessage($chatId, $text);
@@ -350,28 +385,30 @@ class TelegramBotController extends Controller
             ->get();
 
         if ($onLeave->isEmpty()) {
-            $this->telegram->sendMessage($chatId,
-                "📅 <b>ผู้ลาประจำวันที่ {$todayStr}</b>\n\n✅ ไม่มีผู้ลาในวันนี้"
+            $this->telegram->sendMessage(
+                $chatId,
+                "📅 <b>ข้อมูลการจำหน่ายกำลังพล ประจำวันที่ {$todayStr}</b>\n\n✅ ไม่มีผู้ลาในวันนี้"
             );
             return;
         }
 
         $studentCourses = ['หลักสูตรนายทหารพลาธิการชั้นนายเรือ ประจำปีงบประมาณ 69', 'หลักสูตรอาชีพเพื่อเลื่อนฐานะชั้น จ.อ.'];
-        $onLeaveCivil  = $onLeave->filter(fn($lr) => !in_array($lr->user->department ?? '', $studentCourses));
+        $onLeaveCivil = $onLeave->filter(fn($lr) => !in_array($lr->user->department ?? '', $studentCourses));
         $onLeaveCourse = $onLeave->filter(fn($lr) => in_array($lr->user->department ?? '', $studentCourses));
 
         $text = "📅 <b>ผู้ลาประจำวันที่ {$todayStr}</b>\n"
-            . "👥 รวม {$onLeave->count()} คน\n"
+            . "👥 รวม {$onLeave->count()} นาย\n"
             . "━━━━━━━━━━━━━━━━━━\n";
 
         $renderGroup = function ($items, string $label) use (&$text) {
-            if ($items->isEmpty()) return;
+            if ($items->isEmpty())
+                return;
             $text .= "\n{$label} ({$items->count()} คน)\n";
             foreach ($items->values() as $i => $lr) {
-                $num  = $i + 1;
+                $num = $i + 1;
                 $name = ($lr->user->rank ?? '') . ' ' . $lr->user->name;
                 $startStr = $this->formatThaiDate($lr->start_date);
-                $endStr   = $this->formatThaiDate($lr->end_date);
+                $endStr = $this->formatThaiDate($lr->end_date);
                 $isTemporary = $lr->leaveType->slug === 'temporary';
 
                 $text .= "{$num}. <b>{$name}</b>\n"
@@ -379,9 +416,9 @@ class TelegramBotController extends Controller
 
                 if ($isTemporary) {
                     $period = match ($lr->temporary_leave_period) {
-                        'morning'   => ' (ช่วงเช้า)',
+                        'morning' => ' (ช่วงเช้า)',
                         'afternoon' => ' (ช่วงบ่าย)',
-                        default     => '',
+                        default => '',
                     };
                     $text .= "{$period}\n"
                         . "   📆 {$startStr}\n";
@@ -395,7 +432,7 @@ class TelegramBotController extends Controller
             }
         };
 
-        $renderGroup($onLeaveCivil,  '👔 <b>ข้าราชการ</b>');
+        $renderGroup($onLeaveCivil, '👔 <b>ข้าราชการ</b>');
         $renderGroup($onLeaveCourse, '🎓 <b>หลักสูตร</b>');
 
         $this->telegram->sendMessage($chatId, $text);
@@ -419,7 +456,8 @@ class TelegramBotController extends Controller
             ->first();
 
         if (!$roster && !$seniorRoster) {
-            $this->telegram->sendMessage($chatId,
+            $this->telegram->sendMessage(
+                $chatId,
                 "🛡 <b>ตารางเวรประจำวันที่ {$todayStr}</b>\n\n❌ ไม่มีข้อมูลตารางเวรในวันนี้"
             );
             return;
@@ -501,7 +539,8 @@ class TelegramBotController extends Controller
 
     protected function updateMessageAfterAction(string $chatId, ?int $messageId, LeaveRequest $leaveRequest, string $resultText): void
     {
-        if (!$messageId) return;
+        if (!$messageId)
+            return;
 
         $requester = $leaveRequest->user;
         $requesterName = ($requester->rank ?? '') . ' ' . $requester->name;
@@ -551,10 +590,10 @@ class TelegramBotController extends Controller
         return $query->where(function ($q) use ($allIds, $managedIds) {
             $q->where(function ($qq) use ($allIds) {
                 $qq->whereIn('status', ['pending_supervisor', 'pending_head'])
-                   ->whereIn('user_id', $allIds);
+                    ->whereIn('user_id', $allIds);
             })->orWhere(function ($qq) use ($managedIds) {
                 $qq->where('status', 'pending_manager')
-                   ->whereIn('user_id', $managedIds);
+                    ->whereIn('user_id', $managedIds);
             });
         })->latest()->take(10)->get();
     }
@@ -562,13 +601,22 @@ class TelegramBotController extends Controller
     protected function formatThaiDate(\Carbon\Carbon $date): string
     {
         $thaiMonths = [
-            1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
-            5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
-            9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.',
+            1 => 'ม.ค.',
+            2 => 'ก.พ.',
+            3 => 'มี.ค.',
+            4 => 'เม.ย.',
+            5 => 'พ.ค.',
+            6 => 'มิ.ย.',
+            7 => 'ก.ค.',
+            8 => 'ส.ค.',
+            9 => 'ก.ย.',
+            10 => 'ต.ค.',
+            11 => 'พ.ย.',
+            12 => 'ธ.ค.',
         ];
-        $day   = $date->day;
+        $day = $date->day;
         $month = $thaiMonths[$date->month];
-        $year  = $date->year + 543;
+        $year = $date->year + 543;
         return "{$day} {$month}{$year}";
     }
 

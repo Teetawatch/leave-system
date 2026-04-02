@@ -19,6 +19,10 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user();
+        
+        $botUsername = config('services.telegram.bot_username', 'NassLeaveBot');
+        $existingLink = $user->telegram_link_token ? "https://t.me/{$botUsername}?start={$user->telegram_link_token}" : null;
+
         return Inertia::render('Profile/Edit', [
             'user' => [
                 'id' => $user->id,
@@ -33,7 +37,7 @@ class ProfileController extends Controller
                 'telegram_chat_id' => $user->telegram_chat_id,
             ],
             'status' => session('status'),
-            'telegram_link' => session('telegram_link'),
+            'telegram_link' => session('telegram_link') ?: $existingLink,
         ]);
     }
 
@@ -84,10 +88,11 @@ class ProfileController extends Controller
     public function generateTelegramLink(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $token = Str::random(32);
+        // Use shorter, lowercase token for better reliability across different database collations
+        $token = strtolower(Str::random(16));
         $user->update(['telegram_link_token' => $token]);
 
-        $botUsername = config('services.telegram.bot_username', 'NassLeaveBot');
+        $botUsername = config('services.telegram.bot_username', 'navalsupplyhrmis_bot');
         $deepLink = "https://t.me/{$botUsername}?start={$token}";
 
         return Redirect::route('profile.edit')

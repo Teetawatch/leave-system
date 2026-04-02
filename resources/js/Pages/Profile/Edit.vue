@@ -44,8 +44,14 @@ function roleLabel(role) {
     return map[role] || 'กำลังพล';
 }
 
+const isGeneratingLink = ref(false);
+
 function generateTelegramLink() {
-    router.post('/profile/telegram-link', {}, { preserveScroll: true });
+    isGeneratingLink.value = true;
+    router.post('/profile/telegram-link', {}, { 
+        preserveScroll: true,
+        onFinish: () => isGeneratingLink.value = false 
+    });
 }
 
 function unlinkTelegram() {
@@ -248,8 +254,8 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                 
                                 <div v-else class="flex flex-col items-center text-center space-y-4">
                                     <p class="text-[12px] font-medium text-slate-500">รับการแจ้งเตือนการลาและการตรวจสอบสถานะผ่าน Telegram โดยตรง</p>
-                                    <button v-if="!telegram_link" @click="generateTelegramLink" type="button" class="w-full py-4 bg-[#0088cc] hover:bg-[#0077b3] text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-1">
-                                        สร้างลิงก์เชื่อมต่อ
+                                    <button v-if="!telegram_link" @click="generateTelegramLink" :disabled="isGeneratingLink" type="button" class="w-full py-4 bg-[#0088cc] hover:bg-[#0077b3] text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-sky-500/20 transition-all hover:-translate-y-1 disabled:opacity-50">
+                                        {{ isGeneratingLink ? 'กำลังดำเนินการ...' : 'สร้างลิงก์เชื่อมต่อ' }}
                                     </button>
                                     <div v-else class="w-full text-center space-y-3">
                                         <p class="text-xs font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100">
