@@ -90,10 +90,25 @@ class ProfileController extends Controller
         $user = $request->user();
         // Use shorter, lowercase token for better reliability across different database collations
         $token = strtolower(Str::random(16));
-        $user->update(['telegram_link_token' => $token]);
+        
+        // Use explicit assignment and save() for more reliable persistence
+        $user->telegram_link_token = $token;
+        $saved = $user->save();
 
         $botUsername = config('services.telegram.bot_username', 'navalsupplyhrmis_bot');
         $deepLink = "https://t.me/{$botUsername}?start={$token}";
+
+        if ($saved) {
+            \Illuminate\Support\Facades\Log::info("[Telegram Link] Token generated and saved successfully", [
+                'user_id' => $user->id,
+                'token' => $token,
+                'bot_username' => $botUsername
+            ]);
+        } else {
+            \Illuminate\Support\Facades\Log::error("[Telegram Link] Failed to save token to database", [
+                'user_id' => $user->id
+            ]);
+        }
 
         return Redirect::route('profile.edit')
             ->with('telegram_link', $deepLink)
