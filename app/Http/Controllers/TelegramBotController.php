@@ -188,13 +188,16 @@ class TelegramBotController extends Controller
             $user = User::where('telegram_link_token', $linkToken)->first();
 
             if ($user) {
-                // Link the account
-                $user->update([
-                    'telegram_chat_id' => $chatId,
-                    'telegram_link_token' => null,
-                ]);
+                // Use explicit assignment and save() for more reliable persistence
+                $user->telegram_chat_id = (string) $chatId;
+                $user->telegram_link_token = null;
+                $saved = $user->save();
 
-                Log::info("[Telegram Bot] Successfully linked User ID: [{$user->id}] with Chat ID: [{$chatId}]");
+                if ($saved) {
+                    Log::info("[Telegram Bot] Successfully linked and saved User ID: [{$user->id}] with Chat ID: [{$chatId}]");
+                } else {
+                    Log::error("[Telegram Bot] Database FAILED to save linking for User ID: [{$user->id}]");
+                }
 
                 $this->telegram->sendMessage(
                     $chatId,
