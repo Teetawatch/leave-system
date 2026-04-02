@@ -81,8 +81,21 @@ function formatThaiDateRange(start, end) {
 }
 
 function getSwapInfo(day, position) {
-    if (!day.guard_changes || !Array.isArray(day.guard_changes)) return null;
-    return day.guard_changes.find(gc => gc.duty_position === position) || null;
+    if (!day.guard_changes || !Array.isArray(day.guard_changes) || !day.roster) return null;
+    
+    // Get current officer ID from roster
+    const currentOfficerId = position === 'duty_officer' 
+        ? day.roster.duty_officer_id 
+        : day.roster.assistant_duty_officer_id;
+        
+    // Show swap info if the record matches either the original user OR the replacement user
+    // This handles both "Pending" swaps (where original is still on roster) 
+    // and "Approved" swaps (where replacement is on roster)
+    // while still hiding the UI if the roster was manually changed to someone else entirely (User's deletion case)
+    return day.guard_changes.find(gc => 
+        gc.duty_position === position && 
+        (gc.user_id === currentOfficerId || gc.replacement_user_id === currentOfficerId)
+    ) || null;
 }
 
 onMounted(() => { 
