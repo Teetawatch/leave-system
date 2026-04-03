@@ -106,6 +106,16 @@ function getSwapInfo(day, position) {
     return day.guard_changes.find(gc => gc.duty_position === position) || null;
 }
 
+function getStatusInfo(status) {
+    const map = {
+        'pending':            { label: 'รอผู้เปลี่ยนแทนตอบรับ', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+        'approved':           { label: 'รอ รอง ผอ. อนุมัติ',    color: 'bg-blue-100 text-blue-800 border-blue-300' },
+        'director_approved':  { label: 'รอ ผอ. อนุมัติ',        color: 'bg-indigo-100 text-indigo-800 border-indigo-300' },
+        'fully_approved':     { label: 'อนุมัติเสร็จสมบูรณ์',    color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+    };
+    return map[status] || { label: status, color: 'bg-slate-100 text-slate-600 border-slate-300' };
+}
+
 onMounted(() => { 
     setTimeout(() => { 
         if (window.lucide) window.lucide.createIcons(); 
@@ -299,11 +309,16 @@ onMounted(() => {
                                             <div v-if="getSwapInfo(day, 'duty_officer')" class="inline-flex flex-col gap-2 p-2 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm relative overflow-hidden group/swap w-full max-w-[280px]">
                                                 <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-200/40 to-orange-200/40 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none"></div>
                                                 
-                                                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 w-fit shrink-0 tracking-widest uppercase mb-1 shadow-sm">
-                                                    <i data-lucide="arrow-left-right" class="w-3 h-3"></i> แลกเปลี่ยนเวรยาม
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 shrink-0 tracking-widest uppercase shadow-sm">
+                                                        <i data-lucide="arrow-left-right" class="w-3 h-3"></i> เปลี่ยนเวร
+                                                    </div>
+                                                    <div class="px-2 py-0.5 rounded-full text-[9px] font-black border shrink-0" :class="getStatusInfo(getSwapInfo(day, 'duty_officer').status).color">
+                                                        {{ getStatusInfo(getSwapInfo(day, 'duty_officer').status).label }}
+                                                    </div>
                                                 </div>
                                                 
-                                                <!-- Old User -->
+                                                <!-- Old User (ผู้ขอเปลี่ยน) -->
                                                 <div class="flex items-center gap-2 opacity-60 grayscale-[50%] transition-all duration-300 group-hover/swap:grayscale-0 group-hover/swap:opacity-100">
                                                     <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-black text-[10px] shrink-0 overflow-hidden relative">
                                                         <div class="absolute inset-0 bg-black/5 z-10 w-full h-full"></div>
@@ -316,7 +331,7 @@ onMounted(() => {
                                                     </div>
                                                 </div>
 
-                                                <!-- New User (Current) -->
+                                                <!-- New User (ผู้รับเปลี่ยนแทน) -->
                                                 <div class="flex flex-col gap-2 bg-white/80 backdrop-blur-md p-2 rounded-xl border border-amber-200/60 shadow-sm">
                                                     <div class="flex items-start gap-2">
                                                         <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs shrink-0 border border-blue-200 overflow-hidden shadow-sm relative group-hover/swap:scale-105 transition-transform duration-300">
@@ -325,6 +340,7 @@ onMounted(() => {
                                                             <span v-else class="relative z-0">{{ getSwapInfo(day, 'duty_officer').replacement_user?.name?.charAt(0) }}</span>
                                                         </div>
                                                         <div class="flex flex-col flex-1 min-w-0">
+                                                            <span class="text-[9px] font-black text-amber-600 leading-tight">เปลี่ยนแทนโดย</span>
                                                             <span class="text-[10px] font-black text-blue-800 leading-tight">{{ getSwapInfo(day, 'duty_officer').replacement_user?.rank }}</span>
                                                             <span class="text-[13px] font-bold text-slate-800 leading-tight truncate" :title="getSwapInfo(day, 'duty_officer').replacement_user?.name">{{ getSwapInfo(day, 'duty_officer').replacement_user?.name }}</span>
                                                             <p v-if="getSwapInfo(day, 'duty_officer').remarks" class="mt-1.5 text-[10px] text-amber-800 bg-amber-100/60 border border-amber-200/50 px-2 py-1.5 rounded-lg leading-snug font-medium italic relative">
@@ -357,11 +373,16 @@ onMounted(() => {
                                             <div v-if="getSwapInfo(day, 'assistant_duty_officer')" class="inline-flex flex-col gap-2 p-2 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm relative overflow-hidden group/swap w-full max-w-[280px]">
                                                 <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-200/40 to-orange-200/40 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none"></div>
                                                 
-                                                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 w-fit shrink-0 tracking-widest uppercase mb-1 shadow-sm">
-                                                    <i data-lucide="arrow-left-right" class="w-3 h-3"></i> แลกเปลี่ยนเวรยาม
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 shrink-0 tracking-widest uppercase shadow-sm">
+                                                        <i data-lucide="arrow-left-right" class="w-3 h-3"></i> เปลี่ยนเวร
+                                                    </div>
+                                                    <div class="px-2 py-0.5 rounded-full text-[9px] font-black border shrink-0" :class="getStatusInfo(getSwapInfo(day, 'assistant_duty_officer').status).color">
+                                                        {{ getStatusInfo(getSwapInfo(day, 'assistant_duty_officer').status).label }}
+                                                    </div>
                                                 </div>
                                                 
-                                                <!-- Old User -->
+                                                <!-- Old User (ผู้ขอเปลี่ยน) -->
                                                 <div class="flex items-center gap-2 opacity-60 grayscale-[50%] transition-all duration-300 group-hover/swap:grayscale-0 group-hover/swap:opacity-100">
                                                     <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-black text-[10px] shrink-0 overflow-hidden relative">
                                                         <div class="absolute inset-0 bg-black/5 z-10 w-full h-full"></div>
@@ -374,7 +395,7 @@ onMounted(() => {
                                                     </div>
                                                 </div>
 
-                                                <!-- New User (Current) -->
+                                                <!-- New User (ผู้รับเปลี่ยนแทน) -->
                                                 <div class="flex flex-col gap-2 bg-white/80 backdrop-blur-md p-2 rounded-xl border border-amber-200/60 shadow-sm">
                                                     <div class="flex items-start gap-2">
                                                         <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200 overflow-hidden shadow-sm relative group-hover/swap:scale-105 transition-transform duration-300">
@@ -383,6 +404,7 @@ onMounted(() => {
                                                             <span v-else class="relative z-0">{{ getSwapInfo(day, 'assistant_duty_officer').replacement_user?.name?.charAt(0) }}</span>
                                                         </div>
                                                         <div class="flex flex-col flex-1 min-w-0">
+                                                            <span class="text-[9px] font-black text-amber-600 leading-tight">เปลี่ยนแทนโดย</span>
                                                             <span class="text-[10px] font-black text-rose-800 leading-tight">{{ getSwapInfo(day, 'assistant_duty_officer').replacement_user?.rank }}</span>
                                                             <span class="text-[13px] font-bold text-slate-800 leading-tight truncate" :title="getSwapInfo(day, 'assistant_duty_officer').replacement_user?.name">{{ getSwapInfo(day, 'assistant_duty_officer').replacement_user?.name }}</span>
                                                             <p v-if="getSwapInfo(day, 'assistant_duty_officer').remarks" class="mt-1.5 text-[10px] text-amber-800 bg-amber-100/60 border border-amber-200/50 px-2 py-1.5 rounded-lg leading-snug font-medium italic relative">
