@@ -111,7 +111,6 @@ function isToday(dateStr) {
 }
 
 // ========== File Upload ==========
-const fileInput = ref(null);
 const isDragging = ref(false);
 const isUploading = ref(false);
 
@@ -141,7 +140,7 @@ function triggerFileInput() {
     fileInput.value?.click();
 }
 
-function handleFileChange(e) {
+function handleUploadFileChange(e) {
     const file = e.target.files[0];
     if (file) uploadFile(file);
 }
@@ -319,7 +318,7 @@ onMounted(() => {
                         </p>
                         <p class="text-[10px] text-slate-400">รองรับ PDF, JPG, PNG, DOC, DOCX, XLS, XLSX (ไม่เกิน 10MB)</p>
                     </div>
-                    <input ref="fileInput" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" @change="handleFileChange" />
+                    <input ref="fileInput" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" @change="handleUploadFileChange" />
                 </div>
             </div>
 

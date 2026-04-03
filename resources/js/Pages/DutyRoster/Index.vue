@@ -49,7 +49,6 @@ function formatThaiDate(dateStr) {
     return `${day} ${month} ${year}`;
 }
 
-<<<<<<< HEAD
 function formatFileSize(bytes) {
     if (!bytes) return '';
     if (bytes < 1024) return bytes + ' B';
@@ -65,7 +64,8 @@ function getFileIcon(name) {
     if (['doc', 'docx'].includes(ext)) return 'file-type';
     if (['xls', 'xlsx'].includes(ext)) return 'table';
     return 'file';
-=======
+}
+
 function formatThaiDateRange(start, end) {
     if (!start || !end) return '—';
     const startDate = new Date(start);
@@ -113,7 +113,6 @@ function getSwapInfo(day, position) {
         gc.duty_position === position && 
         (gc.user_id === currentOfficerId || gc.replacement_user_id === currentOfficerId)
     ) || null;
->>>>>>> 68960bb5b10ab03b87286be4467f80f97c12a303
 }
 
 onMounted(() => { 
