@@ -111,7 +111,7 @@ function getSwapInfo(day, position) {
     // while still hiding the UI if the roster was manually changed to someone else entirely (User's deletion case)
     return day.guard_changes.find(gc => 
         gc.duty_position === position && 
-        (gc.user_id === currentOfficerId || gc.replacement_user_id === currentOfficerId)
+        (gc.user_id == currentOfficerId || gc.replacement_user_id == currentOfficerId)
     ) || null;
 }
 
