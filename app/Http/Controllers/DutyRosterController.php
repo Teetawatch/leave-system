@@ -42,8 +42,8 @@ class DutyRosterController extends Controller
             ->orderBy('start_date')
             ->get();
 
-        // ดึงข้อมูลการแลกเปลี่ยนเวรยาม (เฉพาะที่ผู้รับแทนอนุมัติแล้ว)
-        $guardChanges = \App\Models\GuardChangeRequest::whereIn('status', ['approved', 'director_approved', 'fully_approved'])
+        // ดึงข้อมูลการแลกเปลี่ยนเวรยาม (รวมที่รอการตอบรับ และที่อนุมัติแล้ว)
+        $guardChanges = \App\Models\GuardChangeRequest::whereIn('status', ['pending', 'approved', 'director_approved', 'fully_approved'])
             ->whereBetween('duty_date', [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])
             ->with(['user', 'replacementUser'])
             ->get();
