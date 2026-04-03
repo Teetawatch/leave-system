@@ -228,7 +228,7 @@ class ApprovalController extends Controller
 
             $leaveRequest->status = 'pending_director';
             $leaveRequest->save();
-            $this->logApproval($leaveRequest, $user, 'deputy_director', 'acknowledged', $request->comment, null, $request->ip());
+            $this->logApproval($leaveRequest, $user, 'deputy_director', 'acknowledged', $request->comment, $signaturePath, $request->ip());
             $this->notifyRole('director', $leaveRequest, $requester);
             return $this->successResponse('รับทราบคำขอเรียบร้อยแล้ว รอ ผอ. ดำเนินการขั้นสุดท้าย', $leaveRequest);
         }

@@ -170,6 +170,16 @@ Route::get('/dashboard', function () {
         ->take(5)
         ->get();
 
+    // 6. Today's Duty Information
+    $todayDuty = \App\Models\DutyRoster::whereDate('duty_date', now())
+        ->with(['dutyOfficer', 'assistantDutyOfficer'])
+        ->first();
+
+    $todaySeniorDuty = \App\Models\SeniorDutyRoster::whereDate('start_date', '<=', now())
+        ->whereDate('end_date', '>=', now())
+        ->with('seniorOfficer')
+        ->first();
+
     // Format recent requests for Vue
     $recentRequests->load('leaveType');
     $formattedRequests = $recentRequests->map(fn ($r) => [
@@ -198,6 +208,25 @@ Route::get('/dashboard', function () {
             'user' => $l->user ? ['name' => $l->user->name, 'avatar' => $l->user->avatar] : null,
         ]),
         'recentRequests' => $formattedRequests,
+        'todayDuty' => $todayDuty ? [
+            'duty_officer' => $todayDuty->dutyOfficer ? [
+                'name' => $todayDuty->dutyOfficer->name,
+                'rank' => $todayDuty->dutyOfficer->rank,
+                'avatar' => $todayDuty->dutyOfficer->avatar,
+            ] : null,
+            'assistant_duty_officer' => $todayDuty->assistantDutyOfficer ? [
+                'name' => $todayDuty->assistantDutyOfficer->name,
+                'rank' => $todayDuty->assistantDutyOfficer->rank,
+                'avatar' => $todayDuty->assistantDutyOfficer->avatar,
+            ] : null,
+        ] : null,
+        'todaySeniorDuty' => $todaySeniorDuty ? [
+            'senior_officer' => $todaySeniorDuty->seniorOfficer ? [
+                'name' => $todaySeniorDuty->seniorOfficer->name,
+                'rank' => $todaySeniorDuty->seniorOfficer->rank,
+                'avatar' => $todaySeniorDuty->seniorOfficer->avatar,
+            ] : null,
+        ] : null,
     ]);
 })->middleware(['auth', 'verified', 'ensure.avatar'])->name('dashboard');
 

@@ -1,8 +1,9 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useForm, Link, router } from '@inertiajs/vue3';
+import { useForm, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
-import { confirmDialog } from '@/utils/swal';
+import { confirmDialog, Toast } from '@/utils/swal';
+import UserAutocomplete from '@/Components/UserAutocomplete.vue';
 
 const props = defineProps({ days: Array, year: Number, month: Number, monthName: String, thaiYear: Number, users: Array, seniorRosters: Array, exemptUserIds: Array, monthlyFile: Object });
 
@@ -36,14 +37,26 @@ async function saveDay(dateStr) {
     const f = dayForms.value[dateStr];
     if (!f) return;
     f.saving = true;
-    try {
-        await fetch('/duty-roster/save-day', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' },
-            body: JSON.stringify({ date: dateStr, duty_officer_id: f.duty_officer_id || null, assistant_duty_officer_id: f.assistant_duty_officer_id || null }),
-        });
-    } catch (e) { console.error(e); }
-    f.saving = false;
+    
+    router.post('/duty-roster/store', {
+        duty_date: dateStr,
+        duty_officer_id: f.duty_officer_id || null,
+        assistant_duty_officer_id: f.assistant_duty_officer_id || null
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            Toast.fire({ icon: 'success', title: 'บันทึกเวรเรียบร้อยแล้ว' });
+            f.saving = false;
+        },
+        onError: () => {
+            Toast.fire({ icon: 'error', title: 'ข้อผิดพลาดในการบันทึก กรุณาตรวจสอบข้อมูล' });
+            f.saving = false;
+        },
+        onFinish: () => {
+            f.saving = false;
+        }
+    });
 }
 
 async function autoSchedule() {
@@ -58,6 +71,31 @@ async function clearMonth() {
     if (result.isConfirmed) {
         router.delete('/duty-roster/clear-month', { data: { year: props.year, month: props.month } });
     }
+}
+
+const fileInput = ref(null);
+function triggerImport() {
+    fileInput.value.click();
+}
+
+const importForm = useForm({
+    file: null,
+});
+
+function handleFileChange(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    importForm.file = file;
+    importForm.post('/duty-roster/import', {
+        onSuccess: () => {
+            importForm.reset();
+            if (fileInput.value) fileInput.value.value = '';
+        },
+        onError: (err) => {
+            console.error(err);
+        }
+    });
 }
 
 const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
@@ -174,6 +212,18 @@ onMounted(() => {
                             class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold rounded-xl hover:bg-indigo-100 transition-all text-xs">
                             <i data-lucide="zap" class="w-4 h-4"></i> จัดเวรอัตโนมัติ
                         </button>
+                        <input type="file" ref="fileInput" class="hidden" accept=".xlsx,.xls,.csv" @change="handleFileChange">
+                        <button @click="triggerImport" :disabled="importForm.processing"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold rounded-xl hover:bg-emerald-100 transition-all text-xs"
+                            :class="{ 'opacity-50 cursor-not-allowed': importForm.processing }">
+                            <i v-if="!importForm.processing" data-lucide="file-up" class="w-4 h-4"></i>
+                            <i v-else class="w-4 h-4 animate-spin border-2 border-emerald-600 border-t-transparent rounded-full"></i>
+                            {{ importForm.processing ? 'กำลังนำเข้า...' : 'นำเข้า Excel' }}
+                        </button>
+                        <a :href="`/duty-roster/template?year=${year}&month=${month}`"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 border border-blue-100 font-bold rounded-xl hover:bg-blue-100 transition-all text-xs">
+                            <i data-lucide="download" class="w-4 h-4"></i> แม่แบบ
+                        </a>
                         <Link :href="`/duty-roster?year=${year}&month=${month}`"
                             class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-xs">
                             <i data-lucide="eye" class="w-4 h-4"></i> ดูตาราง
@@ -312,7 +362,7 @@ onMounted(() => {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <div v-for="day in days" :key="day.date"
-                    class="day-card relative overflow-hidden rounded-2xl border p-4"
+                    class="day-card relative rounded-2xl border p-4"
                     :class="[
                         isToday(day.date) ? 'border-indigo-400 bg-white' : isWeekend(day.date) ? 'border-rose-200 bg-rose-50/30' : day.roster ? 'border-emerald-200 bg-emerald-50/20' : 'border-slate-100 bg-white',
                     ]">
@@ -340,21 +390,23 @@ onMounted(() => {
                             <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1 mb-1">
                                 <i data-lucide="shield" class="w-3 h-3"></i> นายทหารเวร
                             </label>
-                            <select v-if="dayForms[day.date]" v-model="dayForms[day.date].duty_officer_id"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all">
-                                <option value="">-- ไม่มี --</option>
-                                <option v-for="u in users" :key="u.id" :value="u.id">{{ u.rank }} {{ u.name }}</option>
-                            </select>
+                            <UserAutocomplete 
+                                v-if="dayForms[day.date]" 
+                                v-model="dayForms[day.date].duty_officer_id"
+                                :options="users"
+                                placeholder="ค้นหาและเลือก..."
+                            />
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-pink-600 uppercase tracking-wider flex items-center gap-1 mb-1">
                                 <i data-lucide="shield-check" class="w-3 h-3"></i> ผู้ช่วยนายทหารเวร
                             </label>
-                            <select v-if="dayForms[day.date]" v-model="dayForms[day.date].assistant_duty_officer_id"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/10 outline-none transition-all">
-                                <option value="">-- ไม่มี --</option>
-                                <option v-for="u in users" :key="u.id" :value="u.id">{{ u.rank }} {{ u.name }}</option>
-                            </select>
+                            <UserAutocomplete 
+                                v-if="dayForms[day.date]" 
+                                v-model="dayForms[day.date].assistant_duty_officer_id"
+                                :options="users"
+                                placeholder="ค้นหาและเลือก..."
+                            />
                         </div>
                         <button @click="saveDay(day.date)" :disabled="dayForms[day.date]?.saving"
                             class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all"

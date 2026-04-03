@@ -42,6 +42,16 @@ class DutyRosterController extends Controller
             ->orderBy('start_date')
             ->get();
 
+        // ดึงข้อมูลการแลกเปลี่ยนเวรยาม (รวมที่รอการตอบรับ และที่อนุมัติแล้ว)
+        $guardChanges = \App\Models\GuardChangeRequest::whereIn('status', ['pending', 'approved', 'director_approved', 'fully_approved'])
+            ->whereBetween('duty_date', [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])
+            ->with(['user', 'replacementUser'])
+            ->get();
+            
+        $guardChangesByDate = $guardChanges->groupBy(function ($item) {
+            return $item->duty_date->format('Y-m-d');
+        });
+
         // สร้าง array ของวันทั้งหมดในเดือน
         $days = [];
         $current = $startOfMonth->copy();
@@ -50,9 +60,11 @@ class DutyRosterController extends Controller
             $days[] = [
                 'date' => $current->copy(),
                 'roster' => $rosters->get($dateKey),
+                'guard_changes' => $guardChangesByDate->get($dateKey, collect())->values(),
             ];
             $current->addDay();
         }
+
 
         $monthName = $this->getThaiMonth($month);
         $thaiYear = $year + 543;
@@ -174,9 +186,6 @@ class DutyRosterController extends Controller
         return Inertia::render('DutyRoster/Manage', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'users', 'seniorRosters', 'exemptUserIds', 'monthlyFile'));
     }
 
-    /**
-     * บันทึก/อัปเดตตารางเวร (Admin เท่านั้น)
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -190,8 +199,10 @@ class DutyRosterController extends Controller
             'duty_date.required' => 'กรุณาระบุวันที่เข้าเวร',
         ]);
 
+        $dutyDate = Carbon::parse($validated['duty_date'])->format('Y-m-d');
+
         $roster = DutyRoster::updateOrCreate(
-            ['duty_date' => $validated['duty_date']],
+            ['duty_date' => $dutyDate],
             [
                 'duty_officer_id' => $validated['duty_officer_id'],
                 'reserve_duty_officer_id' => $validated['reserve_duty_officer_id'] ?? null,
@@ -209,9 +220,6 @@ class DutyRosterController extends Controller
         ]);
     }
 
-    /**
-     * บันทึก/อัปเดตหลายวันพร้อมกัน (Bulk)
-     */
     public function bulkStore(Request $request)
     {
         $validated = $request->validate([
@@ -226,8 +234,9 @@ class DutyRosterController extends Controller
 
         $count = 0;
         foreach ($validated['entries'] as $entry) {
+            $dutyDate = Carbon::parse($entry['duty_date'])->format('Y-m-d');
             DutyRoster::updateOrCreate(
-                ['duty_date' => $entry['duty_date']],
+                ['duty_date' => $dutyDate],
                 [
                     'duty_officer_id' => $entry['duty_officer_id'] ?? null,
                     'reserve_duty_officer_id' => $entry['reserve_duty_officer_id'] ?? null,
