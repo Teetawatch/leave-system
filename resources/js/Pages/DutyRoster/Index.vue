@@ -3,7 +3,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
-const props = defineProps({ days: Array, year: Number, month: Number, monthName: String, thaiYear: Number, seniorRosters: Array });
+const props = defineProps({ days: Array, year: Number, month: Number, monthName: String, thaiYear: Number, seniorRosters: Array, monthlyFile: Object });
 
 const isLoaded = ref(false);
 
@@ -45,6 +45,23 @@ function formatThaiDate(dateStr) {
     const month = months[date.getMonth()];
     const year = date.getFullYear() + 543; // Convert to Buddhist year
     return `${day} ${month} ${year}`;
+}
+
+function formatFileSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function getFileIcon(name) {
+    if (!name) return 'file';
+    const ext = name.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return 'file-text';
+    if (['jpg', 'jpeg', 'png'].includes(ext)) return 'image';
+    if (['doc', 'docx'].includes(ext)) return 'file-type';
+    if (['xls', 'xlsx'].includes(ext)) return 'table';
+    return 'file';
 }
 
 onMounted(() => { 
@@ -132,6 +149,37 @@ onMounted(() => {
                         <i data-lucide="chevron-right" class="w-5 h-5"></i>
                     </Link>
                 </div>
+
+                <!-- Monthly File Attachment -->
+                <section v-if="monthlyFile" class="mb-8"
+                         :class="{ 'opacity-100 translate-y-0': isLoaded, 'opacity-0 translate-y-4': !isLoaded }" style="transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: 230ms;">
+                    <div class="glass-card rounded-2xl p-5 border-l-4 border-l-violet-400">
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 text-violet-600 flex items-center justify-center border border-violet-200 shadow-sm">
+                                    <i :data-lucide="getFileIcon(monthlyFile.name)" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span class="text-xs font-black text-violet-600 uppercase tracking-wider">ใบเวรยามประจำเดือน</span>
+                                    </div>
+                                    <h4 class="font-bold text-slate-800">{{ monthlyFile.name }}</h4>
+                                    <p class="text-[10px] text-slate-400 font-medium">{{ formatFileSize(monthlyFile.size) }} · อัปเดตเมื่อ {{ monthlyFile.updated_at }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a :href="monthlyFile.url" target="_blank"
+                                    class="glass-btn inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-violet-700 hover:text-violet-800 transition-all border border-violet-100">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i> เปิดดู
+                                </a>
+                                <a :href="monthlyFile.url" download
+                                    class="glass-btn inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-all border border-emerald-100">
+                                    <i data-lucide="download" class="w-4 h-4"></i> ดาวน์โหลด
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- Senior Duty Rosters -->
                 <section v-if="seniorRosters && seniorRosters.length > 0" class="mb-8"

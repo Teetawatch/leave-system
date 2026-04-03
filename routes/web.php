@@ -301,6 +301,8 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
         Route::post('/duty-roster/exemptions', [DutyRosterController::class, 'updateExemptions'])->name('duty-roster.exemptions');
         Route::post('/duty-roster/senior/store', [DutyRosterController::class, 'storeSenior'])->name('duty-roster.senior.store');
         Route::delete('/duty-roster/senior/{id}', [DutyRosterController::class, 'destroySenior'])->name('duty-roster.senior.destroy');
+        Route::post('/duty-roster/upload-monthly-file', [DutyRosterController::class, 'uploadMonthlyFile'])->name('duty-roster.upload-monthly-file');
+        Route::delete('/duty-roster/delete-monthly-file', [DutyRosterController::class, 'deleteMonthlyFile'])->name('duty-roster.delete-monthly-file');
 
         Route::resource('departments', App\Http\Controllers\DepartmentController::class)->only(['index', 'store', 'update', 'destroy']);
 

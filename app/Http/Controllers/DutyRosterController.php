@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\DutyRosterTemplateExport;
 use App\Imports\DutyRosterImport;
@@ -56,7 +57,10 @@ class DutyRosterController extends Controller
         $monthName = $this->getThaiMonth($month);
         $thaiYear = $year + 543;
 
-        return Inertia::render('DutyRoster/Index', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'seniorRosters'));
+        // ตรวจสอบไฟล์ใบเวรยามประจำเดือน
+        $monthlyFile = $this->getMonthlyFileInfo($year, $month);
+
+        return Inertia::render('DutyRoster/Index', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'seniorRosters', 'monthlyFile'));
     }
 
     /**
@@ -164,7 +168,10 @@ class DutyRosterController extends Controller
 
         $exemptUserIds = User::where('is_duty_exempt', true)->pluck('id')->toArray();
 
-        return Inertia::render('DutyRoster/Manage', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'users', 'seniorRosters', 'exemptUserIds'));
+        // ตรวจสอบไฟล์ใบเวรยามประจำเดือน
+        $monthlyFile = $this->getMonthlyFileInfo($year, $month);
+
+        return Inertia::render('DutyRoster/Manage', compact('days', 'year', 'month', 'monthName', 'thaiYear', 'users', 'seniorRosters', 'exemptUserIds', 'monthlyFile'));
     }
 
     /**
@@ -613,5 +620,87 @@ class DutyRosterController extends Controller
         });
 
         return back()->with('success', 'บันทึกรายชื่อผู้ได้รับการยกเว้นเรียบร้อยแล้ว');
+    }
+
+    /**
+     * ดึงข้อมูลไฟล์ใบเวรยามประจำเดือน
+     */
+    private function getMonthlyFileInfo($year, $month)
+    {
+        $dir = public_path("duty-roster-files/{$year}/{$month}");
+        if (!File::isDirectory($dir)) {
+            return null;
+        }
+
+        $files = File::files($dir);
+        if (empty($files)) {
+            return null;
+        }
+
+        $file = $files[0]; // ใช้ไฟล์แรก (เก็บได้ 1 ไฟล์ต่อเดือน)
+        return [
+            'name' => $file->getFilename(),
+            'url' => "/duty-roster-files/{$year}/{$month}/" . $file->getFilename(),
+            'size' => $file->getSize(),
+            'updated_at' => date('Y-m-d H:i:s', $file->getMTime()),
+        ];
+    }
+
+    /**
+     * อัปโหลดไฟล์ใบเวรยามประจำเดือน
+     */
+    public function uploadMonthlyFile(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240',
+        ], [
+            'file.required' => 'กรุณาเลือกไฟล์',
+            'file.mimes' => 'รองรับเฉพาะไฟล์ PDF, รูปภาพ, Word, Excel เท่านั้น',
+            'file.max' => 'ขนาดไฟล์ต้องไม่เกิน 10MB',
+        ]);
+
+        $year = $request->year;
+        $month = $request->month;
+        $dir = public_path("duty-roster-files/{$year}/{$month}");
+
+        // ลบไฟล์เก่า (ถ้ามี)
+        if (File::isDirectory($dir)) {
+            File::cleanDirectory($dir);
+        } else {
+            File::makeDirectory($dir, 0755, true);
+        }
+
+        // บันทึกไฟล์ใหม่
+        $file = $request->file('file');
+        $monthName = $this->getThaiMonth($month);
+        $thaiYear = $year + 543;
+        $extension = $file->getClientOriginalExtension();
+        $fileName = "ใบเวรยาม_{$monthName}_{$thaiYear}.{$extension}";
+        $file->move($dir, $fileName);
+
+        return back()->with('success', 'อัปโหลดไฟล์ใบเวรยามเรียบร้อยแล้ว');
+    }
+
+    /**
+     * ลบไฟล์ใบเวรยามประจำเดือน
+     */
+    public function deleteMonthlyFile(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+        ]);
+
+        $year = $request->year;
+        $month = $request->month;
+        $dir = public_path("duty-roster-files/{$year}/{$month}");
+
+        if (File::isDirectory($dir)) {
+            File::deleteDirectory($dir);
+        }
+
+        return back()->with('success', 'ลบไฟล์ใบเวรยามเรียบร้อยแล้ว');
     }
 }

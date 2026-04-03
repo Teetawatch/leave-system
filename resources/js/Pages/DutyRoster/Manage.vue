@@ -4,7 +4,7 @@ import { useForm, Link, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import { confirmDialog } from '@/utils/swal';
 
-const props = defineProps({ days: Array, year: Number, month: Number, monthName: String, thaiYear: Number, users: Array, seniorRosters: Array, exemptUserIds: Array });
+const props = defineProps({ days: Array, year: Number, month: Number, monthName: String, thaiYear: Number, users: Array, seniorRosters: Array, exemptUserIds: Array, monthlyFile: Object });
 
 const prevMonth = computed(() => {
     let m = props.month - 1, y = props.year;
@@ -72,6 +72,82 @@ function isToday(dateStr) {
     return dateStr === new Date().toISOString().split('T')[0];
 }
 
+// ========== File Upload ==========
+const fileInput = ref(null);
+const isDragging = ref(false);
+const isUploading = ref(false);
+
+const uploadForm = useForm({
+    year: props.year,
+    month: props.month,
+    file: null,
+});
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function getFileIcon(name) {
+    if (!name) return 'file';
+    const ext = name.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return 'file-text';
+    if (['jpg', 'jpeg', 'png'].includes(ext)) return 'image';
+    if (['doc', 'docx'].includes(ext)) return 'file-type';
+    if (['xls', 'xlsx'].includes(ext)) return 'table';
+    return 'file';
+}
+
+function triggerFileInput() {
+    fileInput.value?.click();
+}
+
+function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (file) uploadFile(file);
+}
+
+function handleDrop(e) {
+    isDragging.value = false;
+    const file = e.dataTransfer.files[0];
+    if (file) uploadFile(file);
+}
+
+function uploadFile(file) {
+    isUploading.value = true;
+    uploadForm.file = file;
+    uploadForm.year = props.year;
+    uploadForm.month = props.month;
+
+    router.post('/duty-roster/upload-monthly-file', {
+        year: props.year,
+        month: props.month,
+        file: file,
+    }, {
+        forceFormData: true,
+        onFinish: () => {
+            isUploading.value = false;
+            if (fileInput.value) fileInput.value.value = '';
+        },
+    });
+}
+
+async function deleteFile() {
+    const result = await confirmDialog({
+        title: 'ลบไฟล์ใบเวรยาม?',
+        text: 'ไฟล์จะถูกลบออกจากระบบ ไม่สามารถย้อนกลับได้',
+        icon: 'warning',
+        confirmText: 'ลบไฟล์',
+        confirmColor: '#ef4444',
+    });
+    if (result.isConfirmed) {
+        router.delete('/duty-roster/delete-monthly-file', {
+            data: { year: props.year, month: props.month },
+        });
+    }
+}
+
 onMounted(() => {
     (props.days || []).forEach(day => initDayForm(day));
     setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100);
@@ -128,6 +204,73 @@ onMounted(() => {
                     class="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center hover:border-indigo-500 hover:text-indigo-500 hover:scale-105 transition-all">
                     <i data-lucide="chevron-right" class="w-5 h-5"></i>
                 </Link>
+            </div>
+
+            <!-- Monthly File Upload Section -->
+            <div class="file-upload-section rounded-2xl p-5 mb-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-md shadow-violet-500/20">
+                        <i data-lucide="paperclip" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-violet-800 uppercase tracking-wider">ใบเวรยามประจำเดือน</h3>
+                        <p class="text-[10px] text-violet-600">แนบไฟล์ใบเวรยามประจำเดือน (PDF, รูปภาพ, Word, Excel · ไม่เกิน 10MB)</p>
+                    </div>
+                </div>
+
+                <!-- Current File Display -->
+                <div v-if="monthlyFile" class="bg-white rounded-xl border border-violet-200 p-4 mb-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
+                                <i :data-lucide="getFileIcon(monthlyFile.name)" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">{{ monthlyFile.name }}</p>
+                                <p class="text-[10px] text-slate-400">{{ formatFileSize(monthlyFile.size) }} · อัปเดตล่าสุด: {{ monthlyFile.updated_at }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a :href="monthlyFile.url" target="_blank"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 text-violet-600 border border-violet-100 font-bold rounded-lg hover:bg-violet-100 transition-all text-xs">
+                                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> เปิดไฟล์
+                            </a>
+                            <a :href="monthlyFile.url" download
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold rounded-lg hover:bg-emerald-100 transition-all text-xs">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> ดาวน์โหลด
+                            </a>
+                            <button @click="deleteFile"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-100 font-bold rounded-lg hover:bg-rose-100 transition-all text-xs">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ลบ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Drop Zone -->
+                <div
+                    class="upload-dropzone rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition-all"
+                    :class="isDragging ? 'border-violet-500 bg-violet-50/50' : 'border-violet-200 bg-white/50 hover:border-violet-400 hover:bg-violet-50/30'"
+                    @click="triggerFileInput"
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="handleDrop"
+                >
+                    <div v-if="isUploading" class="flex flex-col items-center gap-2">
+                        <div class="w-8 h-8 border-3 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
+                        <p class="text-sm font-bold text-violet-600">กำลังอัปโหลด...</p>
+                    </div>
+                    <div v-else class="flex flex-col items-center gap-2">
+                        <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-400 flex items-center justify-center mx-auto">
+                            <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-600">
+                            {{ monthlyFile ? 'อัปโหลดไฟล์ใหม่ (แทนที่ไฟล์เดิม)' : 'คลิกหรือลากไฟล์มาวางที่นี่' }}
+                        </p>
+                        <p class="text-[10px] text-slate-400">รองรับ PDF, JPG, PNG, DOC, DOCX, XLS, XLSX (ไม่เกิน 10MB)</p>
+                    </div>
+                    <input ref="fileInput" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" @change="handleFileChange" />
+                </div>
             </div>
 
             <!-- Senior Duty Rosters -->
@@ -230,6 +373,13 @@ onMounted(() => {
 .senior-section {
     background: linear-gradient(135deg, #fffbeb, #fef3c7);
     border: 1px solid #fbbf24;
+}
+.file-upload-section {
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 1px solid #c4b5fd;
+}
+.upload-dropzone {
+    transition: all 0.3s ease;
 }
 .day-card { transition: all 0.3s ease; }
 .day-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); }
