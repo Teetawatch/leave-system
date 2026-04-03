@@ -98,12 +98,15 @@ function formatThaiDateRange(start, end) {
 }
 
 function getSwapInfo(day, position) {
-    if (!day.guard_changes || !Array.isArray(day.guard_changes) || !day.roster) return null;
+    if (!day.guard_changes || !Array.isArray(day.guard_changes)) return null;
     
-    // Show swap info if there's any guard change record for this date and position
-    // regardless of who the current roster officer is — this prevents swap UI from
-    // disappearing when an admin manually reassigns the roster after a guard change was submitted
-    return day.guard_changes.find(gc => gc.duty_position === position) || null;
+    // Normalize function for more resilient matching
+    const normalize = (s) => (s || '').toString().toLowerCase().trim().replace(/_/g, '');
+    const targetPos = normalize(position);
+    
+    return day.guard_changes.find(gc => {
+        return normalize(gc.duty_position) === targetPos;
+    }) || null;
 }
 
 function getStatusInfo(status) {
@@ -304,129 +307,129 @@ onMounted(() => {
 
                                     <!-- Duty Officer column -->
                                     <td class="px-6 py-4 align-middle">
-                                        <div v-if="day.roster?.duty_officer">
-                                            <!-- Guard Change / Swap UI -->
-                                            <div v-if="getSwapInfo(day, 'duty_officer')" class="inline-flex flex-col gap-2 p-2 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm relative overflow-hidden group/swap w-full max-w-[280px]">
-                                                <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-200/40 to-orange-200/40 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none"></div>
-                                                
-                                                <div class="flex items-center gap-1.5 flex-wrap">
-                                                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 shrink-0 tracking-widest uppercase shadow-sm">
-                                                        <i data-lucide="arrow-left-right" class="w-3 h-3"></i> เปลี่ยนเวร
-                                                    </div>
-                                                    <div class="px-2 py-0.5 rounded-full text-[9px] font-black border shrink-0" :class="getStatusInfo(getSwapInfo(day, 'duty_officer').status).color">
-                                                        {{ getStatusInfo(getSwapInfo(day, 'duty_officer').status).label }}
-                                                    </div>
+                                        <!-- Show Swap UI if exists (takes priority) -->
+                                        <div v-if="getSwapInfo(day, 'duty_officer')" class="inline-flex flex-col gap-2 p-2 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm relative overflow-hidden group/swap w-full max-w-[280px]">
+                                            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-200/40 to-orange-200/40 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none"></div>
+                                            
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 shrink-0 tracking-widest uppercase shadow-sm">
+                                                    <i data-lucide="arrow-left-right" class="w-3 h-3"></i> เปลี่ยนเวร
                                                 </div>
-                                                
-                                                <!-- Old User (ผู้ขอเปลี่ยน) -->
-                                                <div class="flex items-center gap-2 opacity-60 grayscale-[50%] transition-all duration-300 group-hover/swap:grayscale-0 group-hover/swap:opacity-100">
-                                                    <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-black text-[10px] shrink-0 overflow-hidden relative">
-                                                        <div class="absolute inset-0 bg-black/5 z-10 w-full h-full"></div>
-                                                        <img v-if="getSwapInfo(day, 'duty_officer').user?.avatar" :src="`/storage/${getSwapInfo(day, 'duty_officer').user.avatar}`" class="w-full h-full object-cover relative z-0">
-                                                        <span v-else class="relative z-0">{{ getSwapInfo(day, 'duty_officer').user?.name?.charAt(0) }}</span>
-                                                    </div>
-                                                    <div class="flex flex-col">
-                                                        <span class="text-[9px] font-black text-slate-500 leading-tight line-through decoration-slate-400">{{ getSwapInfo(day, 'duty_officer').user?.rank }}</span>
-                                                        <span class="text-[11px] font-bold text-slate-600 leading-tight line-through decoration-slate-400 truncate w-32 md:w-40" :title="getSwapInfo(day, 'duty_officer').user?.name">{{ getSwapInfo(day, 'duty_officer').user?.name }}</span>
-                                                    </div>
-                                                </div>
-
-                                                <!-- New User (ผู้รับเปลี่ยนแทน) -->
-                                                <div class="flex flex-col gap-2 bg-white/80 backdrop-blur-md p-2 rounded-xl border border-amber-200/60 shadow-sm">
-                                                    <div class="flex items-start gap-2">
-                                                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs shrink-0 border border-blue-200 overflow-hidden shadow-sm relative group-hover/swap:scale-105 transition-transform duration-300">
-                                                            <div class="absolute inset-0 ring-2 ring-inset ring-amber-400 rounded-full z-10"></div>
-                                                            <img v-if="getSwapInfo(day, 'duty_officer').replacement_user?.avatar" :src="`/storage/${getSwapInfo(day, 'duty_officer').replacement_user.avatar}`" class="w-full h-full object-cover relative z-0">
-                                                            <span v-else class="relative z-0">{{ getSwapInfo(day, 'duty_officer').replacement_user?.name?.charAt(0) }}</span>
-                                                        </div>
-                                                        <div class="flex flex-col flex-1 min-w-0">
-                                                            <span class="text-[9px] font-black text-amber-600 leading-tight">เปลี่ยนแทนโดย</span>
-                                                            <span class="text-[10px] font-black text-blue-800 leading-tight">{{ getSwapInfo(day, 'duty_officer').replacement_user?.rank }}</span>
-                                                            <span class="text-[13px] font-bold text-slate-800 leading-tight truncate" :title="getSwapInfo(day, 'duty_officer').replacement_user?.name">{{ getSwapInfo(day, 'duty_officer').replacement_user?.name }}</span>
-                                                            <p v-if="getSwapInfo(day, 'duty_officer').remarks" class="mt-1.5 text-[10px] text-amber-800 bg-amber-100/60 border border-amber-200/50 px-2 py-1.5 rounded-lg leading-snug font-medium italic relative">
-                                                                <i data-lucide="message-square-quote" class="absolute right-1 -top-1 w-3 h-3 text-amber-300 opacity-50"></i>
-                                                                "{{ getSwapInfo(day, 'duty_officer').remarks }}"
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                <div class="px-2 py-0.5 rounded-full text-[9px] font-black border shrink-0" :class="getStatusInfo(getSwapInfo(day, 'duty_officer').status).color">
+                                                    {{ getStatusInfo(getSwapInfo(day, 'duty_officer').status).label }}
                                                 </div>
                                             </div>
-                                            <!-- Standard Display -->
-                                            <div v-else class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 shadow-sm group-hover:shadow transition-shadow">
-                                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs shrink-0 border border-blue-200 overflow-hidden shadow-sm">
-                                                    <img v-if="day.roster.duty_officer?.avatar" :src="`/storage/${day.roster.duty_officer.avatar}`" class="w-full h-full object-cover">
-                                                    <span v-else>{{ day.roster.duty_officer.name?.charAt(0) }}</span>
+                                            
+                                            <!-- Old User (ผู้ขอเปลี่ยน) -->
+                                            <div class="flex items-center gap-2 opacity-60 grayscale-[50%] transition-all duration-300 group-hover/swap:grayscale-0 group-hover/swap:opacity-100">
+                                                <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-black text-[10px] shrink-0 overflow-hidden relative">
+                                                    <div class="absolute inset-0 bg-black/5 z-10 w-full h-full"></div>
+                                                    <img v-if="getSwapInfo(day, 'duty_officer').user?.avatar" :src="`/storage/${getSwapInfo(day, 'duty_officer').user.avatar}`" class="w-full h-full object-cover relative z-0">
+                                                    <span v-else class="relative z-0">{{ getSwapInfo(day, 'duty_officer').user?.name?.charAt(0) }}</span>
                                                 </div>
                                                 <div class="flex flex-col">
-                                                    <span class="text-xs font-black text-blue-800 leading-tight">{{ day.roster.duty_officer.rank }}</span>
-                                                    <span class="text-sm font-bold text-slate-800 leading-tight">{{ day.roster.duty_officer.name }}</span>
+                                                    <span class="text-[9px] font-black text-slate-500 leading-tight line-through decoration-slate-400">{{ getSwapInfo(day, 'duty_officer').user?.rank }}</span>
+                                                    <span class="text-[11px] font-bold text-slate-600 leading-tight line-through decoration-slate-400 truncate w-32 md:w-40" :title="getSwapInfo(day, 'duty_officer').user?.name">{{ getSwapInfo(day, 'duty_officer').user?.name }}</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- New User (ผู้รับเปลี่ยนแทน) -->
+                                            <div class="flex flex-col gap-2 bg-white/80 backdrop-blur-md p-2 rounded-xl border border-amber-200/60 shadow-sm">
+                                                <div class="flex items-start gap-2">
+                                                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs shrink-0 border border-blue-200 overflow-hidden shadow-sm relative group-hover/swap:scale-105 transition-transform duration-300">
+                                                        <div class="absolute inset-0 ring-2 ring-inset ring-amber-400 rounded-full z-10"></div>
+                                                        <img v-if="(getSwapInfo(day, 'duty_officer').replacement_user || getSwapInfo(day, 'duty_officer').replacementUser)?.avatar" :src="`/storage/${(getSwapInfo(day, 'duty_officer').replacement_user || getSwapInfo(day, 'duty_officer').replacementUser).avatar}`" class="w-full h-full object-cover relative z-0">
+                                                        <span v-else class="relative z-0">{{ (getSwapInfo(day, 'duty_officer').replacement_user || getSwapInfo(day, 'duty_officer').replacementUser)?.name?.charAt(0) }}</span>
+                                                    </div>
+                                                    <div class="flex flex-col flex-1 min-w-0">
+                                                        <span class="text-[9px] font-black text-amber-600 leading-tight">เปลี่ยนแทนโดย</span>
+                                                        <span class="text-[10px] font-black text-blue-800 leading-tight">{{ (getSwapInfo(day, 'duty_officer').replacement_user || getSwapInfo(day, 'duty_officer').replacementUser)?.rank }}</span>
+                                                        <span class="text-[13px] font-bold text-slate-800 leading-tight truncate" :title="(getSwapInfo(day, 'duty_officer').replacement_user || getSwapInfo(day, 'duty_officer').replacementUser)?.name">{{ (getSwapInfo(day, 'duty_officer').replacement_user || getSwapInfo(day, 'duty_officer').replacementUser)?.name }}</span>
+                                                        <p v-if="getSwapInfo(day, 'duty_officer').remarks" class="mt-1.5 text-[10px] text-amber-800 bg-amber-100/60 border border-amber-200/50 px-2 py-1.5 rounded-lg leading-snug font-medium italic relative">
+                                                            <i data-lucide="message-square-quote" class="absolute right-1 -top-1 w-3 h-3 text-amber-300 opacity-50"></i>
+                                                            "{{ getSwapInfo(day, 'duty_officer').remarks }}"
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                        <!-- Standard Display if roster exists and no swap -->
+                                        <div v-else-if="day.roster?.duty_officer" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 shadow-sm group-hover:shadow transition-shadow">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs shrink-0 border border-blue-200 overflow-hidden shadow-sm">
+                                                <img v-if="day.roster.duty_officer?.avatar" :src="`/storage/${day.roster.duty_officer.avatar}`" class="w-full h-full object-cover">
+                                                <span v-else>{{ day.roster.duty_officer.name?.charAt(0) }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-xs font-black text-blue-800 leading-tight">{{ day.roster.duty_officer.rank }}</span>
+                                                <span class="text-sm font-bold text-slate-800 leading-tight">{{ day.roster.duty_officer.name }}</span>
+                                            </div>
+                                        </div>
+                                        
                                         <div v-else class="text-slate-300 font-bold px-4">—</div>
                                     </td>
 
                                     <!-- Assistant Duty Officer column -->
                                     <td class="px-6 py-4 pr-8 align-middle">
-                                        <div v-if="day.roster?.assistant_duty_officer">
-                                            <!-- Guard Change / Swap UI -->
-                                            <div v-if="getSwapInfo(day, 'assistant_duty_officer')" class="inline-flex flex-col gap-2 p-2 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm relative overflow-hidden group/swap w-full max-w-[280px]">
-                                                <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-200/40 to-orange-200/40 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none"></div>
-                                                
-                                                <div class="flex items-center gap-1.5 flex-wrap">
-                                                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 shrink-0 tracking-widest uppercase shadow-sm">
-                                                        <i data-lucide="arrow-left-right" class="w-3 h-3"></i> เปลี่ยนเวร
-                                                    </div>
-                                                    <div class="px-2 py-0.5 rounded-full text-[9px] font-black border shrink-0" :class="getStatusInfo(getSwapInfo(day, 'assistant_duty_officer').status).color">
-                                                        {{ getStatusInfo(getSwapInfo(day, 'assistant_duty_officer').status).label }}
-                                                    </div>
+                                        <!-- Show Swap UI if exists (takes priority) -->
+                                        <div v-if="getSwapInfo(day, 'assistant_duty_officer')" class="inline-flex flex-col gap-2 p-2 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 shadow-sm relative overflow-hidden group/swap w-full max-w-[280px]">
+                                            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-200/40 to-orange-200/40 rounded-full blur-xl -mr-8 -mt-8 pointer-events-none"></div>
+                                            
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black text-amber-700 bg-amber-100/90 border border-amber-200 shrink-0 tracking-widest uppercase shadow-sm">
+                                                    <i data-lucide="arrow-left-right" class="w-3 h-3"></i> เปลี่ยนเวร
                                                 </div>
-                                                
-                                                <!-- Old User (ผู้ขอเปลี่ยน) -->
-                                                <div class="flex items-center gap-2 opacity-60 grayscale-[50%] transition-all duration-300 group-hover/swap:grayscale-0 group-hover/swap:opacity-100">
-                                                    <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-black text-[10px] shrink-0 overflow-hidden relative">
-                                                        <div class="absolute inset-0 bg-black/5 z-10 w-full h-full"></div>
-                                                        <img v-if="getSwapInfo(day, 'assistant_duty_officer').user?.avatar" :src="`/storage/${getSwapInfo(day, 'assistant_duty_officer').user.avatar}`" class="w-full h-full object-cover relative z-0">
-                                                        <span v-else class="relative z-0">{{ getSwapInfo(day, 'assistant_duty_officer').user?.name?.charAt(0) }}</span>
-                                                    </div>
-                                                    <div class="flex flex-col">
-                                                        <span class="text-[9px] font-black text-slate-500 leading-tight line-through decoration-slate-400">{{ getSwapInfo(day, 'assistant_duty_officer').user?.rank }}</span>
-                                                        <span class="text-[11px] font-bold text-slate-600 leading-tight line-through decoration-slate-400 truncate w-32 md:w-40" :title="getSwapInfo(day, 'assistant_duty_officer').user?.name">{{ getSwapInfo(day, 'assistant_duty_officer').user?.name }}</span>
-                                                    </div>
-                                                </div>
-
-                                                <!-- New User (ผู้รับเปลี่ยนแทน) -->
-                                                <div class="flex flex-col gap-2 bg-white/80 backdrop-blur-md p-2 rounded-xl border border-amber-200/60 shadow-sm">
-                                                    <div class="flex items-start gap-2">
-                                                        <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200 overflow-hidden shadow-sm relative group-hover/swap:scale-105 transition-transform duration-300">
-                                                            <div class="absolute inset-0 ring-2 ring-inset ring-amber-400 rounded-full z-10"></div>
-                                                            <img v-if="getSwapInfo(day, 'assistant_duty_officer').replacement_user?.avatar" :src="`/storage/${getSwapInfo(day, 'assistant_duty_officer').replacement_user.avatar}`" class="w-full h-full object-cover relative z-0">
-                                                            <span v-else class="relative z-0">{{ getSwapInfo(day, 'assistant_duty_officer').replacement_user?.name?.charAt(0) }}</span>
-                                                        </div>
-                                                        <div class="flex flex-col flex-1 min-w-0">
-                                                            <span class="text-[9px] font-black text-amber-600 leading-tight">เปลี่ยนแทนโดย</span>
-                                                            <span class="text-[10px] font-black text-rose-800 leading-tight">{{ getSwapInfo(day, 'assistant_duty_officer').replacement_user?.rank }}</span>
-                                                            <span class="text-[13px] font-bold text-slate-800 leading-tight truncate" :title="getSwapInfo(day, 'assistant_duty_officer').replacement_user?.name">{{ getSwapInfo(day, 'assistant_duty_officer').replacement_user?.name }}</span>
-                                                            <p v-if="getSwapInfo(day, 'assistant_duty_officer').remarks" class="mt-1.5 text-[10px] text-amber-800 bg-amber-100/60 border border-amber-200/50 px-2 py-1.5 rounded-lg leading-snug font-medium italic relative">
-                                                                <i data-lucide="message-square-quote" class="absolute right-1 -top-1 w-3 h-3 text-amber-300 opacity-50"></i>
-                                                                "{{ getSwapInfo(day, 'assistant_duty_officer').remarks }}"
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                <div class="px-2 py-0.5 rounded-full text-[9px] font-black border shrink-0" :class="getStatusInfo(getSwapInfo(day, 'assistant_duty_officer').status).color">
+                                                    {{ getStatusInfo(getSwapInfo(day, 'assistant_duty_officer').status).label }}
                                                 </div>
                                             </div>
-                                            <!-- Standard Display -->
-                                            <div v-else class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-50/80 to-pink-50/80 border border-rose-100 shadow-sm group-hover:shadow transition-shadow">
-                                                <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200 overflow-hidden shadow-sm">
-                                                    <img v-if="day.roster.assistant_duty_officer?.avatar" :src="`/storage/${day.roster.assistant_duty_officer.avatar}`" class="w-full h-full object-cover">
-                                                    <span v-else>{{ day.roster.assistant_duty_officer.name?.charAt(0) }}</span>
+                                            
+                                            <!-- Old User (ผู้ขอเปลี่ยน) -->
+                                            <div class="flex items-center gap-2 opacity-60 grayscale-[50%] transition-all duration-300 group-hover/swap:grayscale-0 group-hover/swap:opacity-100">
+                                                <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-black text-[10px] shrink-0 overflow-hidden relative">
+                                                    <div class="absolute inset-0 bg-black/5 z-10 w-full h-full"></div>
+                                                    <img v-if="getSwapInfo(day, 'assistant_duty_officer').user?.avatar" :src="`/storage/${getSwapInfo(day, 'assistant_duty_officer').user.avatar}`" class="w-full h-full object-cover relative z-0">
+                                                    <span v-else class="relative z-0">{{ getSwapInfo(day, 'assistant_duty_officer').user?.name?.charAt(0) }}</span>
                                                 </div>
                                                 <div class="flex flex-col">
-                                                    <span class="text-xs font-black text-rose-800 leading-tight">{{ day.roster.assistant_duty_officer.rank }}</span>
-                                                    <span class="text-sm font-bold text-slate-800 leading-tight">{{ day.roster.assistant_duty_officer.name }}</span>
+                                                    <span class="text-[9px] font-black text-slate-500 leading-tight line-through decoration-slate-400">{{ getSwapInfo(day, 'assistant_duty_officer').user?.rank }}</span>
+                                                    <span class="text-[11px] font-bold text-slate-600 leading-tight line-through decoration-slate-400 truncate w-32 md:w-40" :title="getSwapInfo(day, 'assistant_duty_officer').user?.name">{{ getSwapInfo(day, 'assistant_duty_officer').user?.name }}</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- New User (ผู้รับเปลี่ยนแทน) -->
+                                            <div class="flex flex-col gap-2 bg-white/80 backdrop-blur-md p-2 rounded-xl border border-amber-200/60 shadow-sm">
+                                                <div class="flex items-start gap-2">
+                                                    <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200 overflow-hidden shadow-sm relative group-hover/swap:scale-105 transition-transform duration-300">
+                                                        <div class="absolute inset-0 ring-2 ring-inset ring-amber-400 rounded-full z-10"></div>
+                                                        <img v-if="(getSwapInfo(day, 'assistant_duty_officer').replacement_user || getSwapInfo(day, 'assistant_duty_officer').replacementUser)?.avatar" :src="`/storage/${(getSwapInfo(day, 'assistant_duty_officer').replacement_user || getSwapInfo(day, 'assistant_duty_officer').replacementUser).avatar}`" class="w-full h-full object-cover relative z-0">
+                                                        <span v-else class="relative z-0">{{ (getSwapInfo(day, 'assistant_duty_officer').replacement_user || getSwapInfo(day, 'assistant_duty_officer').replacementUser)?.name?.charAt(0) }}</span>
+                                                    </div>
+                                                    <div class="flex flex-col flex-1 min-w-0">
+                                                        <span class="text-[9px] font-black text-amber-600 leading-tight">เปลี่ยนแทนโดย</span>
+                                                        <span class="text-[10px] font-black text-rose-800 leading-tight">{{ (getSwapInfo(day, 'assistant_duty_officer').replacement_user || getSwapInfo(day, 'assistant_duty_officer').replacementUser)?.rank }}</span>
+                                                        <span class="text-[13px] font-bold text-slate-800 leading-tight truncate" :title="(getSwapInfo(day, 'assistant_duty_officer').replacement_user || getSwapInfo(day, 'assistant_duty_officer').replacementUser)?.name">{{ (getSwapInfo(day, 'assistant_duty_officer').replacement_user || getSwapInfo(day, 'assistant_duty_officer').replacementUser)?.name }}</span>
+                                                        <p v-if="getSwapInfo(day, 'assistant_duty_officer').remarks" class="mt-1.5 text-[10px] text-amber-800 bg-amber-100/60 border border-amber-200/50 px-2 py-1.5 rounded-lg leading-snug font-medium italic relative">
+                                                            <i data-lucide="message-square-quote" class="absolute right-1 -top-1 w-3 h-3 text-amber-300 opacity-50"></i>
+                                                            "{{ getSwapInfo(day, 'assistant_duty_officer').remarks }}"
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Standard Display if roster exists and no swap -->
+                                        <div v-else-if="day.roster?.assistant_duty_officer" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-50/80 to-pink-50/80 border border-rose-100 shadow-sm group-hover:shadow transition-shadow">
+                                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-black text-xs shrink-0 border border-rose-200 overflow-hidden shadow-sm">
+                                                <img v-if="day.roster.assistant_duty_officer?.avatar" :src="`/storage/${day.roster.assistant_duty_officer.avatar}`" class="w-full h-full object-cover">
+                                                <span v-else>{{ day.roster.assistant_duty_officer.name?.charAt(0) }}</span>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-xs font-black text-rose-800 leading-tight">{{ day.roster.assistant_duty_officer.rank }}</span>
+                                                <span class="text-sm font-bold text-slate-800 leading-tight">{{ day.roster.assistant_duty_officer.name }}</span>
+                                            </div>
+                                        </div>
+                                        
                                         <div v-else class="text-slate-300 font-bold px-4">—</div>
                                     </td>
                                 </tr>
