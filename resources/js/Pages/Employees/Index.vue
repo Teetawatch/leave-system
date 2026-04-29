@@ -1,13 +1,29 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { confirmDelete } from '@/utils/swal';
+
+function openOfficialDutyModal() {
+    showOfficialDutyModal.value = true;
+    nextTick(() => {
+        if (window.lucide) window.lucide.createIcons();
+    });
+}
 
 const props = defineProps({ employees: Object, departments: Array });
 const search = ref('');
 const selectedDept = ref('');
 const viewMode = ref('grid');
+const selectedEmployees = ref([]);
+const showOfficialDutyModal = ref(false);
+const officialDutyForm = ref({
+    start_date: '',
+    end_date: '',
+    reason: '',
+    location: '',
+    attachment: null
+});
 
 function applyFilter() {
     router.get('/employees', { search: search.value, department: selectedDept.value }, { preserveState: true });
@@ -16,6 +32,44 @@ function applyFilter() {
 async function deleteEmployee(id) {
     const result = await confirmDelete({ title: 'ลบข้อมูลบุคลากร?', text: 'คุณต้องการลบบุคลากรนี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้' });
     if (result.isConfirmed) router.delete(`/employees/${id}`);
+}
+
+function toggleSelect(id) {
+    const index = selectedEmployees.value.indexOf(id);
+    if (index > -1) selectedEmployees.value.splice(index, 1);
+    else selectedEmployees.value.push(id);
+}
+
+function toggleSelectAll() {
+    if (selectedEmployees.value.length === props.employees.data.length) {
+        selectedEmployees.value = [];
+    } else {
+        selectedEmployees.value = props.employees.data.map(e => e.id);
+    }
+}
+
+function submitOfficialDuty() {
+    const formData = new FormData();
+    selectedEmployees.value.forEach(id => formData.append('employee_ids[]', id));
+    formData.append('start_date', officialDutyForm.value.start_date);
+    formData.append('end_date', officialDutyForm.value.end_date);
+    formData.append('reason', officialDutyForm.value.reason);
+    formData.append('location', officialDutyForm.value.location);
+    if (officialDutyForm.value.attachment) {
+        formData.append('attachment', officialDutyForm.value.attachment);
+    }
+
+    router.post('/employees/bulk-official-duty', formData, {
+        onSuccess: () => {
+            showOfficialDutyModal.value = false;
+            selectedEmployees.value = [];
+            officialDutyForm.value = { start_date: '', end_date: '', reason: '', location: '', attachment: null };
+        }
+    });
+}
+
+function handleFileChange(e) {
+    officialDutyForm.value.attachment = e.target.files[0];
 }
 
 function roleLabel(role) {
@@ -56,6 +110,9 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                 <i data-lucide="upload" class="w-4 h-4 group-hover:-translate-y-0.5 transition-transform"></i> Import
                             </Link>
                         </div>
+                        <button v-if="selectedEmployees.length > 0" @click.stop="openOfficialDutyModal" class="inline-flex items-center px-6 py-3 bg-brand-50 text-brand-600 font-black rounded-2xl border-2 border-brand-200 hover:bg-brand-100 transition-all hover:-translate-y-1 gap-2">
+                            <i data-lucide="briefcase" class="w-5 h-5"></i> ไปราชการ ({{ selectedEmployees.length }})
+                        </button>
                         <Link href="/employees/create" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-black rounded-2xl shadow-xl shadow-brand-500/20 transition-all hover:-translate-y-1 gap-2">
                             <i data-lucide="user-plus" class="w-5 h-5"></i> เพิ่มข้าราชการใหม่
                         </Link>
@@ -140,7 +197,15 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
             <!-- Grid View -->
             <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 min-h-[500px]">
                 <div v-for="emp in employees.data" :key="emp.id"
-                    class="bg-white rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 border border-slate-50 hover:shadow-2xl hover:border-brand-200 transition-all duration-500 group relative flex flex-col h-full overflow-hidden">
+                    @click="toggleSelect(emp.id)"
+                    :class="selectedEmployees.includes(emp.id) ? 'ring-2 ring-brand-500 bg-brand-50/30' : 'bg-white border-slate-50'"
+                    class="rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 border hover:shadow-2xl hover:border-brand-200 transition-all duration-500 group relative flex flex-col h-full overflow-hidden cursor-pointer">
+                    <div class="absolute top-4 left-4 z-20">
+                        <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all"
+                            :class="selectedEmployees.includes(emp.id) ? 'bg-brand-500 border-brand-500' : 'bg-white/80 border-slate-200 group-hover:border-brand-300'">
+                            <i v-if="selectedEmployees.includes(emp.id)" data-lucide="check" class="w-4 h-4 text-white"></i>
+                        </div>
+                    </div>
                     <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-brand-50 transition-colors duration-500"></div>
                     <div class="relative flex flex-col items-center flex-1">
                         <div class="relative mb-4 group-hover:-translate-y-2 transition-transform duration-500">
@@ -165,8 +230,8 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                         </div>
                     </div>
                     <div class="flex items-center gap-2 pt-4 border-t border-slate-100 mt-auto">
-                        <Link :href="`/employees/${emp.id}/edit`" class="flex-1 text-center py-2.5 rounded-xl bg-brand-50 text-brand-600 text-xs font-black hover:bg-brand-100 transition-all">แก้ไข</Link>
-                        <button @click="deleteEmployee(emp.id)" class="flex-1 text-center py-2.5 rounded-xl bg-rose-50 text-rose-600 text-xs font-black hover:bg-rose-100 transition-all">ลบ</button>
+                        <Link @click.stop :href="`/employees/${emp.id}/edit`" class="flex-1 text-center py-2.5 rounded-xl bg-brand-50 text-brand-600 text-xs font-black hover:bg-brand-100 transition-all">แก้ไข</Link>
+                        <button @click.stop="deleteEmployee(emp.id)" class="flex-1 text-center py-2.5 rounded-xl bg-rose-50 text-rose-600 text-xs font-black hover:bg-rose-100 transition-all">ลบ</button>
                     </div>
                 </div>
             </div>
@@ -176,6 +241,12 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead><tr class="bg-slate-50 border-b border-slate-100">
+                            <th class="px-6 py-4 text-left w-12">
+                                <button @click="toggleSelectAll" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all"
+                                    :class="selectedEmployees.length === employees.data.length ? 'bg-brand-500 border-brand-500' : 'bg-white border-slate-200'">
+                                    <i v-if="selectedEmployees.length === employees.data.length" data-lucide="check" class="w-4 h-4 text-white"></i>
+                                </button>
+                            </th>
                             <th class="px-6 py-4 text-left font-black text-slate-400 text-xs uppercase tracking-widest">ชื่อ</th>
                             <th class="px-6 py-4 text-left font-black text-slate-400 text-xs uppercase tracking-widest">แผนก</th>
                             <th class="px-6 py-4 text-left font-black text-slate-400 text-xs uppercase tracking-widest">ตำแหน่ง</th>
@@ -183,7 +254,16 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                             <th class="px-6 py-4 text-right font-black text-slate-400 text-xs uppercase tracking-widest">จัดการ</th>
                         </tr></thead>
                         <tbody>
-                            <tr v-for="emp in employees.data" :key="emp.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <tr v-for="emp in employees.data" :key="emp.id"
+                                @click="toggleSelect(emp.id)"
+                                :class="selectedEmployees.includes(emp.id) ? 'bg-brand-50/50' : 'hover:bg-slate-50/50'"
+                                class="border-b border-slate-50 transition-colors cursor-pointer">
+                                <td class="px-6 py-4">
+                                    <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all"
+                                        :class="selectedEmployees.includes(emp.id) ? 'bg-brand-500 border-brand-500' : 'bg-white border-slate-200'">
+                                        <i v-if="selectedEmployees.includes(emp.id)" data-lucide="check" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-4">
                                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-50 to-indigo-50 text-brand-600 flex items-center justify-center font-black overflow-hidden ring-2 ring-white shadow">
@@ -200,8 +280,8 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <Link :href="`/employees/${emp.id}/edit`" class="px-4 py-2 rounded-xl bg-brand-50 text-brand-600 text-xs font-black hover:bg-brand-100 transition">แก้ไข</Link>
-                                        <button @click="deleteEmployee(emp.id)" class="px-4 py-2 rounded-xl bg-rose-50 text-rose-600 text-xs font-black hover:bg-rose-100 transition">ลบ</button>
+                                        <Link @click.stop :href="`/employees/${emp.id}/edit`" class="px-4 py-2 rounded-xl bg-brand-50 text-brand-600 text-xs font-black hover:bg-brand-100 transition">แก้ไข</Link>
+                                        <button @click.stop="deleteEmployee(emp.id)" class="px-4 py-2 rounded-xl bg-rose-50 text-rose-600 text-xs font-black hover:bg-rose-100 transition">ลบ</button>
                                     </div>
                                 </td>
                             </tr>
@@ -218,6 +298,79 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                             :class="link.active ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100'" v-html="link.label" />
                         <span v-else class="px-4 py-3 text-sm text-slate-300 font-bold" v-html="link.label" />
                     </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Official Duty Modal -->
+        <div v-if="showOfficialDutyModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showOfficialDutyModal = false"></div>
+            <div class="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-brand-600 to-brand-500 text-white">
+                    <div>
+                        <h3 class="text-2xl font-black">บันทึกข้อมูลไปราชการ</h3>
+                        <p class="text-brand-100 text-sm mt-1">เพิ่มข้อมูลการไปราชการสำหรับบุคลากร {{ selectedEmployees.length }} ท่าน</p>
+                    </div>
+                    <button @click="showOfficialDutyModal = false" class="p-2 hover:bg-white/20 rounded-xl transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div class="p-8 max-h-[70vh] overflow-y-auto">
+                    <form @submit.prevent="submitOfficialDuty" class="space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-black text-slate-700 ml-1">วันที่เริ่มต้น</label>
+                                <input v-model="officialDutyForm.start_date" type="date" required
+                                    class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-brand-500 rounded-2xl font-bold transition-all outline-none">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-black text-slate-700 ml-1">วันที่สิ้นสุด</label>
+                                <input v-model="officialDutyForm.end_date" type="date" required
+                                    class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-brand-500 rounded-2xl font-bold transition-all outline-none">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-black text-slate-700 ml-1">สถานที่/จังหวัด</label>
+                            <input v-model="officialDutyForm.location" type="text" required placeholder="เช่น จ.เชียงใหม่ หรือ ศูนย์ฝึกอบรม..."
+                                class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-brand-500 rounded-2xl font-bold transition-all outline-none">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-black text-slate-700 ml-1">เหตุผล/โครงการ</label>
+                            <textarea v-model="officialDutyForm.reason" rows="3" required placeholder="ระบุวัตถุประสงค์ของการไปราชการ..."
+                                class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-brand-500 rounded-2xl font-bold transition-all outline-none resize-none"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-black text-slate-700 ml-1">เอกสารแนบ (PDF - ถ้ามี)</label>
+                            <div class="relative group">
+                                <input type="file" @change="handleFileChange" accept=".pdf"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <div class="w-full px-5 py-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl font-bold group-hover:border-brand-400 transition-all flex items-center justify-center gap-3 text-slate-500 group-hover:text-brand-600">
+                                    <i data-lucide="file-up" class="w-5 h-5"></i>
+                                    {{ officialDutyForm.attachment ? officialDutyForm.attachment.name : 'คลิกเพื่อเลือกไฟล์ PDF' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selected Employees List -->
+                        <div class="bg-slate-50 rounded-2xl p-4">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">รายชื่อที่เลือก</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <div v-for="id in selectedEmployees" :key="id" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-2">
+                                    {{ employees.data.find(e => e.id === id)?.rank }}{{ employees.data.find(e => e.id === id)?.name }}
+                                    <button @click.stop="toggleSelect(id)" class="text-slate-300 hover:text-rose-500 transition-colors">
+                                        <i data-lucide="x" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" @click="showOfficialDutyModal = false"
+                                class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black rounded-2xl transition-all">ยกเลิก</button>
+                            <button type="submit"
+                                class="flex-[2] py-4 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-black rounded-2xl shadow-xl shadow-brand-500/20 transition-all hover:-translate-y-1">บันทึกข้อมูล</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

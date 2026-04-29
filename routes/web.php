@@ -311,6 +311,7 @@ Route::middleware(['auth', 'ensure.avatar'])->group(function () {
 
         // Admin Routes - Employees (resource route AFTER specific routes)
         Route::post('/employees/bulk-destroy', [App\Http\Controllers\EmployeeController::class, 'bulkDestroy'])->name('employees.bulk-destroy');
+        Route::post('/employees/bulk-official-duty', [App\Http\Controllers\EmployeeController::class, 'bulkStoreOfficialDuty'])->name('employees.bulk-official-duty');
         Route::post('/employees/{id}/official-duty', [App\Http\Controllers\EmployeeController::class, 'storeOfficialDuty'])->name('employees.official-duty.store');
         Route::resource('employees', App\Http\Controllers\EmployeeController::class);
 

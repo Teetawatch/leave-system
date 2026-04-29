@@ -1,29 +1,54 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useForm } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { ref, onMounted, computed, nextTick } from 'vue';
+import { toastSuccess, toastError } from '@/utils/swal';
 
 const props = defineProps({ leaveTypes: Array });
 
 const form = useForm({
     leave_types: Object.fromEntries((props.leaveTypes || []).map(lt => [lt.id, {
-        max_days: lt.max_days_per_year, advance_notice_days: lt.advance_notice_days || 0,
+        max_days: lt.max_days_per_year, 
+        advance_notice_days: lt.advance_notice_days || 0,
         max_retroactive_days: lt.max_retroactive_days || 0,
-        requires_advance_notice: lt.requires_advance_notice, enforce_advance_notice: lt.enforce_advance_notice,
-        allows_retroactive: lt.allows_retroactive, enforce_retroactive_check: lt.enforce_retroactive_check,
-        enforce_balance_check: lt.enforce_balance_check, requires_file: lt.requires_file,
+        requires_advance_notice: !!lt.requires_advance_notice, 
+        enforce_advance_notice: !!lt.enforce_advance_notice,
+        allows_retroactive: !!lt.allows_retroactive, 
+        enforce_retroactive_check: !!lt.enforce_retroactive_check,
+        enforce_balance_check: !!lt.enforce_balance_check, 
+        requires_file: !!lt.requires_file,
     }])),
 });
 
-function submit() { form.put('/settings'); }
+function submit() {
+    form.put('/settings', {
+        preserveScroll: true,
+        onSuccess: () => toastSuccess('บันทึกการตั้งค่าเรียบร้อยแล้ว'),
+        onError: () => toastError('เกิดข้อผิดพลาดในการบันทึกข้อมูล'),
+    });
+}
 
-const expanded = ref({});
-function toggle(id) { expanded.value[id] = !expanded.value[id]; }
+const expanded = ref(Object.fromEntries(props.leaveTypes.map((lt, i) => [lt.id, i === 0])));
+function toggle(id) { 
+    expanded.value[id] = !expanded.value[id]; 
+    if (expanded.value[id]) {
+        nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+    }
+}
+
+const allExpanded = computed(() => Object.values(expanded.value).every(v => v));
+function toggleAll() {
+    const target = !allExpanded.value;
+    props.leaveTypes.forEach(lt => expanded.value[lt.id] = target);
+    nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+}
 
 const colors = ['indigo', 'emerald', 'amber', 'rose', 'violet', 'cyan', 'orange', 'teal'];
 const icons = { sick: 'thermometer', personal: 'briefcase', vacation: 'palmtree', temporary: 'clock', 'official-duty': 'landmark' };
 
-onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100); });
+onMounted(() => { 
+    setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100); 
+});
 </script>
 
 <template>
@@ -45,6 +70,13 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                 การตั้งค่า <span class="text-indigo-600">ระบบ</span>
                             </h1>
                             <p class="text-slate-500 font-medium text-lg max-w-xl leading-relaxed">กำหนดค่าพารามิเตอร์ของระบบ ปรับแต่งเงื่อนไขประเภทการลา เปิด/ปิด กฎเกณฑ์ต่างๆ</p>
+                        </div>
+                        <div class="flex items-end gap-3">
+                            <button type="button" @click="toggleAll" 
+                                class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/50 backdrop-blur-md border border-white text-slate-700 font-black text-sm hover:bg-white hover:shadow-xl transition-all group">
+                                <i :data-lucide="allExpanded ? 'fold-vertical' : 'unfold-vertical'" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                                {{ allExpanded ? 'ย่อทั้งหมด' : 'ขยายทั้งหมด' }}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -99,8 +131,12 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">จำนวนวันลาสูงสุด/ปี</label>
                                         <div class="flex items-center gap-3">
                                             <input v-model="form.leave_types[lt.id].max_days" type="number" min="0"
-                                                class="number-input block w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-center font-black text-2xl text-slate-800 py-3 transition-all">
+                                                class="number-input block w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-center font-black text-2xl text-slate-800 py-3 transition-all"
+                                                :class="form.errors[`leave_types.${lt.id}.max_days`] && 'border-rose-500 ring-rose-500/10'">
                                             <span class="text-xs font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">วัน</span>
+                                        </div>
+                                        <div v-if="form.errors[`leave_types.${lt.id}.max_days`]" class="text-[10px] font-bold text-rose-500 mt-2 ml-1">
+                                            {{ form.errors[`leave_types.${lt.id}.max_days`] }}
                                         </div>
                                     </div>
                                     <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
@@ -140,9 +176,13 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                             </div>
                                             <div class="flex items-center gap-2">
                                                 <input v-model="form.leave_types[lt.id].advance_notice_days" type="number" min="0"
-                                                    class="number-input w-20 rounded-xl border-slate-200 bg-white shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-center font-black text-xl text-slate-800 py-2 transition-all">
+                                                    class="number-input w-20 rounded-xl border-slate-200 bg-white shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-center font-black text-xl text-slate-800 py-2 transition-all"
+                                                    :class="form.errors[`leave_types.${lt.id}.advance_notice_days`] && 'border-rose-500 ring-rose-500/10'">
                                                 <span class="text-xs font-bold text-slate-400">วัน</span>
                                             </div>
+                                        </div>
+                                        <div v-if="form.errors[`leave_types.${lt.id}.advance_notice_days`]" class="text-[10px] font-bold text-rose-500 mt-2 text-right">
+                                            {{ form.errors[`leave_types.${lt.id}.advance_notice_days`] }}
                                         </div>
                                     </div>
                                     <div :class="!form.leave_types[lt.id].requires_advance_notice && 'opacity-45 pointer-events-none'">
@@ -181,9 +221,13 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                                             </div>
                                             <div class="flex items-center gap-2">
                                                 <input v-model="form.leave_types[lt.id].max_retroactive_days" type="number" min="0"
-                                                    class="number-input w-20 rounded-xl border-slate-200 bg-white shadow-sm focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 text-center font-black text-xl text-slate-800 py-2 transition-all">
+                                                    class="number-input w-20 rounded-xl border-slate-200 bg-white shadow-sm focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 text-center font-black text-xl text-slate-800 py-2 transition-all"
+                                                    :class="form.errors[`leave_types.${lt.id}.max_retroactive_days`] && 'border-rose-500 ring-rose-500/10'">
                                                 <span class="text-xs font-bold text-slate-400">วัน</span>
                                             </div>
+                                        </div>
+                                        <div v-if="form.errors[`leave_types.${lt.id}.max_retroactive_days`]" class="text-[10px] font-bold text-rose-500 mt-2 text-right">
+                                            {{ form.errors[`leave_types.${lt.id}.max_retroactive_days`] }}
                                         </div>
                                     </div>
                                     <div class="flex items-center justify-between bg-amber-50/50 rounded-2xl p-5 border border-amber-100/50">
@@ -215,13 +259,30 @@ onMounted(() => { setTimeout(() => { if (window.lucide) window.lucide.createIcon
                         </div>
                     </div>
 
-                    <!-- Submit -->
-                    <div class="pt-6 flex justify-end">
-                        <button type="submit" :disabled="form.processing"
-                            class="group inline-flex items-center justify-center px-10 py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-[2rem] shadow-xl hover:shadow-indigo-500/30 transition-all duration-300 hover:-translate-y-1 uppercase tracking-widest gap-3 disabled:opacity-50">
-                            <i data-lucide="save" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                            {{ form.processing ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่าทั้งหมด' }}
-                        </button>
+                    <!-- Submit Bar (Sticky) -->
+                    <div class="sticky bottom-8 z-50 mt-12">
+                        <div class="glass-panel rounded-[2.5rem] p-4 flex items-center justify-between shadow-2xl border-white/50">
+                            <div class="hidden md:flex items-center gap-4 ml-6">
+                                <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                    <i data-lucide="info" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-black text-slate-800">ตรวจสอบความถูกต้อง</div>
+                                    <div class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">ระบบจะบังคับใช้เงื่อนไขทันทีที่บันทึก</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 w-full md:w-auto">
+                                <button type="button" @click="form.reset()" :disabled="!form.isDirty || form.processing"
+                                    class="flex-1 md:flex-none px-8 py-4 text-slate-500 font-black text-sm hover:text-rose-600 transition-colors disabled:opacity-30 disabled:pointer-events-none">
+                                    คืนค่าเดิม
+                                </button>
+                                <button type="submit" :disabled="form.processing || !form.isDirty"
+                                    class="flex-[2] md:flex-none group inline-flex items-center justify-center px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-2xl shadow-xl hover:shadow-indigo-500/30 transition-all duration-300 hover:-translate-y-1 uppercase tracking-widest gap-3 disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none">
+                                    <i data-lucide="save" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                                    {{ form.processing ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า' }}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </form>

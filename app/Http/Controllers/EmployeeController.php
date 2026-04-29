@@ -420,5 +420,59 @@ class EmployeeController extends Controller
 
         return redirect()->back()->with('success', "บันทึกข้อมูลการไปราชการของ {$employee->name} เรียบร้อยแล้ว");
     }
+
+    /**
+     * Store official duty record for multiple employees (Admin only)
+     */
+    public function bulkStoreOfficialDuty(Request $request)
+    {
+        $request->validate([
+            'employee_ids' => 'required|array',
+            'employee_ids.*' => 'exists:users,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string|max:500',
+            'location' => 'required|string|max:255',
+            'attachment' => 'nullable|file|mimes:pdf|max:10240',
+        ]);
+
+        $officialDutyType = \App\Models\LeaveType::where('slug', 'official-duty')->first();
+
+        if (!$officialDutyType) {
+            return redirect()->back()->with('error', 'ไม่พบประเภทการลา "ไปราชการ" ในระบบ');
+        }
+
+        $startDate = \Carbon\Carbon::parse($request->start_date);
+        $endDate = \Carbon\Carbon::parse($request->end_date);
+        $totalDays = $startDate->diffInDays($endDate) + 1;
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('leave_attachments', 'public');
+        }
+
+        foreach ($request->employee_ids as $id) {
+            \App\Models\LeaveRequest::create([
+                'user_id' => $id,
+                'leave_type_id' => $officialDutyType->id,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'total_days' => $totalDays,
+                'reason' => $request->reason,
+                'contact_address' => [
+                    'province' => $request->location,
+                    'house' => '-',
+                    'road' => '-',
+                    'tambon' => '-',
+                    'amphoe' => '-'
+                ],
+                'attachment_path' => $attachmentPath,
+                'status' => 'approved',
+                'approved_at' => now(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'บันทึกข้อมูลการไปราชการเรียบร้อยแล้ว (' . count($request->employee_ids) . ' ราย)');
+    }
 }
 
