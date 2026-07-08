@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Department;
 use App\Models\LeaveType;
 use App\Models\LeaveBalance;
 use Illuminate\Http\Request;
@@ -36,9 +37,14 @@ class EmployeeController extends Controller
         }
 
         $employees = $query->orderBy('name')->paginate(10);
-        $departments = \App\Models\Department::all();
+        $allEmployees = User::orderBy('rank')->get(['id', 'rank', 'name', 'department', 'avatar']);
+        $departments = Department::all();
 
-        return Inertia::render('Employees/Index', compact('employees', 'departments'));
+        return Inertia::render('Employees/Index', [
+            'employees' => $employees,
+            'allEmployees' => $allEmployees,
+            'departments' => $departments,
+        ]);
     }
 
     /**
